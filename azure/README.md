@@ -4,6 +4,10 @@
 
 [Deploy a new VM on Azure](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FConservationMetrics%2Fgc-stack-deploy%2Frefs%2Fheads%2Fmain%2Fbuild%2Fazure%2Fnew-vm.arm.json)
 
+## Prerequisites
+
+Your Azure user must have **Contributor** role on an existing Resource Group to deploy the stack,
+or **Contributor** role on the Subscription to create a new Resource Group for the stack.
 
 ## Instructions
 
