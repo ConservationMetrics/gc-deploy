@@ -1,0 +1,368 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vmName": {
+      "type": "String",
+      "defaultValue": "guardian-XXXX",
+      "metadata": {
+        "description": "Name of the virtual machine."
+      }
+    },
+    "vmSize": {
+      "defaultValue": "Standard_B2s",
+      "type": "String",
+      "metadata": {
+        "description": "Size of the virtual machine."
+      }
+    },
+    "adminUsername": {
+      "type": "String",
+      "defaultValue": "cmiadmin",
+      "metadata": {
+        "description": "Username to login to the Virtual Machine."
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "minLength": 16,
+      "metadata": {
+        "description": "Password to login to the Virtual Machine."
+      }
+    },
+    "storageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Azure Storage Account to mount"
+      }
+    },
+    "storageAccountFolder": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Files share in the Storage Account"
+      }
+    },
+    "storageAccessKey": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Access key for the storage account"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2024-01-01",
+      "name": "[variables('publicIpName')]",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "Standard",
+        "tier": "Regional"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static"
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2024-01-01",
+      "name": "[variables('networkSecurityGroupName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": [
+          {
+            "id": "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', variables('networkSecurityGroupName'), 'SSH')]",
+            "name": "SSH",
+            "properties": {
+              "access": "Allow",
+              "destinationAddressPrefix": "*",
+              "destinationAddressPrefixes": [],
+              "destinationPortRange": "22",
+              "destinationPortRanges": [],
+              "direction": "Inbound",
+              "priority": 300,
+              "protocol": "TCP",
+              "sourceAddressPrefix": "*",
+              "sourceAddressPrefixes": [],
+              "sourcePortRange": "*",
+              "sourcePortRanges": []
+            },
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules"
+          },
+          {
+            "id": "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', variables('networkSecurityGroupName'), 'HTTP')]",
+            "name": "HTTP",
+            "properties": {
+              "access": "Allow",
+              "destinationAddressPrefix": "*",
+              "destinationAddressPrefixes": [],
+              "destinationPortRange": "80",
+              "destinationPortRanges": [],
+              "direction": "Inbound",
+              "priority": 320,
+              "protocol": "TCP",
+              "sourceAddressPrefix": "*",
+              "sourceAddressPrefixes": [],
+              "sourcePortRange": "*",
+              "sourcePortRanges": []
+            },
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules"
+          },
+          {
+            "id": "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', variables('networkSecurityGroupName'), 'AllowAnyHTTPSInbound')]",
+            "name": "AllowAnyHTTPSInbound",
+            "properties": {
+              "access": "Allow",
+              "destinationAddressPrefix": "*",
+              "destinationAddressPrefixes": [],
+              "destinationPortRange": "443",
+              "destinationPortRanges": [],
+              "direction": "Inbound",
+              "priority": 330,
+              "protocol": "TCP",
+              "sourceAddressPrefix": "*",
+              "sourceAddressPrefixes": [],
+              "sourcePortRange": "*",
+              "sourcePortRanges": []
+            },
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2024-01-01",
+      "name": "[variables('virtualNetworkName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": ["10.1.0.0/16"]
+        },
+        "enableDdosProtection": false,
+        "subnets": [
+          {
+            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), 'default')]",
+            "name": "default",
+            "properties": {
+              "addressPrefix": "10.1.0.0/24",
+              "delegations": [],
+              "privateEndpointNetworkPolicies": "Disabled",
+              "privateLinkServiceNetworkPolicies": "Enabled"
+            },
+            "type": "Microsoft.Network/virtualNetworks/subnets"
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2024-07-01",
+      "name": "[parameters('vmName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "additionalCapabilities": {
+          "hibernationEnabled": false
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('vmSize')]"
+        },
+        "osProfile": {
+          "customData": "[variables('cloudInit')]",
+          "allowExtensionOperations": true,
+          "computerName": "[parameters('vmName')]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]",
+          "linuxConfiguration": {
+            "disablePasswordAuthentication": false,
+            "patchSettings": {
+              "assessmentMode": "ImageDefault",
+              "patchMode": "ImageDefault"
+            },
+            "provisionVMAgent": true
+          },
+          "secrets": []
+        },
+        "storageProfile": {
+          "imageReference": {
+            "offer": "ubuntu-24_04-lts",
+            "publisher": "canonical",
+            "sku": "server",
+            "version": "latest"
+          },
+          "osDisk": {
+            "caching": "ReadWrite",
+            "createOption": "FromImage",
+            "deleteOption": "Delete",
+            "diskSizeGB": 30,
+            "managedDisk": {
+              "storageAccountType": "StandardSSD_LRS"
+            },
+            "osType": "Linux"
+          },
+          "dataDisks": []
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]",
+              "properties": {
+                "deleteOption": "Delete",
+                "primary": true
+              }
+            }
+          ]
+        },
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": true
+          }
+        },
+        "securityProfile": {
+          "securityType": "TrustedLaunch",
+          "uefiSettings": {
+            "secureBootEnabled": true,
+            "vTpmEnabled": true
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2024-01-01",
+      "name": "[variables('nicName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "auxiliaryMode": "None",
+        "auxiliarySku": "None",
+        "disableTcpStateTracking": false,
+        "dnsSettings": {
+          "dnsServers": []
+        },
+        "enableAcceleratedNetworking": false,
+        "enableIPForwarding": false,
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))]",
+                "properties": {
+                  "deleteOption": "Delete"
+                }
+              },
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), 'default')]"
+              }
+            },
+            "type": "Microsoft.Network/networkInterfaces/ipConfigurations"
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+        },
+        "nicType": "Standard"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), 'default')]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+      ]
+    },
+    {
+      "apiVersion": "2024-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+      ],
+      "name": "[concat(variables('networkSecurityGroupName'), '/AllowCaprover3000Inbound')]",
+      "properties": {
+        "access": "Allow",
+        "destinationAddressPrefix": "*",
+        "destinationAddressPrefixes": [],
+        "destinationPortRange": "3000",
+        "destinationPortRanges": [],
+        "direction": "Inbound",
+        "priority": 340,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "*",
+        "sourceAddressPrefixes": [],
+        "sourcePortRange": "*",
+        "sourcePortRanges": []
+      },
+      "type": "Microsoft.Network/networkSecurityGroups/securityRules"
+    },
+    {
+      "apiVersion": "2024-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+      ],
+      "name": "[concat(variables('networkSecurityGroupName'), '/HTTP')]",
+      "properties": {
+        "access": "Allow",
+        "destinationAddressPrefix": "*",
+        "destinationAddressPrefixes": [],
+        "destinationPortRange": "80",
+        "destinationPortRanges": [],
+        "direction": "Inbound",
+        "priority": 320,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "*",
+        "sourceAddressPrefixes": [],
+        "sourcePortRange": "*",
+        "sourcePortRanges": []
+      },
+      "type": "Microsoft.Network/networkSecurityGroups/securityRules"
+    },
+    {
+      "apiVersion": "2024-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+      ],
+      "name": "[concat(variables('networkSecurityGroupName'), '/SSH')]",
+      "properties": {
+        "access": "Allow",
+        "destinationAddressPrefix": "*",
+        "destinationAddressPrefixes": [],
+        "destinationPortRange": "22",
+        "destinationPortRanges": [],
+        "direction": "Inbound",
+        "priority": 300,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "*",
+        "sourceAddressPrefixes": [],
+        "sourcePortRange": "*",
+        "sourcePortRanges": []
+      },
+      "type": "Microsoft.Network/networkSecurityGroups/securityRules"
+    },
+    {
+      "apiVersion": "2024-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+      ],
+      "name": "[concat(variables('virtualNetworkName'), '/default')]",
+      "properties": {
+        "addressPrefix": "10.1.0.0/24",
+        "delegations": [],
+        "privateEndpointNetworkPolicies": "Disabled",
+        "privateLinkServiceNetworkPolicies": "Enabled"
+      },
+      "type": "Microsoft.Network/virtualNetworks/subnets"
+    }
+  ],
+  "variables": {
+    "nicName": "[concat(parameters('vmName'), '-nic') ]",
+    "networkSecurityGroupName": "[concat(parameters('vmName'), '-nsg') ]",
+    "publicIpName": "[concat(parameters('vmName'), '-ip') ]",
+    "virtualNetworkName": "[concat(parameters('vmName'), '-vnet') ]",
+
+    "cloudInit": "[base64(concat('#cloud-config\n', 'package_update: true\n', 'apt:\n', '  sources:\n', '    docker.list:\n', '      source: deb [arch=amd64] https://download.docker.com/linux/ubuntu $RELEASE stable\n', '      keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88\n', 'packages:\n', '  - docker-ce\n', '  - docker-ce-cli\n', '  - cifs-utils\n', '  - smbclient\n', 'runcmd:\n', '  - mkdir -p /var/lib/cloud/scripts/per-boot\n', '  - mkdir -p /etc/systemd/journald.conf.d/\n', 'write_files:\n', '  - path: /etc/systemd/journald.conf.d/diskspace.conf\n', '    permissions: 0644\n', '    content: |\n', '      [Journal]\n', '      SystemMaxUse=900M\n', '      MaxRetentionSec=30day\n', '  - path: /var/lib/cloud/scripts/per-boot/mount-datalake.sh\n', '    permissions: 0755\n', '    content: |\n', '      #!/bin/bash\n', '      MOUNT_PATH=/mnt/persistent-storage\n', '      mkdir -p \"$MOUNT_PATH\"\n', '      mount -t cifs //', parameters('storageAccountName'), '.file.core.windows.net/', parameters('storageAccountFolder'), ' \"$MOUNT_PATH\" -o \"vers=3.0,username=', parameters('storageAccountName'), ',password=', parameters('storageAccessKey'), ',dir_mode=0777,file_mode=0777,serverino\" || true\n'))]"
+  }
+}
