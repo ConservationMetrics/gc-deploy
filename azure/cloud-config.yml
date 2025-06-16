@@ -31,4 +31,4 @@ write_files:
       #!/bin/bash
       MOUNT_PATH=/mnt/persistent-storage
       mkdir -p "$MOUNT_PATH"
-      mount -t cifs //', parameters('storageAccountName'), '.file.core.windows.net/', parameters('storageAccountFolder'), ' "$MOUNT_PATH" -o "vers=3.0,username=', parameters('storageAccountName'), ',password=', parameters('storageAccessKey'), ',dir_mode=0777,file_mode=0777,serverino" || true
+      mount -t cifs //', parameters('storageAccountName'), '.file.core.windows.net/', parameters('storageAccountFolder'), ' "$MOUNT_PATH" -o "vers=3.0,username=', parameters('storageAccountName'), ',password=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2022-09-01').keys[0].value, ',dir_mode=0777,file_mode=0777,serverino" || true

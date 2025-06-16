@@ -29,6 +29,7 @@ Many communities keep their data lake files on Azure Files. This is optional.
 
 2. **To not use Azure Files:**
    - Delete the entire `write_files:` section from `cloud-config.yml`
+   - When deploying, set `createStorageAccount` to `false`
 
 NOTEs:
 - The `cloud-config.yml` contains ARM template parameter references like `parameters('storageAccountName')` which are invalid YAML but get processed correctly by the ARM template at deployment time. The build script converts the cloud-init configuration into a properly escaped JSON string for embedding in the ARM template

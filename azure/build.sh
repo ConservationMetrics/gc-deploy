@@ -12,7 +12,7 @@ awk 'NR > 1 {printf(", ")} {gsub(/"/, "\\\""); printf "\047%s\\n\047", $0}' < cl
 
 # Wrap the entire content of replacement.txt with a JSON property definition
 # that wraps the cloud-init content in ARM template base64(concat()) function
-gawk -i inplace '$0="\"cloudInit\": \"[base64(concat("$0"))]\""' replacement.txt
+gawk -i inplace '$0="          \"customData\": \"[base64(concat("$0"))]\","' replacement.txt
 
 # Find the __CLOUD_INIT__ placeholder in new-vm.arm.json.
 # Replace its entire line with the contents of replacement.txt (r command),
