@@ -1,0 +1,34 @@
+#cloud-config
+package_update: true
+
+apt:
+  sources:
+    # from: https://stackoverflow.com/a/62706447
+    docker.list:
+      source: deb [arch=amd64] https://download.docker.com/linux/ubuntu $RELEASE stable
+      keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+
+packages:
+  # Docker
+  - docker-ce
+  - docker-ce-cli
+
+  # For SMB mount to Azure Files
+  - cifs-utils
+  - smbclient
+
+runcmd:
+  - mkdir -p /var/lib/cloud/scripts/per-boot
+  - mkdir -p /etc/systemd/journald.conf.d/
+
+write_files:
+  - path: /var/lib/cloud/scripts/per-boot/mount-datalake.sh
+    # Have the datalake network storage mounted locally at each boot.
+    # This `mount-datalake.sh` script is run at each boot (including
+    # the very first one, i.e. after instance creation).
+    permissions: "0755"
+    content: |
+      #!/bin/bash
+      MOUNT_PATH=/mnt/persistent-storage
+      mkdir -p "$MOUNT_PATH"
+      mount -t cifs //', parameters('storageAccountName'), '.file.core.windows.net/', parameters('storageAccountFolder'), ' "$MOUNT_PATH" -o "vers=3.0,username=', parameters('storageAccountName'), ',password=', parameters('storageAccessKey'), ',dir_mode=0777,file_mode=0777,serverino" || true
