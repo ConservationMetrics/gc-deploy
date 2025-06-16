@@ -1,13 +1,18 @@
 # Launch a VM in Azure
 
+## One-click Quick Deployment
+
+[Deploy a new VM on Azure](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FConservationMetrics%2Fgc-stack-deploy%2Frefs%2Fheads%2Fmain%2Fbuild%2Fazure%2Fnew-vm.arm.json)
+
+
+## Instructions
+
 This folder can launch infrastructure to host a Guardian Connector stack in a VM in Azure.
 
 The build process creates an Azure Resource Manager (ARM) template that provisions
 a VM with Docker and configures Azure Files storage mounting.
 
 The final built ARM can be deployed via Azure Portal or CLI.
-
-## Instructions
 
 ### Configuring Azure Files (Optional)
 

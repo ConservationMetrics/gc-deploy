@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Destination directory for the built ARM template
-DST="../docs/build/azure"
+DST="../build/azure"
 mkdir -p "$DST"
 
 # Minimize cloud-config.yml:
