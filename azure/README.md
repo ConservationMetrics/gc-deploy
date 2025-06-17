@@ -1,9 +1,22 @@
 # Launch a VM in Azure
 
-## One-click Quick Deployment
+## 🚀 Quick Deployment (5 minutes)
 
-[Deploy a new VM on Azure](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FConservationMetrics%2Fgc-stack-deploy%2Frefs%2Fheads%2Fmain%2Fbuild%2Fazure%2Fnew-vm.arm.json)
+1. [Click here to deploy a new VM on Azure](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.2. com%2FConservationMetrics%2Fgc-stack-deploy%2Frefs%2Fheads%2Fmain%2Fbuild%2Fazure%2Fnew-vm.arm.json)
+2. Fill in required fields:
+   - Resource Group: Create new (e.g. `guardian-«community»`)
+   - Storage account:
+      - `createStorageAccount: true` to create a new storage account
+      - `createStorageAccount: false` and give a `Storage Account Name` & `Folder` to use an existing Azure storage account.
+      - `createStorageAccount: false` and skip `Storage Account Name` & `Folder` to store files directly on the VM.
+   - Admin Password: Strong password for VM login
+3. Click "Review + Create"
+4. After deployment: SSH to your VM and install CapRover
 
+## Prerequisites
+
+Your Azure user must have **Contributor** role on an existing Resource Group to deploy the stack,
+or **Contributor** role on the Subscription to create a new Resource Group for the stack.
 
 ## Instructions
 
@@ -25,6 +38,7 @@ Many communities keep their data lake files on Azure Files. This is optional.
 
 2. **To not use Azure Files:**
    - Delete the entire `write_files:` section from `cloud-config.yml`
+   - When deploying, set `createStorageAccount` to `false`
 
 NOTEs:
 - The `cloud-config.yml` contains ARM template parameter references like `parameters('storageAccountName')` which are invalid YAML but get processed correctly by the ARM template at deployment time. The build script converts the cloud-init configuration into a properly escaped JSON string for embedding in the ARM template

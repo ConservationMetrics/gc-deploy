@@ -2,6 +2,28 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "createStorageAccount": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Whether to create a new storage account or use existing one"
+      }
+    },
+    "storageAccountName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Name of the storage account (existing or to be created). Leave empty to skip Azure Files mounting."
+      }
+    },
+    "storageAccountFolder": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Name of the Files share in the Storage Account. Leave empty to skip Azure Files mounting."
+      }
+    },
+
     "vmName": {
       "type": "String",
       "defaultValue": "guardian-XXXX",
@@ -27,29 +49,34 @@
       "type": "securestring",
       "minLength": 16,
       "metadata": {
-        "description": "Password to login to the Virtual Machine."
-      }
-    },
-    "storageAccountName": {
-      "type": "string",
-      "metadata": {
-        "description": "Name of the Azure Storage Account to mount"
-      }
-    },
-    "storageAccountFolder": {
-      "type": "string",
-      "metadata": {
-        "description": "Name of the Files share in the Storage Account"
-      }
-    },
-    "storageAccessKey": {
-      "type": "securestring",
-      "metadata": {
-        "description": "Access key for the storage account"
+        "description": "Password to login to the Virtual Machine. Must be 16+ characters"
       }
     }
   },
   "resources": [
+    {
+      "condition": "[parameters('createStorageAccount')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2023-01-01",
+      "name": "[parameters('storageAccountName')]",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "StorageV2",
+      "properties": {
+        "accessTier": "Hot"
+      }
+    },
+    {
+      "condition": "[parameters('createStorageAccount')]",
+      "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+      "apiVersion": "2023-01-01",
+      "name": "[concat(parameters('storageAccountName'), '/default/', parameters('storageAccountFolder'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+      ]
+    },
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "apiVersion": "2024-01-01",
@@ -171,7 +198,7 @@
           "vmSize": "[parameters('vmSize')]"
         },
         "osProfile": {
-          "customData": "[variables('cloudInit')]",
+          "customData": "__CLOUD_INIT__",
           "allowExtensionOperations": true,
           "computerName": "[parameters('vmName')]",
           "adminUsername": "[parameters('adminUsername')]",
@@ -361,8 +388,6 @@
     "nicName": "[concat(parameters('vmName'), '-nic') ]",
     "networkSecurityGroupName": "[concat(parameters('vmName'), '-nsg') ]",
     "publicIpName": "[concat(parameters('vmName'), '-ip') ]",
-    "virtualNetworkName": "[concat(parameters('vmName'), '-vnet') ]",
-
-    "cloudInit": "__CLOUD_INIT__"
+    "virtualNetworkName": "[concat(parameters('vmName'), '-vnet') ]"
   }
 }
