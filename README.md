@@ -1,4 +1,4 @@
-# `gc-stack-deploy`: Guardian Connector deployments for community partners
+# Deploy the Guardian Connector stack in Cloud or locally
 
 ## Components of the Guardian Connector Stack
 

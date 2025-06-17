@@ -2,7 +2,7 @@
 
 ## 🚀 Quick Deployment (5 minutes)
 
-1. [Click here to deploy a new VM on Azure](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.2. com%2FConservationMetrics%2Fgc-stack-deploy%2Frefs%2Fheads%2Fmain%2Fbuild%2Fazure%2Fnew-vm.arm.json)
+1. [Click here to deploy a new VM on Azure](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.2. com%2FConservationMetrics%2Fgc-deploy%2Frefs%2Fheads%2Fmain%2Fbuild%2Fazure%2Fnew-vm.arm.json)
 2. Fill in required fields:
    - Resource Group: Create new (e.g. `guardian-«community»`)
    - Storage account:
