@@ -45,10 +45,10 @@
         "description": "Username to login to the Virtual Machine."
       }
     },
-    "sshPublicKeys": {
-      "type": "array",
+    "sshPublicKey": {
+      "type": "String",
       "metadata": {
-        "description": "List of SSH public keys for VM access; in the Portal type as a JSON list of Strings."
+        "description": "SSH public keys for VM access"
       }
     }
   },
@@ -207,14 +207,8 @@
               "enabled": true,
               "publicKeys": [
                 {
-                  "copy": {
-                    "name": "sshKeyLoop",
-                    "count": "[length(parameters('sshPublicKeys'))]",
-                    "input": {
-                      "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
-                      "keyData": "[parameters('sshPublicKeys')[copyIndex()]]"
-                    }
-                  }
+                  "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
+                  "keyData": "[parameters('sshPublicKey')]"
                 }
               ]
             },
