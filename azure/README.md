@@ -1,8 +1,17 @@
 # Launch a VM in Azure
 
-## One-click Quick Deployment
+## 🚀 Quick Deployment (5 minutes)
 
-[Deploy a new VM on Azure](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FConservationMetrics%2Fgc-stack-deploy%2Frefs%2Fheads%2Fmain%2Fbuild%2Fazure%2Fnew-vm.arm.json)
+1. [Click here to deploy a new VM on Azure](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.2. com%2FConservationMetrics%2Fgc-stack-deploy%2Frefs%2Fheads%2Fmain%2Fbuild%2Fazure%2Fnew-vm.arm.json)
+2. Fill in required fields:
+   - Resource Group: Create new (e.g. `guardian-«community»`)
+   - Storage account:
+      - `createStorageAccount: true` to create a new storage account
+      - `createStorageAccount: false` and give a `Storage Account Name` & `Folder` to use an existing Azure storage account.
+      - `createStorageAccount: false` and skip `Storage Account Name` & `Folder` to store files directly on the VM.
+   - Admin Password: Strong password for VM login
+3. Click "Review + Create"
+4. After deployment: SSH to your VM and install CapRover
 
 ## Prerequisites
 
