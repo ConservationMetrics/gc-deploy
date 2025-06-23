@@ -2,7 +2,7 @@
 
 ## 🚀 Quick Deployment (5 minutes)
 
-1. [Click here to deploy a new VM on Azure](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.2. com%2FConservationMetrics%2Fgc-deploy%2Frefs%2Fheads%2Fmain%2Fbuild%2Fazure%2Fnew-vm.arm.json)
+1. [Click here to deploy a new VM on Azure](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FConservationMetrics%2Fgc-deploy%2Frefs%2Fheads%2Fmain%2Fbuild%2Fazure%2Fnew-vm.arm.json)
 2. Fill in required fields:
    - Resource Group: Create new (e.g. `guardian-«community»`)
    - Storage account:
@@ -61,6 +61,9 @@ The ARM template needs to be built before deployment to inject the cloud-init co
 2. Select **Build your own template in the editor**
 3. Upload the built `docs/build/azure/new-vm.arm.json` file
 4. Complete the **parameters**
+   - **Resource Group:** Recommend creating new, so the only thing in the resource group is this Guardian Deployment deployment. See also ["Prerequisites"](#prerequisites) above for discussion about permission requirements.
+   - **Region:** Where will this stack be hosted? e.g. for data about Brazil, choose "`Brazil South`" to adhere to [Brazilian Data Protection Laws](https://www.gov.br/esporte/pt-br/acesso-a-informacao/lgpd). The Instance (VM) "Region" will be same as the Resource group's region.
+   - **Create Storage Account / Storage Account Name:** See ["Configuring Azure Files"](#configuring-azure-files-optional) above.
 5. Review and click **Review + Create**
 
 ### Launching using CLI
