@@ -1,0 +1,78 @@
+captainVersion: 4
+
+services:
+  $$cap_appname:
+    image: communityfirst/guardianconnector-explorer:latest
+    restart: unless-stopped
+    environment:
+      HOST: "0.0.0.0"
+      NODE_ENV: "production"
+
+      NUXT_DB_HOST: $$cap_postgres_host
+      NUXT_DB_PORT: $$cap_postgres_port
+      NUXT_DB_USER: $$cap_postgres_user
+      NUXT_DB_PASSWORD: $$cap_postgres_pass
+      NUXT_DB_SSL: $$cap_postgres_ssl
+      NUXT_DATABASE: $$cap_postgres_database
+
+      NUXT_OAUTH_AUTH0_DOMAIN: $$cap_auth0_domain
+      NUXT_OAUTH_AUTH0_CLIENT_ID: $$cap_auth0_clientid
+      NUXT_OAUTH_AUTH0_CLIENT_SECRET: $$cap_auth0_client_secret
+      NUXT_PUBLIC_AUTH_STRATEGY: "none"
+
+      NUXT_PUBLIC_APP_API_KEY: $$cap_public_app_api_key
+      NUXT_PUBLIC_BASE_URL: https://$$cap_appname.$$cap_root_domain
+      NUXT_SESSION_PASSWORD: $$cap_gen_random_hex(50)
+
+    caproverExtra:
+      containerHttpPort: '8080'
+
+caproverOneClickApp:
+  variables:
+    - id: '$$cap_postgres_host'
+      label: Postgres service host name
+      defaultValue: 'srv-captain--postgres'
+      description: If self-hosted, copy the value from /#/apps/details/postgres
+    - id: '$$cap_postgres_port'
+      label: Postgres service port
+      defaultValue: '5432'
+    - id: '$$cap_postgres_ssl'
+      label: Use SSL to connect to postgres?
+      defaultValue: 'true'
+      description: Likely to be true if using an external PostgreSQL server, or false if hosting postgres in Caprover.
+    - id: '$$cap_postgres_user'
+      label: Postgres user
+      description: If self-hosted, copy the value from /#/apps/details/postgres
+    - id: '$$cap_postgres_pass'
+      label: Postgres password
+      description: If self-hosted, copy the value from /#/apps/details/postgres
+    - id: '$$cap_postgres_database'
+      label: 'Name of database inside Postgres'
+      defaultValue: 'warehouse'
+
+    - id: '$$cap_auth0_domain'
+      label: Auth0 Domain
+      description: optional, to login using Auth0
+    - id: '$$cap_auth0_clientid'
+      label: Auth0 Client ID
+      description: optional, to login using Auth0
+    - id: '$$cap_auth0_client_secret'
+      label: Auth0 Client Secret
+      description: optional, to login using Auth0
+
+    - id: '$$cap_public_app_api_key'
+      label: An API Key for other apps to access Explorer
+      defaultValue: $$cap_gen_random_hex(48)
+
+  instructions:
+    start: |-
+        An app that reads data from a database and renders it on different views (map, gallery, alerts dashboard)
+
+        This requires you to have the PostgreSQL database already deployed:
+        either externally via a cloud provider, or on this same instance as a One-Click App
+    end: |-
+        Explorer is deploying and will be available within a minute.
+  displayName: Guardian Connector Explorer
+  isOfficial: true   # Only if all images used here are official or from a trusted source.
+  description: Explorer is an app that renders maps, gallery, and alerts dashboard.
+  documentation: https://github.com/ConservationMetrics/guardianconnector-explorer

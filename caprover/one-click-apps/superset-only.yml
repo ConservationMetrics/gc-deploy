@@ -1,0 +1,145 @@
+captainVersion: 4
+
+
+services:
+  $$cap_appname:
+    image: $$cap_superset_docker_image
+    command: ["/app/docker/docker-bootstrap.sh", "app-gunicorn"]
+    restart: unless-stopped
+    depends_on:
+      - $$cap_appname-init-and-beat
+    environment:
+      SECRET_KEY: $$cap_secret_key
+      REDIS_URL: $$cap_redis_url
+      CACHE_KEY_PREFIX: $$cap_redis_key_prefix
+      DATABASE_URI: postgresql://$$cap_postgres_userpassword@$$cap_postgres_host:$$cap_postgres_port/superset_metastore
+      AUTH0_DOMAIN: $$cap_auth0_domain
+      AUTH0_CLIENTID: $$cap_auth0_clientid
+      AUTH0_CLIENT_SECRET: $$cap_auth0_client_secret
+      MAPBOX_API_KEY: $$cap_mapbox_api_key
+      APP_ICON: $$cap_app_icon
+      APP_NAME: $$cap_app_title
+      USER_ROLE: Gamma
+      USER_ROLE_PERMISSIONS: "(all_datasource_access,all_datasource_access),(all_database_access,all_database_access),(all_query_access,all_query_access)"
+      LANGUAGES: "{\"en\": {\"flag\": \"us\", \"name\": \"English\"}, \"pt_BR\": {\"flag\": \"br\", \"name\": \"Português\"}, \"es\": {\"flag\": \"mx\", \"name\": \"Español\"}, \"fr\": {\"flag\": \"fr\", \"name\": \"Français\"}, \"nl\": {\"flag\": \"sr\", \"name\": \"Nederlands\"}}"
+      FRAME_ANCESTORS: "https://*.guardianconnector.net"
+    caproverExtra:
+      containerHttpPort: '8088'
+
+  $$cap_appname-worker:
+    command: ["/app/docker/docker-bootstrap.sh", "worker"]
+    restart: unless-stopped
+    depends_on:
+      - $$cap_appname-init-and-beat
+    environment:
+      SECRET_KEY: $$cap_secret_key
+      REDIS_URL: $$cap_redis_url
+      CACHE_KEY_PREFIX: $$cap_redis_key_prefix
+      DATABASE_URI: postgresql://$$cap_postgres_userpassword@$$cap_postgres_host:$$cap_postgres_port/superset_metastore
+    caproverExtra:
+      notExposeAsWebApp: 'true'
+      dockerfileLines:
+        - FROM $$cap_superset_docker_image
+        - HEALTHCHECK NONE  # otherwise Docker keeps restarting this container when it doesn't respond on port 8088
+
+  $$cap_appname-init-and-beat:
+    healthcheck:  # FIXME: This doesn't do anything for caprover, but need to remove the HEALTHCHECK from the Docker image...
+      disable: true
+    # We also run init here because if init was its own service, caprover would continually restart it after it finishes.
+    command: >
+      sh -c "
+        /app/docker/docker-init.sh ;
+        superset db upgrade ;
+        /app/docker/docker-bootstrap.sh beat
+      "
+    restart: unless-stopped
+    environment:
+      SECRET_KEY: $$cap_secret_key
+      REDIS_URL: $$cap_redis_url
+      CACHE_KEY_PREFIX: $$cap_redis_key_prefix
+      DATABASE_URI: postgresql://$$cap_postgres_userpassword@$$cap_postgres_host:$$cap_postgres_port/superset_metastore
+      # For init only:
+      ADMIN_EMAIL: admin@guardianconnector.net
+      ADMIN_PASSWORD: $$cap_gen_random_hex(64)
+    caproverExtra:
+      notExposeAsWebApp: 'true'
+      dockerfileLines:
+        - FROM $$cap_superset_docker_image
+        - HEALTHCHECK NONE  # otherwise Docker keeps restarting this container when it doesn't respond on port 8088
+
+
+caproverOneClickApp:
+  variables:
+    - id: '$$cap_superset_docker_image'
+      label: Superset Docker Image
+      defaultValue: 'guardiancr.azurecr.io/superset-docker:4.1.2_20250519-1315'
+      description: Check out the container registry for valid tags
+    - id: '$$cap_secret_key'
+      label: Superset Secret Key
+      defaultValue: '$$cap_gen_random_hex(100)'
+      description:  |-
+        The secret key is used to encrypt passwords and connections in the database.
+        Once generated, this key should not be changed, and it is essential
+        to back up the key and keep it secure.
+
+    - id: '$$cap_postgres_host'
+      label: Postgres service host name
+      defaultValue: 'srv-captain--postgres'
+      description: Copy the value from /#/apps/details/postgres
+    - id: '$$cap_postgres_port'
+      label: Postgres service port
+      defaultValue: '5432'
+    - id: '$$cap_postgres_userpassword'
+      label: Postgres user:password
+      validRegex: /:/
+      description: user:password, copy the values from /#/apps/details/postgres
+
+    # TODO: run redis on local VM: https://github.com/ConservationMetrics/gc-forge/issues/18
+    - id: '$$cap_redis_url'
+      label: Redis URL
+    - id: '$$cap_redis_key_prefix'
+      label: Redis key prefix
+      defaultValue: '$$cap_gen_random_hex(3)_'
+      description: optional, used when multiple deployments share the same Redis URL
+
+    - id: '$$cap_auth0_domain'
+      label: Auth0 Domain
+      description: optional, to login using Auth0
+    - id: '$$cap_auth0_clientid'
+      label: Auth0 Client ID
+      description: optional, to login using Auth0
+    - id: '$$cap_auth0_client_secret'
+      label: Auth0 Client Secret
+      description: optional, to login using Auth0
+
+    - id: '$$cap_mapbox_api_key'
+      label: Mapbox API key
+      description: optional, to use mapbox maps, see https://docs.mapbox.com/help/getting-started/access-tokens/
+    - id: '$$cap_app_icon'
+      label: App Icon
+      description: a URL to an image
+    - id: '$$cap_app_title'
+      label: App Title
+      description: Shown on the top of the site
+
+  instructions:
+    start: |-
+        Apache Superset is a data exploration and data visualization platform.
+
+        This requires you to have the PostgreSQL database already deployed:
+        either externally via a cloud provider, or on this same instance as a One-Click App
+    end: |-
+        On $$cap_appname-worker and $$cap_appname-init-and-beat, add the following lines to the
+        bottom of "Service Update Override" on the "App Config" page:
+        ```
+        HealthCheck:
+          Test: ["NONE"]
+        ```
+
+        Next steps:
+        1. Login at http://$$cap_appname.$$cap_root_domain
+        2. Add the data warehouse as a new Data Store
+  displayName: Superset
+  isOfficial: false  # Only if all images used here are official or from a trusted source.
+  description: Apache Superset is a data exploration and data visualization platform.
+  documentation: https://github.com/ConservationMetrics/superset-deployment

@@ -1,0 +1,150 @@
+captainVersion: 4
+
+services:
+    $$cap_appname:
+        image: ghcr.io/windmill-labs/windmill:$$cap_app_version
+        expose:
+            - 8000
+        environment:
+            DATABASE_URL: $$cap_database_url
+            DATABASE_CONNECTIONS: $$cap_server_database_connections
+            MODE: server
+        volumes:
+            - $$cap_appname-worker-logs:/tmp/windmill/logs
+        caproverExtra:
+            containerHttpPort: 8000
+
+    $$cap_appname-worker:
+        image: ghcr.io/windmill-labs/windmill:$$cap_app_version
+        volumes:
+            # mount the docker socket to allow to run docker containers from within the workers
+            - /var/run/docker.sock:/var/run/docker.sock
+            - $$cap_appname-worker-dependency-cache:/tmp/windmill/cache
+            - $$cap_appname-worker-logs:/tmp/windmill/logs
+            - /mnt/persistent-storage:/persistent-storage
+        environment:
+            DATABASE_URL: $$cap_database_url
+            DATABASE_CONNECTIONS: $$cap_worker_database_connections
+            MODE: worker
+            WORKER_GROUP: default
+        caproverExtra:
+            notExposeAsWebApp: 'true'
+
+    $$cap_appname-worker-native:
+        image: ghcr.io/windmill-labs/windmill:$$cap_app_version
+        volumes:
+            - $$cap_appname-worker-logs:/tmp/windmill/logs
+            - /mnt/persistent-storage:/persistent-storage
+        environment:
+            DATABASE_URL: $$cap_database_url
+            DATABASE_CONNECTIONS: $$cap_worker_database_connections
+            MODE: worker
+            WORKER_GROUP: native
+            SLEEP_QUEUE: 200
+        caproverExtra:
+            notExposeAsWebApp: 'true'
+
+    $$cap_appname-lsp:
+        image: ghcr.io/windmill-labs/windmill-lsp:latest  # some labels appear broken
+        volumes:
+            - $$cap_appname-lsp-cache:/root/.cache
+        expose:
+            - 3001
+        caproverExtra:
+            containerHttpPort: 3001
+            notExposeAsWebApp: 'true'
+
+caproverOneClickApp:
+    instructions:
+        start: |-
+            Windmill is an open-source alternative to Retool, Airplane and n8n to build all your internal tools (endpoints, workflows, UIs) through simple scripts - in Typescript, Python, Go & Bash - and low code builders.
+
+            Before Deploying, you must set up a database and login for Windmill to use, as follows.
+
+            ## Database Setup
+
+            As as PostgreSQL database admin user, create the `windmill` database and the user that
+            Windmill will use to login to it:
+            ```sql
+            CREATE DATABASE windmill;
+            CREATE USER windmill_login PASSWORD 'changeme';
+            -- windmill_login needs admin permission on this database (but not on others)
+            GRANT ALL PRIVILEGES ON DATABASE windmill TO windmill_login;
+
+            -- The new user "windmill_login" cannot read tables in other databases
+            -- but can connect to them and list the tables.  To prevent that you may optionally
+            -- run this for all other databases on your server:
+            --   REVOKE CONNECT ON DATABASE some_other_db FROM windmill_login;
+            ```
+
+            On Azure PostgreSQL only:
+            1. `GRANT azure_pg_admin TO windmill_login; ALTER USER windmill_login CREATEROLE;`
+            2. In Azure's portal, navigate to database and open "Server parameters". Set `azure.extensions = UUID-OSSP`
+            3. You will need to edit the `init-db-as-superuser.sql` to remove "WITH BYPASSRLS"
+
+            If your database is does not have access to the PG superuser (Azure PostgreSQL, GCP Postgresql, etc),
+            you will need to set the initial role manually. You can do so by following the recipe below.
+            ```
+            psql <DATABASE_URL> -c 'GRANT azure_pg_admin TO windmill_login; ALTER USER windmill_login CREATEROLE;'  # for Azure only
+
+            curl https://raw.githubusercontent.com/windmill-labs/windmill/main/init-db-as-superuser.sql -o init-db-as-superuser.sql
+            psql <DATABASE_URL> -f init-db-as-superuser.sql  # run this in the new 'windmill' logical database
+            ```
+
+            Make sure that the user used in the `DATABASE_URL` passed to Windmill has the role `windmill_admin` and `windmill_user`:
+
+            ```sql
+            GRANT windmill_admin TO windmill_login;
+            GRANT windmill_user TO windmill_login;
+            ```
+
+        end: |-
+            Windmill has been successfully deployed!
+
+            Please change the following settings before using the service:
+            1. Go to the settings for `$$cap_appname`
+            2. Enable **Websocket Support**
+            3. Enable **HTTPS**
+            4. Click on **Edit Default Nginx Configurations** and paste the following content before the last closing bracket "}":
+                ```
+                location /ws/ {
+                    proxy_pass http://srv-captain--$$cap_appname-lsp:3001/ws/;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection "upgrade";
+                }
+                ```
+            Now you can access it at `https://$$cap_appname.$$cap_root_domain`
+
+            Follow the instructions for first-time login: https://www.windmill.dev/docs/advanced/self_host#first-time-login
+
+    displayName: Windmill - No Database
+    isOfficial: true
+    description: Windmill is developer infrastructure for internal tools. You will need to create and configure the database information manually. Intended for advanced users.
+    documentation: https://www.windmill.dev/
+    variables:
+        - id: $$cap_app_version
+          label: Windmill Version
+          defaultValue: '1.491.4'
+          description: Checkout their github page for the valid tags https://github.com/windmill-labs/windmill/releases
+          validRegex: /^([^\s^\/])+$/
+
+        - id: $$cap_database_url
+          label: Database URL
+          defaultValue: 'postgres://windmill_login:changeme@db:5432/windmill'
+          description: |-
+              You must have a PostgreSQL database already deployed: either externally,
+              or as a One-Click App on this same instance.
+
+        - id: $$cap_server_database_connections
+          label: The max number of connections in the server's database connection pool
+          defaultValue: 10
+          validRegex: /^[1-9][0-9]?$/
+
+        - id: $$cap_worker_database_connections
+          label: The max number of connections in a worker's database connection pool.
+          defaultValue: 3
+          description: |-
+              Note that there are multiple worker processes, each one creating its own pool.
+              This value is per worker.
+          validRegex: /^[1-9]$/
