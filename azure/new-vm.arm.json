@@ -204,7 +204,6 @@
           "linuxConfiguration": {
             "disablePasswordAuthentication": true,
             "ssh": {
-              "enabled": true,
               "publicKeys": [
                 {
                   "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
