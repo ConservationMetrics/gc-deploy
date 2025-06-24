@@ -1,4 +1,8 @@
 #cloud-config
+#
+# WARNING: The build process that injects this file into an Azure ARM template
+# currently does not support the presence of backslashes or single-quote characters in this file.
+#
 package_update: true
 package_upgrade: true
 
@@ -25,17 +29,25 @@ runcmd:
   - mkdir -p /var/lib/cloud/scripts/per-boot
   - mkdir -p /etc/systemd/journald.conf.d/
 
-  # Install caprover core
+  # Install & run caprover core server
+  #
   # MAIN_NODE_IP_ADDRESS is used ONLY in initial setup. Set it to loopback so we
   # will not need to bust a firewall hole for port 3000 to the outside internet.
   # (This works as long as `caprover serversetup` will run on the same server.)
   - docker run -p 80:80 -p 443:443 -p 3000:3000 -e MAIN_NODE_IP_ADDRESS=127.0.0.1 -e ACCEPTED_TERMS=true -v /captain:/captain -v /var/run/docker.sock:/var/run/docker.sock caprover/caprover
 
   # Install caprover-cli (will be used for setup), via pnpm (smaller than npm)
-  - PNPM_HOME=/opt/pnpm bash -c "curl -fsSL https://get.pnpm.io/install.sh | sh -"
-  # Every user on the box will put pnpm in their $PATH
-  - echo "export PATH=\"/opt/pnpm:$PATH\"" > /etc/profile.d/pnpm.sh && chmod +x /etc/profile.d/pnpm.sh
-  - pnpm install -g caprover
+  #
+  # With this profile.d script, very user on the box (except runcmd) will put pnpm in their $PATH
+  - |
+    cat > /etc/profile.d/pnpm.sh <<EOF
+    export PNPM_HOME=/opt/pnpm
+    export PATH=\\$PNPM_HOME:\\$PATH
+    EOF
+  # Install pnpm, having sourced the PNPM environment variables
+  - . /etc/profile.d/pnpm.sh ; SHELL=bash bash -c "curl -fsSL https://get.pnpm.io/install.sh | sh -"
+  # Install caprover CLI, having sourced the PNPM environment variables
+  - . /etc/profile.d/pnpm.sh ; pnpm install -g caprover
 
 write_files:
   - path: /var/lib/cloud/scripts/per-boot/mount-datalake.sh
