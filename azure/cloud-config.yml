@@ -25,6 +25,7 @@ runcmd:
   # Install caprover core
   # MAIN_NODE_IP_ADDRESS is used ONLY in initial setup. Set it to loopback so we
   # will not need to bust a firewall hole for port 3000 to the outside internet.
+  # (This works as long as `caprover serversetup` will run on the same server.)
   - docker run -p 80:80 -p 443:443 -p 3000:3000 -e MAIN_NODE_IP_ADDRESS=127.0.0.1 -e ACCEPTED_TERMS=true -v /captain:/captain -v /var/run/docker.sock:/var/run/docker.sock caprover/caprover
 
   # Install caprover-cli (will be used for setup), via pnpm (smaller than npm)

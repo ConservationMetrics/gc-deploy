@@ -30,7 +30,8 @@
 
 ### III. Set up CapRover
 
-You must configure CapRover via SSH and its Caprover CLI. For security reasons configuring through the web interface is disabled _(firewall rule, and MAIN_NODE_IP_ADDRESS=127.0.0.1)_.
+You must configure CapRover using the CapRover CLI _from the server itself._
+For security reasons, initial configuration from another machine is disabled, both via web interface or the CLI on a remote box _(due to Azure NSG blocking port 3000)_.
 
 1. SSH into your new VM:
     ```bash

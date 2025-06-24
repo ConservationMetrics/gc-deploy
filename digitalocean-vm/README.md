@@ -28,7 +28,8 @@
 
 ### III. Set up CapRover
 
-You must configure CapRover via SSH and its Caprover CLI. For security reasons configuring through the web interface is disabled.
+These steps show how to configure CapRover using the CapRover CLI from the server itself.
+CapRover's [Getting Started](https://caprover.com/docs/get-started.html#step-3-configure-and-initialize-caprover) guide shows other ways that can be done from a remote machine (e.g. your laptop).
 
 1. SSH into your new VM:
     ```bash
@@ -45,7 +46,7 @@ You must configure CapRover via SSH and its Caprover CLI. For security reasons c
     ```
     - For "Root domain": enter your full domain (example: `mycommunity.guardianconnector.net`)
 
-4. Close port 3000 in the firewall. Do this in the DO web interface under "Networking".
+4. Close port 3000 in the firewall. Do this in the DigitalOcean web interface under "Networking".
 
 
 ### IV. Install the Guardian Connector software stack
