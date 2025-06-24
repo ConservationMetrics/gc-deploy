@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    name: Build ARM template
+    name: Build static assets
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -33,7 +33,7 @@ jobs:
         with:
           source: caprover/one-click-apps/README.md
           output: build/one-click-apps/index.html
-          style: https://unpkg.com/bamboo.css
+          dark-mode: false
 
       - name: Upload ARM artifacts
         uses: actions/upload-pages-artifact@v3
