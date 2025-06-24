@@ -314,28 +314,6 @@
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
       ],
-      "name": "[concat(variables('networkSecurityGroupName'), '/AllowCaprover3000Inbound')]",
-      "properties": {
-        "access": "Allow",
-        "destinationAddressPrefix": "*",
-        "destinationAddressPrefixes": [],
-        "destinationPortRange": "3000",
-        "destinationPortRanges": [],
-        "direction": "Inbound",
-        "priority": 340,
-        "protocol": "TCP",
-        "sourceAddressPrefix": "*",
-        "sourceAddressPrefixes": [],
-        "sourcePortRange": "*",
-        "sourcePortRanges": []
-      },
-      "type": "Microsoft.Network/networkSecurityGroups/securityRules"
-    },
-    {
-      "apiVersion": "2024-01-01",
-      "dependsOn": [
-        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
-      ],
       "name": "[concat(variables('networkSecurityGroupName'), '/HTTP')]",
       "properties": {
         "access": "Allow",

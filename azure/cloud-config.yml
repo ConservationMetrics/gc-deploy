@@ -1,5 +1,6 @@
 #cloud-config
 package_update: true
+package_upgrade: true
 
 apt:
   sources:
@@ -20,6 +21,15 @@ packages:
 runcmd:
   - mkdir -p /var/lib/cloud/scripts/per-boot
   - mkdir -p /etc/systemd/journald.conf.d/
+
+  # Install caprover core
+  # MAIN_NODE_IP_ADDRESS is used ONLY in initial setup. Set it to loopback so we
+  # will not need to bust a firewall hole for port 3000 to the outside internet.
+  - docker run -p 80:80 -p 443:443 -p 3000:3000 -e MAIN_NODE_IP_ADDRESS=127.0.0.1 -e ACCEPTED_TERMS=true -v /captain:/captain -v /var/run/docker.sock:/var/run/docker.sock caprover/caprover
+
+  # Install caprover-cli (will be used for setup), via pnpm (smaller than npm)
+  - wget -qO- https://get.pnpm.io/install.sh | sh -
+  - export PNPM_HOME=/root/.local/share/pnpm PATH="$PNPM_HOME:$PATH" && pnpm setup && pnpm install -g caprover
 
 write_files:
   - path: /var/lib/cloud/scripts/per-boot/mount-datalake.sh
