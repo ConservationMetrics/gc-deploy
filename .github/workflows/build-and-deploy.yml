@@ -1,4 +1,4 @@
-name: Build Azure ARM Template & Publish to GitHub Pages
+name: Build & Publish to GitHub Pages
 
 on:
   push:
@@ -6,7 +6,9 @@ on:
       - build-assets-to-gh-pages
     paths:
       - 'azure/**'
+      - 'caprover/one-click-apps/**'
       - '.github/workflows/build-and-deploy.yml'
+      - 'build/**'  # if index pages changed
 
 jobs:
   build:
@@ -19,18 +21,21 @@ jobs:
           fetch-depth: 0
 
       - name: Build ARM template
+        run: (cd azure && ./build.sh)
+
+      - name: Copy one-click-apps into build folder
         run: |
-          cd azure
-          ./build.sh
+          mkdir -p build/one-click-apps
+          cp -R caprover/one-click-apps/* build/one-click-apps/
 
       - name: Upload ARM artifacts
         uses: actions/upload-pages-artifact@v3
         with:
           # point to the folder containing your generated JSON
-          path: build/azure
+          path: build
 
   deploy:
-    name: Deploy to GitHub Pages
+    name: Publish to GitHub Pages
     needs: build
     runs-on: ubuntu-latest
     permissions:
