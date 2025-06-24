@@ -1,4 +1,4 @@
-# Deploy CapRover in Azure
+# Set up CapRover in Azure
 
 ## 🚀 Quick Deployment (10 minutes)
 
@@ -6,42 +6,42 @@
 
 1. [Click here to deploy a new VM on Azure](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FConservationMetrics%2Fgc-deploy%2Frefs%2Fheads%2Fmain%2Fbuild%2Fazure%2Fnew-vm.arm.json)
 2. Fill in required parameters:
-   - **Resource Group:** Recommend creating new, so the only thing in the resource group is this Guardian Deployment deployment. See also ["Prerequisites"](#prerequisites) above for discussion about permission requirements.
-   - **Region:** Where will this stack be hosted? e.g. for data about Brazil, choose "`Brazil South`" to adhere to [Brazilian Data Protection Laws](https://www.gov.br/esporte/pt-br/acesso-a-informacao/lgpd). The Instance (VM) "Region" will be same as the Resource group's region.
-   - **Create Storage Account / Storage Account Name:** See ["Configuring Azure Files"](#configuring-azure-files-optional) below.
+    - **Resource Group:** Recommend creating new, so the only thing in the resource group is this Guardian Deployment deployment. See also ["Prerequisites"](#prerequisites) above for discussion about permission requirements.
+    - **Region:** Where will this stack be hosted? e.g. for data about Brazil, choose "`Brazil South`" to adhere to [Brazilian Data Protection Laws](https://www.gov.br/esporte/pt-br/acesso-a-informacao/lgpd). The Instance (VM) "Region" will be same as the Resource group's region.
+    - **Create Storage Account / Storage Account Name:** See ["Configuring Azure Files"](#configuring-azure-files-optional) below.
 3. Click "Review + Create". Wait for deployment (about 2 minutes).
 
 ### II. Set up DNS
 
 1. Get your VM's IP address from the Azure Portal
 2. In your domain provider's control panel, add an A record. Assuming you have a domain like `guardianconnector.net`, add a A record to your VM's public IP:
-
+    ```
     TYPE: A record
     HOST: *.mycommunity (.guardianconnector.net)
     POINTS TO: (IP Address of your VM)
     TTL: 3600
-
+    ```
 3. Confirm: check if IP address resolves to the IP you set in your DNS.
-
+    ```bash
     nslookup random123.mycommunity.guardianconnector.net
-
+    ```
 (Note that `random123` is needed because you set a wildcard entry in your DNS by setting `*.mycommunity` as your host, not `mycommunity`)
 
 
 ### III. Set up CapRover
 
-You must configure CapRover via SSH and its Caprover CLI. For security reasons configuring through the web interface is disabled.
+You must configure CapRover via SSH and its Caprover CLI. For security reasons configuring through the web interface is disabled _(firewall rule, and MAIN_NODE_IP_ADDRESS=127.0.0.1)_.
 
 1. SSH into your new VM:
-   ```bash
-   ssh -i ~/.ssh/your-secret-key YOUR_USERNAME@YOUR_VM_IP
-   ```
+    ```bash
+    ssh -i ~/.ssh/your-secret-key YOUR_USERNAME@captain.mycommunity.guardianconnector.net
+    ```
 2. Run the CapRover setup:
-   ```bash
-   caprover serversetup
-   ```
-   - When asked for "IP address of server": type `127.0.0.1`.
-   - For "Root domain": enter your full domain (example: `mycommunity.guardianconnector.net`)
+    ```bash
+    caprover serversetup
+    ```
+    - When asked for "IP address of server": type `127.0.0.1`.
+    - For "Root domain": enter your full domain (example: `mycommunity.guardianconnector.net`)
 
 ### IV. Install the Guardian Connector software stack
 
