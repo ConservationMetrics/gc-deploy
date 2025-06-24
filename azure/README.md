@@ -48,14 +48,22 @@ You must configure CapRover via SSH and its Caprover CLI. For security reasons c
 Install the app stack by following [`caprover/README.md`](https://github.com/ConservationMetrics/gc-forge/blob/main/caprover/README.md).
 
 
-## 📖 More information
+## 📖 More Information
 
-This folder can launch infrastructure to host a Guardian Connector stack in a VM in Azure.
+The ARM template creates a complete environment ready to host a Guardian Connector stack in Azure.
 
-The build process creates an Azure Resource Manager (ARM) template that provisions
-a VM with Docker and configures Azure Files storage mounting.
+Infrastructure:
+- Ubuntu VM in your chosen region
+- Public IP address with static allocation
+- Virtual network with subnet
+- Network security group with ports 22 (SSH), 80 (HTTP), and 443 (HTTPS) open
+    - port 3000 is intentially not exposed for security; `caprover serversetup` must use loopback address `127.0.0.1`
+- Optional Azure Files storage account and SMB share for your data warehouse
 
-The final built ARM can be deployed via Azure Portal or CLI.
+Software & Configuration:
+- CapRover server installed and running on Docker Swarm
+- CapRover CLI tool installed - needed for initial CapRover setup
+- Azure Files is mounted to a local path (if storage account provided)
 
 ### Prerequisites
 
