@@ -20,23 +20,41 @@ jobs:
         with:
           fetch-depth: 0
 
+      # --- ARM template build ---
       - name: Build ARM template
         run: (cd azure && ./build.sh)
 
-      - name: Copy one-click-apps into build folder
-        run: |
-          mkdir -p build/one-click-apps
-          cp -R caprover/one-click-apps/* build/one-click-apps/
 
-      - name: one-click-apps/README Markdown to HTML
-        uses: jaywcjlove/markdown-to-html-cli@main
+      # --- one-click-apps build ---
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          source: caprover/one-click-apps/README.md
-          output: build/one-click-apps/index.html
-          dark-mode: false
-          style: build/bamboo.min.css
+          node-version: 18
+          cache: 'npm'
 
-      - name: Upload ARM artifacts
+      - name: Clone official CapRover one-click-apps
+        run: |
+          git clone https://github.com/caprover/one-click-apps.git temp-one-click-apps
+
+      - name: Inject our apps into the cloned repo
+        run: |
+          rm -rf temp-one-click-apps/public && mkdir -p temp-one-click-apps/public && cp -R caprover/one-click-apps/v4 temp-one-click-apps/public/
+          echo conservationmetrics.github.io/gc-deploy/one-click-apps > temp-one-click-apps/public/CNAME
+
+      - name: Install & build one-click-apps
+        run: |
+          cd temp-one-click-apps
+          npm ci
+          npm run validate_apps
+          npm run formatter-write
+          npm run build
+          cd ..
+
+      - name: Copy built one-click-apps to build folder
+        run: mv temp-one-click-apps/dist build/one-click-apps
+
+      # --- finally upload everything under build/ to Github Pages ---
+      - name: Upload Pages artifacts
         uses: actions/upload-pages-artifact@v3
         with:
           # point to the folder containing your generated JSON
