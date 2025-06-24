@@ -4,7 +4,8 @@
 
 ### I. Launch a VM with Warehouse Storage
 
-1. [Click here to deploy a new VM on Azure](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fconservationmetrics.github.io%2Fgc-deploy%2Fazure%2Fnew-vm.arm.json)
+1. Click to deploy a new VM on Azure:
+    > [<img src="https://aka.ms/deploytoazurebutton"/>](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fconservationmetrics.github.io%2Fgc-deploy%2Fazure%2Fnew-vm.arm.json)
 2. Fill in required parameters:
     - **Resource Group:** Recommend creating new, so the only thing in the resource group is this Guardian Deployment deployment. See also ["Prerequisites"](#prerequisites) above for discussion about permission requirements.
     - **Region:** Where will this stack be hosted? e.g. for data about Brazil, choose "`Brazil South`" to adhere to [Brazilian Data Protection Laws](https://www.gov.br/esporte/pt-br/acesso-a-informacao/lgpd). The Instance (VM) "Region" will be same as the Resource group's region.
@@ -88,12 +89,19 @@ Many communities keep their data lake files on Azure Files. This is optional.
 
 The ARM template needs to be built before deployment to inject the cloud-init configuration:
 
-1. **Update `cloud-config.yml`** with your specific configuration (see above for Azure Files setup)
-2. **Build the template**:
+After you update `cloud-config.yml`, you can either
+
+1. **Build the ARM template locally**:
    ```bash
    (cd azure ; ./build.sh)
    ```
    This creates `build/azure/new-vm.arm.json` with the cloud-init configuration embedded.
+
+2. **Push changes on `main` branch and let GitHub Actions build the ARM template**:
+   > [![Build Azure ARM Template](https://github.com/ConservationMetrics/gc-deploy/actions/workflows/build-and-deploy.yml/badge.svg)](https://github.com/ConservationMetrics/gc-deploy/actions/workflows/build-and-deploy.yml)
+    - It will be hosted at [`https://conservationmetrics.github.io/gc-deploy/azure/new-vm.arm.json`](https://conservationmetrics.github.io/gc-deploy/azure/new-vm.arm.json)
+    - You can also use the [ARM template viewer](https://armviz.io/#/?load=https%3A%2F%2Fconservationmetrics.github.io%2Fgc-deploy%2Fazure%2Fnew-vm.arm.json) to view the ARM template
+
 
 NOTES:
 - The `cloud-config.yml` contains ARM template parameter references like `parameters('storageAccountName')` which are invalid YAML but get processed correctly by the ARM template at deployment time. The build script converts the cloud-init configuration into a properly escaped JSON string for embedding in the ARM template
