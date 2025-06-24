@@ -30,7 +30,8 @@ runcmd:
 
   # Install caprover-cli (will be used for setup), via pnpm (smaller than npm)
   - wget -qO- https://get.pnpm.io/install.sh | sh -
-  - export PNPM_HOME=/root/.local/share/pnpm PATH="$PNPM_HOME:$PATH" && pnpm setup && pnpm install -g caprover
+  - PNPM_HOME=/root/.local/share/pnpm PATH="$PNPM_HOME:$PATH" pnpm setup
+  - pnpm install -g caprover
 
 write_files:
   - path: /var/lib/cloud/scripts/per-boot/mount-datalake.sh
