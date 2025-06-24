@@ -1,6 +1,6 @@
 # Deploy the Guardian Connector stack in Cloud or locally
 
-## Components of the Guardian Connector Stack
+## An overview: Components of the Guardian Connector Stack
 
 ### 🖥️ Compute
 

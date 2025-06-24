@@ -43,8 +43,10 @@ You must configure CapRover via SSH and its Caprover CLI. For security reasons c
     ```bash
     caprover serversetup
     ```
-    - When asked for "IP address of server": type `127.0.0.1`.
     - For "Root domain": enter your full domain (example: `mycommunity.guardianconnector.net`)
+
+4. Close port 3000 in the firewall. Do this in the DO web interface under "Networking".
+
 
 ### IV. Install the Guardian Connector software stack
 
