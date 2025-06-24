@@ -28,6 +28,13 @@ jobs:
           mkdir -p build/one-click-apps
           cp -R caprover/one-click-apps/* build/one-click-apps/
 
+      - name: one-click-apps/README Markdown to HTML
+        uses: jaywcjlove/markdown-to-html-cli@main
+        with:
+          source: caprover/one-click-apps/README.md
+          output: build/one-click-apps/index.html
+          style: https://unpkg.com/bamboo.css
+
       - name: Upload ARM artifacts
         uses: actions/upload-pages-artifact@v3
         with:
