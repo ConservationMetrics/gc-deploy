@@ -1,0 +1,45 @@
+name: Build Azure ARM Template & Publish to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'azure/**'
+      - '.github/workflows/build-and-deploy.yml'
+
+jobs:
+  build:
+    name: Build ARM template
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build ARM template
+        run: |
+          cd azure
+          ./build.sh
+
+      - name: Upload ARM artifacts
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # point to the folder containing your generated JSON
+          path: build/azure
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write       # needed to push to gh-pages
+      id-token: write    # needed by deploy-pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy artifact to Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

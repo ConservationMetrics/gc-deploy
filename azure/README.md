@@ -91,9 +91,9 @@ The ARM template needs to be built before deployment to inject the cloud-init co
 1. **Update `cloud-config.yml`** with your specific configuration (see above for Azure Files setup)
 2. **Build the template**:
    ```bash
-   (cd azure-vm ; ./build.sh)
+   (cd azure ; ./build.sh)
    ```
-   This creates `docs/build/azure/new-vm.arm.json` with the cloud-init configuration embedded.
+   This creates `build/azure/new-vm.arm.json` with the cloud-init configuration embedded.
 
 NOTES:
 - The `cloud-config.yml` contains ARM template parameter references like `parameters('storageAccountName')` which are invalid YAML but get processed correctly by the ARM template at deployment time. The build script converts the cloud-init configuration into a properly escaped JSON string for embedding in the ARM template
