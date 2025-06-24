@@ -3,7 +3,7 @@ name: Build & Publish to GitHub Pages
 on:
   push:
     branches:
-      - build-assets-to-gh-pages
+      - main
     paths:
       - 'azure/**'
       - 'caprover/one-click-apps/**'
