@@ -3,7 +3,7 @@ name: Build Azure ARM Template & Publish to GitHub Pages
 on:
   push:
     branches:
-      - main
+      - build-assets-to-gh-pages
     paths:
       - 'azure/**'
       - '.github/workflows/build-and-deploy.yml'
