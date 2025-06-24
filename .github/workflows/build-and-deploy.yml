@@ -34,6 +34,7 @@ jobs:
           source: caprover/one-click-apps/README.md
           output: build/one-click-apps/index.html
           dark-mode: false
+          style: build/bamboo.min.css
 
       - name: Upload ARM artifacts
         uses: actions/upload-pages-artifact@v3
