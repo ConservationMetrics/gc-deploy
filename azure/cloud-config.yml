@@ -14,6 +14,9 @@ packages:
   - docker-ce
   - docker-ce-cli
 
+  # For Caprover CLI
+  - nodejs
+
   # For SMB mount to Azure Files
   - cifs-utils
   - smbclient
@@ -29,8 +32,9 @@ runcmd:
   - docker run -p 80:80 -p 443:443 -p 3000:3000 -e MAIN_NODE_IP_ADDRESS=127.0.0.1 -e ACCEPTED_TERMS=true -v /captain:/captain -v /var/run/docker.sock:/var/run/docker.sock caprover/caprover
 
   # Install caprover-cli (will be used for setup), via pnpm (smaller than npm)
-  - wget -qO- https://get.pnpm.io/install.sh | sh -
-  - PNPM_HOME=/root/.local/share/pnpm PATH="$PNPM_HOME:$PATH" pnpm setup
+  - PNPM_HOME=/opt/pnpm bash -c "curl -fsSL https://get.pnpm.io/install.sh | sh -"
+  # Every user on the box will put pnpm in their $PATH
+  - echo "export PATH=\"/opt/pnpm:$PATH\"" > /etc/profile.d/pnpm.sh && chmod +x /etc/profile.d/pnpm.sh
   - pnpm install -g caprover
 
 write_files:
