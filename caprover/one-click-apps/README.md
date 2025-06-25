@@ -1,7 +1,27 @@
+# CapRover One-Click Apps for Guardian Connector
+
 This folder contains custom one-click apps for CapRover.
 
+## 🛠️ Publishing the One-Click Apps repository
 
-## Best Practices for CapRover deployment
+Our CapRover one-click app definitions are built and published automatically via GitHub Actions on every push to `main`. You do *not* need to clone or build this repository locally.
+
+- Hosted catalog URL:
+  https://conservationmetrics.github.io/gc-deploy/one-click-apps/
+
+- Workflow file: [.github/workflows/deploy-and-build.yml](../../.github/workflows/deploy-and-build.yml)
+
+### Adding this catalog to your CapRover
+
+1. In your CapRover web dashboard, navigate to **Apps** → **One-Click Apps/Databases**.
+2. At the very bottom of the Apps list, find **3rd party repositories**. Enter the URL:
+    > `https://conservationmetrics.github.io/gc-deploy/one-click-apps/`
+3. **Connect New Repostory** and refresh the page. You can now browse and install Guardian Connector apps directly from CapRover.
+
+
+## ✨ Best Practices for CapRover deployment
+
+If you are writing your own one-click-apps, follow these suggestions.
 
 ### Use "Service Update Override" to change how the Docker Image behaves
 

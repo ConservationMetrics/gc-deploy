@@ -1,0 +1,75 @@
+name: Build & Publish to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'azure/**'
+      - 'caprover/one-click-apps/**'
+      - '.github/workflows/build-and-deploy.yml'
+      - 'build/**'  # if index pages changed
+
+jobs:
+  build:
+    name: Build static assets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # --- ARM template build ---
+      - name: Build ARM template
+        run: (cd azure && ./build.sh)
+
+
+      # --- one-click-apps build ---
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'latest'
+
+      - name: Clone official CapRover one-click-apps
+        run: |
+          git clone https://github.com/caprover/one-click-apps.git temp-one-click-apps
+
+      - name: Inject our apps into the cloned repo
+        run: |
+          rm -rf temp-one-click-apps/public && mkdir -p temp-one-click-apps/public && cp -R caprover/one-click-apps/v4 temp-one-click-apps/public/
+          echo conservationmetrics.github.io/gc-deploy/one-click-apps > temp-one-click-apps/public/CNAME
+
+      - name: Install & build one-click-apps
+        run: |
+          cd temp-one-click-apps
+          npm ci
+          npm run validate_apps
+          npm run formatter-write
+          npm run build
+          cd ..
+
+      - name: Copy built one-click-apps to build folder
+        run: mv temp-one-click-apps/dist build/one-click-apps
+
+      # --- finally upload everything under build/ to Github Pages ---
+      - name: Upload Pages artifacts
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # point to the folder containing your generated JSON
+          path: build
+
+  deploy:
+    name: Publish to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write       # needed to push to gh-pages
+      id-token: write    # needed by deploy-pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy artifact to Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
