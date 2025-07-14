@@ -6,21 +6,23 @@
       "type": "bool",
       "defaultValue": true,
       "metadata": {
-        "description": "Whether to create a new storage account or use existing one"
+        "description": "Set to true to create a new storage account and file share. Set to false to use existing ones."
       }
     },
     "storageAccountName": {
       "type": "string",
-      "defaultValue": "",
+      "minLength": 3,
+      "maxLength": 24,
       "metadata": {
-        "description": "Name of the storage account (existing or to be created). Leave empty to skip Azure Files mounting."
+        "description": "Name of the storage account. Required. Use an existing account if createStorageAccount is false, or name the new account if true."
       }
     },
     "storageAccountFolder": {
       "type": "string",
-      "defaultValue": "",
+      "minLength": 3,
+      "maxLength": 63,
       "metadata": {
-        "description": "Name of the Files share in the Storage Account. Leave empty to skip Azure Files mounting."
+        "description": "Name of the Azure Files share. Required. Use an existing share if createStorageAccount is false, or name the new share if true."
       }
     },
 
