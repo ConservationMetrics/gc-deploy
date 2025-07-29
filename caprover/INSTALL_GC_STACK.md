@@ -98,7 +98,7 @@ The `stack_deploy.py` script reads one-click-app definitions from this Git repo,
 but over HTTP.  Thus you need to expose the local files on a local HTTP port:
 
 ```sh
-cd gc-forge/caprover/one-click-apps
+cd gc-deploy/caprover/one-click-apps
 python -m http.server 8116
 ```
 

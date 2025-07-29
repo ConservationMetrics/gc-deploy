@@ -38,7 +38,4 @@ in Azure or DigitalOcean — in which case **you may skip the rest of the docume
 
 7. Set up CapRover on the VM
 
-   - With the right amount of knowledge, you can follow CapRover's own [Getting Started](https://caprover.com/docs/get-started.html) guide to figure out how to deploy a VM on your hosting platform of choice.
-   - For instructions on manual VM setup, see [`install-docs/MANUAL-SETUP.md`](install-docs/MANUAL-SETUP.md)
-   - For instructions on setting up CapRover locally for development, see [`install-docs/LOCAL-DEVELOPMENT.md`](install-docs/LOCAL-DEVELOPMENT.md)
-   - In the case of DigitalOcean, CapRover already comes deployed with the one-clik app method of setting up the VM. See [`../digitalocean-vm/README.md`](../digitalocean-vm/README.md)
+   - With the right amount of knowledge, you can follow CapRover's own [Getting Started](https://caprover.com/docs/get-started.html#caprover-setup) guide to figure out how to install CapRover when the hosting platform didn't already do it for you.
