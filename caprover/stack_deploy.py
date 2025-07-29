@@ -72,8 +72,8 @@ def deploy_stack(config, gc_repository, dry_run):
         postgres_port = "5432"
         postgres_ssl = "false"
     else:
-        # Using an external PostgreSQL instance
-        logger.info("Using external PostgreSQL configuration.")
+        # Using an existing PostgreSQL instance
+        logger.info("Using existing PostgreSQL configuration.")
         postgres_host = config["postgres"]["host"]
         postgres_port = config["postgres"]["port"]
         postgres_ssl = "true"
@@ -251,7 +251,7 @@ def deploy_stack(config, gc_repository, dry_run):
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
         variables = {
-            "$$cap_server_bearer_token": cap.gen_random_hex(100),
+            "$$cap_server_bearer_token": "$$cap_gen_random_hex(100)",
         }
         variables = construct_app_variables(config, one_click_app_name, variables)
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
@@ -260,6 +260,7 @@ def deploy_stack(config, gc_repository, dry_run):
                 one_click_app_name,
                 app_name,
                 app_variables=variables,
+                one_click_repository=gc_repository,
                 automated=True,
             )
             cap.enable_ssl(app_name)
@@ -330,18 +331,13 @@ def main():
     )
     parser.add_argument(
         "-c",
-        "--config",
+        "--config-file",
         help="Path to configuration YAML file (copy stack.example.yaml)",
     )
     parser.add_argument(
         "--repo",
-        default="http://localhost:8116/",
-        help=(
-            "GC one-click repository app path (default: http://localhost:8116/)\n"
-            "  To use local files:\n"
-            "  $ cd gc-forge/caprover/one-click-apps\n"
-            "  $ python -m http.server 8116"
-        ),
+        default="https://conservationmetrics.github.io/gc-deploy/one-click-apps/",
+        help="GC one-click repository app path (default: https://conservationmetrics.github.io/gc-deploy/one-click-apps/)",
     )
     parser.add_argument(
         "--dry-run",
@@ -352,7 +348,7 @@ def main():
     args = parser.parse_args()
 
     # Load configuration
-    config = load_config(args.config)
+    config = load_config(args.config_file)
 
     # Deploy application stack
     deploy_stack(config, args.repo, args.dry_run)

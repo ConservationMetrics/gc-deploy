@@ -31,7 +31,7 @@ superset:
   deploy: true
   ### Required
   redis_url: "rediss://:secretkey@srv-captain--redis:6379"
-  redis_key_prefix: "eg_"
+  redis_key_prefix: ""
   ### Optional, but you probably want to override:
   auth0_domain:
   auth0_clientid:
@@ -46,7 +46,6 @@ superset:
 gcexplorer:
   deploy: true
   app_name: explorer  # optional override
-  redirect_from_domain: mycommunity-explorer.guardianconnector.net  # must set DNS record first
   ### Required:
   postgres_database: "warehouse"
   auth0_domain:
@@ -60,4 +59,3 @@ comapeo-cloud:
 filebrowser:
   deploy: true
   app_name: files  # optional override
-  redirect_from_domain: mycommunity-files.guardianconnector.net  # must set DNS record first
