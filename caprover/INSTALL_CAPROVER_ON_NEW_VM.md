@@ -15,12 +15,12 @@ in Azure or DigitalOcean — in which case **you may skip the rest of the docume
 
 1. Create a VM on-premises or on the hosting provider of your choice.
 
-    > [!IMPORTANT]
-    > Your VM should be set up with sufficient CPU processing power, RAM, and disk storage.
-    >
-    > Our current default for the Guardian Connector stack is a VM with 2 vCPUs, 4 GB Memory, and a 35 GB Disk.
-    >
-    > Anything less than that may run into performance issues, or the applications may not start at all.
+> [!IMPORTANT]
+> Your VM should be set up with sufficient CPU processing power, RAM, and disk storage.
+>
+> Our current default for the Guardian Connector stack is a VM with 2 vCPUs, 4 GB Memory, and a 35 GB Disk.
+>
+> Anything less than that may run into performance issues, or the applications may not start at all.
 
 2. Docker Installed: Ensure that Docker is already installed with a version of **25.x or higher**.
     - This is often already done for you: You can check Docker’s version by running `docker --version`
