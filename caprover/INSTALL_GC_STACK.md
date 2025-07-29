@@ -69,6 +69,13 @@ If you already have an external PostgreSQL instance (e.g., cloud-hosted), simply
 
 # Add apps to CapRover
 
+## Runtime Prerequisite
+
+1. In your CapRover web dashboard, navigate to **Apps** → **Create A New App** → **One-Click Apps/Databases**.
+2. At the very bottom of the Apps list, find **3rd party repositories**. Enter the URL:
+    > `https://conservationmetrics.github.io/gc-deploy/one-click-apps/`
+3. **Connect New Repostory** and refresh the page. You can now browse and install Guardian Connector apps directly from CapRover.
+
 ## Different ways to install apps
 
 You have two options to install apps:
@@ -78,36 +85,23 @@ You have two options to install apps:
 
 ### Option 1. Installing the entire stack with `stack_deploy.py`
 
-If you don't want to sweat the details, it's much quicker to deploy the Guardian Connector stack of
-apps by running `stack_deploy.py`.
+If you don't want to sweat the details, it's much quicker to deploy the Guardian Connector stack of apps by running `stack_deploy.py`.
 
-#### Environment prerequisite
+
+Set up a Python environment:
 
 ```sh
-git clone git@github.com:IamJeffG/Caprover-API.git
-git checkout ??? # TODO
+git clone git@github.com:ak4zh/Caprover-API.git
 python setup.py install
 pip install 'psycopg[binary]'
 ```
 
-#### Runtime prerequisite
-
-The `stack_deploy.py` script reads one-click-app definitions from this Git repo,
-but over HTTP.  Thus you need to expose the local files on a local HTTP port:
-
-```sh
-cd gc-deploy/caprover/one-click-apps
-python -m http.server 8116
-```
-
-#### `stack_deploy.py`
-
-The script requires you to create a `stack.yaml` file of variable values by
+The `stack_deploy.py` script requires you to create a `stack.yaml` file of variable values by
 copying `stack.example.yaml` and filling in the blanks.
 
 ```sh
 # First, dry-run to check for misconfigurations
-python stack_deploy.sh --config-file stack.yaml --dry-run
+python stack_deploy.py --config-file stack.yaml --dry-run
 # Then repeat without --dry-run
 ```
 
@@ -115,13 +109,7 @@ python stack_deploy.sh --config-file stack.yaml --dry-run
 
 From the CapRover, navigate to **Apps** and "One-Click Apps/Database".
 
-Of the apps to install (listed below),
-* **Filebrowser** is available by searching the list.
-* Install all other apps by finding the **`>> TEMPLATE <<`** one-click app from the list,
-  then pasting the YAML from this Git repository's `caprover/one-click-apps` folder.
-
-
-## App-specific notes
+Install each of the following apps in turn, paying attention to the **App-specific notes** at the links:
 
 - [CoMapeo Archive Server](#comapeo-archive-server)
 - [Filebrowser](#filebrowser)
@@ -130,8 +118,6 @@ Of the apps to install (listed below),
 - [Windmill](#windmill)
 - [Superset](#superset)
 
-> [!NOTE]
-> If you are having additional issues with any of the apps, please see [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for additional troubleshooting tips, or unexpected issues that have come up before.
 
 ### CoMapeo Archive Server
 

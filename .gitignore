@@ -1,0 +1,3 @@
+caprover/*.yml
+caprover/*.yaml
+!caprover/stack.example.yaml
