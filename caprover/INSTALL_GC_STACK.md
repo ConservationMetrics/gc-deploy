@@ -2,11 +2,11 @@
 
 This guide walks you through setting up your custom Guardian Connector software stack on a fresh virtual machine (VM) using CapRover.
 
-# Prerequisite: Install CapRover
+## Prerequisite: Install CapRover
 
 See [INSTALL_CAPROVER_ON_NEW_VM.md](INSTALL_CAPROVER_ON_NEW_VM.md) if you haven't already configured a new VM running CapRover.
 
-# Set Up a Conservation Metrics private container registry
+## Set Up a Conservation Metrics private container registry
 
 The Guardian Connector stack still uses some Docker images that are not published publicly (namely, Superset).
 
@@ -23,7 +23,7 @@ The Guardian Connector stack still uses some Docker images that are not publishe
 3. Once installed, disable push:
     - Click the pencil icon next to "Docker Registry for Pushing New Images:", and in the modal's dropdown select "disabled push". Save and Update.
 
-# Set Up PostgreSQL Database
+## Set Up PostgreSQL Database
 
 You have two options for the PostgreSQL database
 
@@ -37,9 +37,10 @@ From the CapRover, navigate to **Apps** and "One-Click Apps/Database". Find the 
 > [!NOTE]
 > Your PostgreSQL app is internally available as `srv-captain--postgres` (assuming your app is called "postgres") to other apps as the hostname for a database connection.
 
-#### Optional (⚠️ Not recommended): Expose database to the public internet
+#### Expose database to the public internet (⚠️ Optional & Not recommended):
 
-If you plan to expose the database to applications not hosted on this VM's CapRover, you will need to take some additional steps:
+If you plan to expose the database to applications not hosted on this VM's CapRover,
+you will need to take some additional steps after installing the one-click-app:
 - Uncheck "Do not expose as web-app externally".
 - Enable and force HTTPS.
 - Set a port mapping `5432:5432` for server to container.
@@ -60,10 +61,7 @@ If you plan to expose the database to applications not hosted on this VM's CapRo
 
      **TODO**: figure out how to use trusted certs for Postgres (for example, using Let's Encrypt for which CapRover has built-in support).
 
-> [!IMPORTANT]
-> Make sure your hosting provider’s firewall or network security settings allow inbound traffic on port **5432** using the **TCP** protocol.
->
-> For example, on **Azure**, inbound traffic on port 5432 is blocked by default and must be explicitly allowed through a Network Security Group (NSG) rule.
+- Make sure your hosting provider’s firewall or network security settings allow inbound traffic on port **5432** using the **TCP** protocol. For example, on **Azure**, inbound traffic on port 5432 is blocked by default and must be explicitly allowed through a Network Security Group (NSG) rule.
 
 ### Option 2: Use External PostgreSQL
 
