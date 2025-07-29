@@ -1,6 +1,6 @@
-# "Guardian Connector" Software Stack Setup on CapRover
+# Guardian Connector Software Stack Setup on CapRover
 
-This guide walks you through setting up your custom "Guardian Connector" software stack on a fresh virtual machine (VM) using CapRover.
+This guide walks you through setting up your custom Guardian Connector software stack on a fresh virtual machine (VM) using CapRover.
 
 # Prerequisite: Install CapRover
 
@@ -8,7 +8,7 @@ See [INSTALL_CAPROVER_ON_NEW_VM.md](INSTALL_CAPROVER_ON_NEW_VM.md) if you haven'
 
 # Set Up a Conservation Metrics private container registry
 
-The Guardian Connector stack still uses some Docker images that are not published publicly (namely, Superset and CoMapeo Cloud).
+The Guardian Connector stack still uses some Docker images that are not published publicly (namely, Superset).
 
 > [!NOTE]
 > We are working to eliminate this requirement.
