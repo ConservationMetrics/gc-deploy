@@ -7,7 +7,7 @@
 1. Click to deploy a new VM on Azure:
     > [<img src="https://aka.ms/deploytoazurebutton"/>](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fconservationmetrics.github.io%2Fgc-deploy%2Fazure%2Fnew-vm.arm.json)
 2. Fill in required parameters:
-    - **Resource Group:** Recommend creating new, so the only thing in the resource group is this Guardian Deployment deployment. See also ["Prerequisites"](#prerequisites) above for discussion about permission requirements.
+    - **Resource Group:** Recommend creating new, so the only thing in the resource group is this Guardian Deployment deployment. See also ["Prerequisites"](#prerequisites) below for discussion about permission requirements.
     - **Region:** Where will this stack be hosted? e.g. for data about Brazil, choose "`Brazil South`" to adhere to [Brazilian Data Protection Laws](https://www.gov.br/esporte/pt-br/acesso-a-informacao/lgpd). The Instance (VM) "Region" will be same as the Resource group's region.
     - **Create Storage Account / Storage Account Name:** See ["Configuring Azure Files"](#configuring-azure-files-optional) below.
 3. Click "Review + Create". Wait for deployment (about 2 minutes).
@@ -42,8 +42,11 @@ For security reasons, initial configuration from another machine is disabled, bo
     ```bash
     caprover serversetup
     ```
+    - Answer "y" to the question "have you already started CapRover container on your server?"
     - When asked for "IP address of server": type `127.0.0.1`.
     - For "Root domain": enter your full domain (example: `mycommunity.guardianconnector.net`)
+
+    Note that it may take the server a few minutes to install CapRover. If, when running this command, you get an error that `caprover: command not found`, wait a few minutes and try again.
 
 ### IV. Install the Guardian Connector software stack
 

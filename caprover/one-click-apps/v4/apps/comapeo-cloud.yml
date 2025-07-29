@@ -29,8 +29,8 @@ caproverOneClickApp:
   variables:
   - id: '$$cap_comapeocloud_docker_image'
     label: CoMapeo Archive Server Docker Image
-    defaultValue: 'guardiancr.azurecr.io/comapeo-cloud:20250128-1545'
-    validRegex: /^guardiancr.azurecr.io/comapeo-cloud:[0-9a-z_-]+$/
+    defaultValue: 'communityfirst/comapeo-cloud:0.2.1'
+    validRegex: /^communityfirst/comapeo-cloud:[0-9a-z_-]+$/
     description: Check out the container registry for valid tags
 
   - id: '$$cap_server_bearer_token'
