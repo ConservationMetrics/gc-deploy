@@ -1,0 +1,63 @@
+caproverUrl: "http[s]://captain.your-captain-root.domain"
+caproverPassword: "secret-captain-password"
+
+postgres:
+  deploy: false  # Set to false to skip PostgreSQL deployment
+  # Required in all cases
+  user: "your_pg_user"
+  pass: "your_pg_password"
+
+  # Set only when deploy: true
+  database: postgres
+  version: 17
+
+  # Set only when deploy: false
+  host: "srv-captain--postgres"
+  port: 5432
+
+windmill-only:
+  deploy: true
+  app_name: windmill
+  app_version: 1.435.2
+  db_user: windmill_login
+  db_pass: changeme
+
+redis:
+  deploy: true
+  app_name: redis  # optional override
+  redis_password: "secretkey"
+
+superset:
+  deploy: true
+  ### Required
+  redis_url: "rediss://:secretkey@srv-captain--redis:6379"
+  redis_key_prefix: "eg_"
+  ### Optional, but you probably want to override:
+  auth0_domain:
+  auth0_clientid:
+  auth0_client_secret:
+  mapbox_api_key:
+  app_icon:
+  app_title: "Dashboard: Biocultural Monitoring Demo"
+  ### Optional: one-click app already has sane defaults
+  # superset_docker_image:
+  # secret_key:
+
+gcexplorer:
+  deploy: true
+  app_name: explorer  # optional override
+  redirect_from_domain: mycommunity-explorer.guardianconnector.net  # must set DNS record first
+  ### Required:
+  postgres_database: "warehouse"
+  auth0_domain:
+  auth0_clientid:
+  auth0_client_secret:
+
+comapeo-cloud:
+  deploy: true
+  app_name: comapeo  # optional override
+
+filebrowser:
+  deploy: true
+  app_name: files  # optional override
+  redirect_from_domain: mycommunity-files.guardianconnector.net  # must set DNS record first

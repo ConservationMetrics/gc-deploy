@@ -34,7 +34,7 @@ High-level steps to spawn a new stack
 1. 🖥️ Choose your cloud provider and deploy a VM running CapRover.
     - **[Azure Setup Guide](azure/README.md)**
     - **[DigitalOcean Setup Guide](digitalocean-vm/README.md)**
-    - With the right amount of knowledge, you can follow CapRover's own [Getting Started](https://caprover.com/docs/get-started.html) guide to figure out how to deploy a VM on your hosting platform of choice.
+    - or [DIY on-premises or on another hosting provider](caprover/INSTALL_CAPROVER_ON_NEW_VM.md)
 
 2. 📂 Create your data warehouse: file storage & a SQL database.
     - The Azure deployment can automatically create an Azure Storage Account and Files share for you, or you can use an existing one. If you are storing files on the VM directly, you can skip Azure Files entirely.
