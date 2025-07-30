@@ -4,7 +4,7 @@ caproverPassword: "secret-captain-password"
 postgres:
   deploy: false  # Set to false to skip PostgreSQL deployment
   # Required in all cases
-  user: "your_pg_user"
+  user: "postgres"
   pass: "your_pg_password"
 
   # Set only when deploy: true
@@ -17,7 +17,7 @@ postgres:
 
 windmill-only:
   deploy: true
-  app_name: windmill
+  app_name: windmill  # IMPORTANT so that your app doesn't get deployed as "windmill-only"
   app_version: 1.435.2
   db_user: windmill_login
   db_pass: changeme
@@ -29,6 +29,7 @@ redis:
 
 superset-only:
   deploy: true
+  app_name: superset  # IMPORTANT so that your app doesn't get deployed as "superset-only"
   ### Required
   redis_url: "rediss://:secretkey@srv-captain--redis:6379"
   redis_key_prefix: "eg_"
@@ -45,7 +46,7 @@ superset-only:
 
 gcexplorer:
   deploy: true
-  app_name: explorer  # optional override
+  app_name: explorer  # IMPORTANT so that your app doesn't get deployed as "gcexplorer"
   ### Required:
   postgres_database: "warehouse"
   auth0_domain:
@@ -54,8 +55,8 @@ gcexplorer:
 
 comapeo-cloud:
   deploy: true
-  app_name: comapeo  # optional override
+  app_name: comapeo  # IMPORTANT so that your app doesn't get deployed as "comapeo-cloud"
 
 filebrowser:
   deploy: true
-  app_name: files  # optional override
+  app_name: files  # IMPORTANT so that your app doesn't get deployed as "filebrowser"
