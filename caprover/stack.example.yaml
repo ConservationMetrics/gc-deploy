@@ -31,7 +31,7 @@ superset-only:
   deploy: true
   app_name: superset  # IMPORTANT so that your app doesn't get deployed as "superset-only"
   ### Required
-  redis_url: "rediss://:secretkey@srv-captain--redis:6379"
+  redis_url: "redis[s]://:secretkey@srv-captain--redis:6379"  # for locally hosted redis, omit the second s before :
   redis_key_prefix: "eg_"
   ### Optional, but you probably want to override:
   auth0_domain:
