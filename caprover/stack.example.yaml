@@ -27,7 +27,7 @@ redis:
   app_name: redis  # optional override
   redis_password: "secretkey"
 
-superset:
+superset-only:
   deploy: true
   ### Required
   redis_url: "rediss://:secretkey@srv-captain--redis:6379"
