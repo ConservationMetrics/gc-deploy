@@ -25,15 +25,15 @@ You will need a Google Cloud Platform (GCP) OAuth 2.0 Client in order to [avoid 
 5. In **Authentication / Social**, enable google-oauth2 under Social Connections. You will need to provide a Client ID and Secret (see [GCP OAuth client configuration](#gcp-oauth-client-configuration)).
 
 1.  In **Applications**, create a separate Regular Web Application for each tool (e.g., Superset, GC-Explorer). Add appropriate production domain values under Callback URLs, Web Origins, and CORS.
-    * For **Superset** (assuming Superset is hosted at the root of your subdomain; otherwise, use the appropriate subdomain i.e. `{domain}-superset`):
+    * For **Superset** (assuming Superset is hosted at the root of your subdomain; otherwise, use the appropriate subdomain i.e. `superset.{domain}`):
       * **Callback URL**: `http://{domain}.guardianconnector.net/oauth-authorized/auth0`
       * **Allowed Web Origins**: `https://{domain}.guardianconnector.net/`
     * For **GC-Explorer**:
-      * **Callback URL**: `http://{domain}-explorer.guardianconnector.net/login`
-      * **Allowed Web Origins**: `http://{domain}-explorer.guardianconnector.net`
+      * **Callback URL**: `http://explorer.{domain}.guardianconnector.net/login`
+      * **Allowed Web Origins**: `http://explorer.{domain}.guardianconnector.net`
     * For **Windmill**:
       * **Callback URL**: `https://windmill.{domain}.guardianconnector.net/user/login_callback/auth0`
-      * **Allowed Web Origins**: `https://windmill.demo.guardianconnector.net/`
+      * **Allowed Web Origins**: `https://windmill.{domain}.guardianconnector.net/`
 2.  (Optional) in **Branding**, a few minor customizations like adding an organization logo and setting the background color to gray #F9F9F9 instead of standard black.
 
 ## Using Terraform
@@ -42,23 +42,28 @@ It is possible to use Terraform to automate much of the above process. Please se
 
 ## User approval flow
 
-To restrict access until a user is approved, a Login Flow Action is used in Auth0. This action intercepts login attempts and denies access unless the user’s `app_metadata` includes `"approved": true`.
+To restrict access until a user is approved, a Post-Login Trigger Action is used in Auth0. This action intercepts login attempts and denies access unless the user’s `app_metadata` includes `"approved": true`.
 
+1. On the Auth0 Page, navigate to **Actions -> Triggers** page.
+2. Modify the **Post Login** Flow.
+3. Create a custom action using this trigger code (influenced by [the Common Use Cases in the auth0 documentation](https://auth0.com/docs/customize/actions/flows-and-triggers/login-flow#common-use-cases)):
+  ```jsx
+  exports.onExecutePostLogin = async (event, api) => {
+    // Check if the user is approved
+    if (event.user.app_metadata && event.user.app_metadata.approved) {
+      // User is approved, continue without action
+    } else {
+      api.access.deny('Your approval to access the app is pending.');
+    }
+  };
+  ```
 
-Action code (influenced by [the Common Use Cases in the auth0 documentation](https://auth0.com/docs/customize/actions/flows-and-triggers/login-flow#common-use-cases)):
-
-```jsx
-exports.onExecutePostLogin = async (event, api) => {
-  // Check if the user is approved
-  if (event.user.app_metadata && event.user.app_metadata.approved) {
-    // User is approved, continue without action
-  } else {
-    api.access.deny('Your approval to access the app is pending.');
-  }
-};
-```
-
-This Action should be added to the **Post Login **flow in the Auth0 **Actions** section.
+4. Drag the new action into the flow, so it looks like this:
+  ```mermaid
+  graph TD
+  A[Start: User Logged In] --> B["<> Check Approval"]
+  B --> C[Complete: Token Issued]
+  ```
 
 ## auth0 approval process
 
@@ -76,7 +81,7 @@ This Action should be added to the **Post Login **flow in the Auth0 **Actions** 
      }
      ```
 4. Once approved, the user can log in to GuardianConnector services.
-5. For Superset, the user is initially assigned the **Gamma** role by default (controlled via the `USER_ROLE` environment variable).
+5. For Superset, the user is initially assigned the **Alpha** role by default (controlled via the `USER_ROLE` environment variable).
 
     A Superset admin can then upgrade the user’s role or share specific dashboards.
 
