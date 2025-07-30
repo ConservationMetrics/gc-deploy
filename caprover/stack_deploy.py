@@ -320,7 +320,7 @@ def main():
     )
     parser.add_argument(
         "-c",
-        "--config",
+        "--config-file",
         help="Path to configuration YAML file (copy stack.example.yaml)",
     )
     parser.add_argument(
@@ -337,7 +337,7 @@ def main():
     args = parser.parse_args()
 
     # Load configuration
-    config = load_config(args.config)
+    config = load_config(args.config_file)
 
     # Deploy application stack
     deploy_stack(config, args.repo, args.dry_run)
