@@ -46,7 +46,6 @@ superset:
 gcexplorer:
   deploy: true
   app_name: explorer  # optional override
-  redirect_from_domain: mycommunity-explorer.guardianconnector.net  # must set DNS record first
   ### Required:
   postgres_database: "warehouse"
   auth0_domain:
@@ -60,4 +59,3 @@ comapeo-cloud:
 filebrowser:
   deploy: true
   app_name: files  # optional override
-  redirect_from_domain: mycommunity-files.guardianconnector.net  # must set DNS record first
