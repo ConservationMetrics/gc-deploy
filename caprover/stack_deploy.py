@@ -267,14 +267,6 @@ def deploy_stack(config, gc_repository, dry_run):
                 app_name, force_ssl=True, redirectDomain=f"{app_name}.{cap.root_domain}"
             )
 
-            cap.update_app(
-                app_name,
-                # For comapeo, save to local disk instead of volume mount
-                persistent_directories=[
-                    "$$cap_appname-data:/comapeo-persistent-storage",
-                ],
-            )
-
             if redirect_from_domain := config[one_click_app_name].get(
                 "redirect_from_domain"
             ):
