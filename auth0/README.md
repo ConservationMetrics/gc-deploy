@@ -44,27 +44,26 @@ It is possible to use Terraform to automate much of the above process. Please se
 
 To restrict access until a user is approved, a Post-Login Trigger Action is used in Auth0. This action intercepts login attempts and denies access unless the user’s `app_metadata` includes `"approved": true`.
 
+1. On the Auth0 Page, navigate to **Actions -> Triggers** page.
+2. Modify the **Post Login** Flow.
+3. Create a custom action using this trigger code (influenced by [the Common Use Cases in the auth0 documentation](https://auth0.com/docs/customize/actions/flows-and-triggers/login-flow#common-use-cases)):
+  ```jsx
+  exports.onExecutePostLogin = async (event, api) => {
+    // Check if the user is approved
+    if (event.user.app_metadata && event.user.app_metadata.approved) {
+      // User is approved, continue without action
+    } else {
+      api.access.deny('Your approval to access the app is pending.');
+    }
+  };
+  ```
 
-Trigger code (influenced by [the Common Use Cases in the auth0 documentation](https://auth0.com/docs/customize/actions/flows-and-triggers/login-flow#common-use-cases)):
-
-```jsx
-exports.onExecutePostLogin = async (event, api) => {
-  // Check if the user is approved
-  if (event.user.app_metadata && event.user.app_metadata.approved) {
-    // User is approved, continue without action
-  } else {
-    api.access.deny('Your approval to access the app is pending.');
-  }
-};
-```
-
-This Trigger Action should be added to the **Post Login** Flow on the Auth0 **Actions -> Triggers** page. The flow should look like this:
-
-```mermaid
-graph TD
-A[Start: User Logged In] --> B["<> Check Approval"]
-B --> C[Complete: Token Issued]
-```
+4. Drag the new action into the flow, so it looks like this:
+  ```mermaid
+  graph TD
+  A[Start: User Logged In] --> B["<> Check Approval"]
+  B --> C[Complete: Token Issued]
+  ```
 
 ## auth0 approval process
 
