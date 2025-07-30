@@ -251,7 +251,7 @@ def deploy_stack(config, gc_repository, dry_run):
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
         variables = {
-            "$$cap_server_bearer_token": cap.gen_random_hex(100),
+            "$$cap_server_bearer_token": "$$cap_gen_random_hex(100)",
         }
         variables = construct_app_variables(config, one_click_app_name, variables)
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
@@ -260,6 +260,7 @@ def deploy_stack(config, gc_repository, dry_run):
                 one_click_app_name,
                 app_name,
                 app_variables=variables,
+                one_click_repository=gc_repository,
                 automated=True,
             )
             cap.enable_ssl(app_name)
