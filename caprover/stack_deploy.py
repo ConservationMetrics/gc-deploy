@@ -199,7 +199,7 @@ def deploy_stack(config, gc_repository, dry_run):
                     worker_app["serviceUpdateOverride"]
                     + '\n    HealthCheck:\n      Test: ["NONE"]'
                 )
-                worker_app.update_app(appname, serviceUpdateOverride=new_suo)
+                cap.update_app(appname, serviceUpdateOverride=new_suo)
 
             if redirect_from_domain := config[one_click_app_name].get(
                 "redirect_from_domain"
