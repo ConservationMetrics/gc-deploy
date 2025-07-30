@@ -336,8 +336,8 @@ def main():
     )
     parser.add_argument(
         "--repo",
-        default="https://conservationmetrics.github.io/gc-deploy/one-click-apps/",
-        help="GC one-click repository app path (default: https://conservationmetrics.github.io/gc-deploy/one-click-apps/)",
+        default="https://conservationmetrics.github.io/gc-deploy/one-click-apps/v4/apps/",
+        help="GC one-click repository app path (default: https://conservationmetrics.github.io/gc-deploy/one-click-apps/v4/apps/)",
     )
     parser.add_argument(
         "--dry-run",
