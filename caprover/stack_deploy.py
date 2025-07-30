@@ -299,13 +299,11 @@ def deploy_stack(config, gc_repository, dry_run):
 
             cap.update_app(
                 app_name,
-                # set persistent volume mount to /mnt/persistent-storage
                 persistent_directories=[
-                    "files-database:/database",
-                    "/mnt/persistent-storage:/persistent-storage",
+                    f"{app_name}-database:/database",
+                    f"{app_name}-config:/config",
+                    "/mnt/persistent-storage:/srv",  # The files to be served up live here
                 ],
-                # set this path in the command.
-                serviceUpdateOverride="TaskTemplate:\n  ContainerSpec:\n    Args:\n      - -r\n      - /persistent-storage/datalake\n    Command:",
             )
 
             if redirect_from_domain := config[one_click_app_name].get(
