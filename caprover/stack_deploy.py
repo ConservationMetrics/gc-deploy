@@ -34,12 +34,14 @@ def load_config(file_path):
     return config
 
 
-def construct_app_variables(config, service_name, init=None):
+def construct_app_variables(config, one_click_app_name, app_name, init=None):
     variables = {} if init is None else init
-    for key, val in config[service_name].items():
+    for key, val in config[one_click_app_name].items():
         if key == "deploy":
             continue
         variables[f"$$cap_{key}"] = val
+    if "$$cap_appname" not in variables:
+        variables[f"$$cap_appname"] = app_name
     return variables
 
 
@@ -88,7 +90,7 @@ def deploy_stack(config, gc_repository, dry_run):
             "$$cap_database_url": f"postgres://{windmill_db_user}:{windmill_db_pass}@{postgres_host}:{postgres_port}/windmill"
         }
 
-        variables = construct_app_variables(config, one_click_app_name, variables)
+        variables = construct_app_variables(config, one_click_app_name, app_name, variables)
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
 
         input("Before continuing, enable UUID-OSSP extension on the Azure database...")
@@ -156,7 +158,7 @@ def deploy_stack(config, gc_repository, dry_run):
     one_click_app_name = "redis"
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
-        variables = construct_app_variables(config, one_click_app_name)
+        variables = construct_app_variables(config, one_click_app_name, app_name)
         logger.info("Deploying Redis")
         if not dry_run:
             cap.deploy_one_click_app(
@@ -175,7 +177,7 @@ def deploy_stack(config, gc_repository, dry_run):
             "$$cap_postgres_port": postgres_port,
             "$$cap_postgres_userpassword": f"{config['postgres']['user']}:{config['postgres']['pass']}",
         }
-        variables = construct_app_variables(config, one_click_app_name, variables)
+        variables = construct_app_variables(config, one_click_app_name, app_name, variables)
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
         if not dry_run:
             cap.deploy_one_click_app(
@@ -222,7 +224,7 @@ def deploy_stack(config, gc_repository, dry_run):
             "$$cap_postgres_pass": config["postgres"]["pass"],
             "$$cap_postgres_database": config[one_click_app_name]["postgres_database"],
         }
-        variables = construct_app_variables(config, one_click_app_name, variables)
+        variables = construct_app_variables(config, one_click_app_name, app_name, variables)
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
         if not dry_run:
             cap.deploy_one_click_app(
@@ -253,7 +255,7 @@ def deploy_stack(config, gc_repository, dry_run):
         variables = {
             "$$cap_server_bearer_token": "$$cap_gen_random_hex(100)",
         }
-        variables = construct_app_variables(config, one_click_app_name, variables)
+        variables = construct_app_variables(config, one_click_app_name, app_name, variables)
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
         if not dry_run:
             cap.deploy_one_click_app(
@@ -289,8 +291,7 @@ def deploy_stack(config, gc_repository, dry_run):
     one_click_app_name = "filebrowser"
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
-        variables = {}
-        variables = construct_app_variables(config, one_click_app_name, variables)
+        variables = construct_app_variables(config, one_click_app_name, app_name)
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
         if not dry_run:
             cap.deploy_one_click_app(
