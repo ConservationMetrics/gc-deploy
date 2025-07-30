@@ -91,7 +91,8 @@ If you don't want to sweat the details, it's much quicker to deploy the Guardian
 Set up a Python environment:
 
 ```sh
-git clone git@github.com:ak4zh/Caprover-API.git
+git clone git@github.com:IamJeffG/Caprover-API.git
+git checkout fix-oneclick-repo
 python setup.py install
 pip install 'psycopg[binary]'
 ```
