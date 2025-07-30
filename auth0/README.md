@@ -42,10 +42,10 @@ It is possible to use Terraform to automate much of the above process. Please se
 
 ## User approval flow
 
-To restrict access until a user is approved, a Login Flow Action is used in Auth0. This action intercepts login attempts and denies access unless the user’s `app_metadata` includes `"approved": true`.
+To restrict access until a user is approved, a Post-Login Trigger Action is used in Auth0. This action intercepts login attempts and denies access unless the user’s `app_metadata` includes `"approved": true`.
 
 
-Action code (influenced by [the Common Use Cases in the auth0 documentation](https://auth0.com/docs/customize/actions/flows-and-triggers/login-flow#common-use-cases)):
+Trigger code (influenced by [the Common Use Cases in the auth0 documentation](https://auth0.com/docs/customize/actions/flows-and-triggers/login-flow#common-use-cases)):
 
 ```jsx
 exports.onExecutePostLogin = async (event, api) => {
@@ -58,7 +58,13 @@ exports.onExecutePostLogin = async (event, api) => {
 };
 ```
 
-This Action should be added to the **Post Login **flow in the Auth0 **Actions** section.
+This Trigger Action should be added to the **Post Login** Flow on the Auth0 **Actions -> Triggers** page. The flow should look like this:
+
+```mermaid
+graph TD
+A[Start: User Logged In] --> B["<> Check Approval"]
+B --> C[Complete: Token Issued]
+```
 
 ## auth0 approval process
 
@@ -76,7 +82,7 @@ This Action should be added to the **Post Login **flow in the Auth0 **Actions** 
      }
      ```
 4. Once approved, the user can log in to GuardianConnector services.
-5. For Superset, the user is initially assigned the **Gamma** role by default (controlled via the `USER_ROLE` environment variable).
+5. For Superset, the user is initially assigned the **Alpha** role by default (controlled via the `USER_ROLE` environment variable).
 
     A Superset admin can then upgrade the user’s role or share specific dashboards.
 
