@@ -25,15 +25,15 @@ You will need a Google Cloud Platform (GCP) OAuth 2.0 Client in order to [avoid 
 5. In **Authentication / Social**, enable google-oauth2 under Social Connections. You will need to provide a Client ID and Secret (see [GCP OAuth client configuration](#gcp-oauth-client-configuration)).
 
 1.  In **Applications**, create a separate Regular Web Application for each tool (e.g., Superset, GC-Explorer). Add appropriate production domain values under Callback URLs, Web Origins, and CORS.
-    * For **Superset** (assuming Superset is hosted at the root of your subdomain; otherwise, use the appropriate subdomain i.e. `{domain}-superset`):
+    * For **Superset** (assuming Superset is hosted at the root of your subdomain; otherwise, use the appropriate subdomain i.e. `superset.{domain}`):
       * **Callback URL**: `http://{domain}.guardianconnector.net/oauth-authorized/auth0`
       * **Allowed Web Origins**: `https://{domain}.guardianconnector.net/`
     * For **GC-Explorer**:
-      * **Callback URL**: `http://{domain}-explorer.guardianconnector.net/login`
-      * **Allowed Web Origins**: `http://{domain}-explorer.guardianconnector.net`
+      * **Callback URL**: `http://explorer.{domain}.guardianconnector.net/login`
+      * **Allowed Web Origins**: `http://explorer.{domain}.guardianconnector.net`
     * For **Windmill**:
       * **Callback URL**: `https://windmill.{domain}.guardianconnector.net/user/login_callback/auth0`
-      * **Allowed Web Origins**: `https://windmill.demo.guardianconnector.net/`
+      * **Allowed Web Origins**: `https://windmill.{domain}.guardianconnector.net/`
 2.  (Optional) in **Branding**, a few minor customizations like adding an organization logo and setting the background color to gray #F9F9F9 instead of standard black.
 
 ## Using Terraform

@@ -1,4 +1,4 @@
-caproverUrl: "http[s]://captain.your-captain-root.domain"
+caproverUrl: "http[s]://captain.your-captain-root.net"
 caproverPassword: "secret-captain-password"
 
 postgres:
@@ -29,6 +29,7 @@ redis:
 
 superset:
   deploy: true
+  redirect_from_domain: your-captain-root.net  # make superset the landing page when no subdomain specified
   ### Required
   redis_url: "rediss://:secretkey@srv-captain--redis:6379"
   redis_key_prefix: "eg_"
