@@ -130,9 +130,17 @@ Install - for Docker image tag, just use `v2`.
 
 #### After Install
 
-Carefully follow the post-installation instructions. Specifically:
-- Change the password inside Filebrowser app.
-- In the app's CapRover "App Configs", change the Persistent Directory for `/srv` to specific host path, and then the local path of your datalake on the VM.
+Carefully follow the post-installation instructions.
+
+Find the admin password in the CapRover web portal under Files > Logs.
+Then change the password inside Filebrowser app.
+
+When logging into Filebrowser app, you may see "This location can't be reached".
+This is because Filebrowser is configured to show files in a folder called "datalake"
+and that folder hasnt been created yet. You may do any of the following:
+- create that folder in Azure Storage Explorer, or
+- upload any file anyway - this will implictly create the necessary folder. Then you can delete it.
+
 
 ### GuardianConnector Explorer
 
