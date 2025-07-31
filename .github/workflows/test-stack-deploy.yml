@@ -61,6 +61,25 @@ jobs:
           echo "Waiting... ($i/30)"
           sleep 5
         done
+        
+        # Verify DNS resolution
+        echo "Testing DNS resolution:"
+        nslookup captain.localhost.test || echo "nslookup failed"
+        ping -c 1 captain.localhost.test || echo "ping failed"
+        
+        # Wait for HTTP endpoint to be available
+        echo "Waiting for CapRover HTTP endpoint..."
+        for i in {1..30}; do
+          if curl -f -s http://captain.localhost.test/api/v2/login >/dev/null 2>&1; then
+            echo "CapRover HTTP endpoint is ready!"
+            break
+          elif curl -f -s http://127.0.0.1:3000/api/v2/login >/dev/null 2>&1; then
+            echo "CapRover HTTP endpoint is ready on localhost!"
+            break
+          fi
+          echo "Waiting for HTTP endpoint... ($i/30)"
+          sleep 5
+        done
 
         # Setup CapRover
         echo "Setting up CapRover..."
