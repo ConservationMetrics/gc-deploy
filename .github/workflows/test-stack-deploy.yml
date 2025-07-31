@@ -36,6 +36,10 @@ jobs:
 
     - name: Install CapRover
       run: |
+        # Add CapRover domain to hosts file for proper routing
+        echo "127.0.0.1 captain.localhost.test" | sudo tee -a /etc/hosts
+        echo "127.0.0.1 localhost.test" | sudo tee -a /etc/hosts
+
         # Install CapRover CLI
         npm install -g caprover
 
