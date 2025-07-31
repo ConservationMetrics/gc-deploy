@@ -199,7 +199,7 @@ def deploy_stack(config, gc_repository, dry_run):
                     worker_app["serviceUpdateOverride"]
                     + '\n    HealthCheck:\n      Test: ["NONE"]'
                 )
-                worker_app.update_app(appname, serviceUpdateOverride=new_suo)
+                cap.update_app(appname, serviceUpdateOverride=new_suo)
 
             if redirect_from_domain := config[one_click_app_name].get(
                 "redirect_from_domain"
@@ -251,7 +251,7 @@ def deploy_stack(config, gc_repository, dry_run):
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
         variables = {
-            "$$cap_server_bearer_token": cap.gen_random_hex(100),
+            "$$cap_server_bearer_token": "$$cap_gen_random_hex(100)",
         }
         variables = construct_app_variables(config, one_click_app_name, variables)
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
@@ -260,19 +260,12 @@ def deploy_stack(config, gc_repository, dry_run):
                 one_click_app_name,
                 app_name,
                 app_variables=variables,
+                one_click_repository=gc_repository,
                 automated=True,
             )
             cap.enable_ssl(app_name)
             cap.update_app(
                 app_name, force_ssl=True, redirectDomain=f"{app_name}.{cap.root_domain}"
-            )
-
-            cap.update_app(
-                app_name,
-                # For comapeo, save to local disk instead of volume mount
-                persistent_directories=[
-                    "$$cap_appname-data:/comapeo-persistent-storage",
-                ],
             )
 
             if redirect_from_domain := config[one_click_app_name].get(
@@ -305,13 +298,14 @@ def deploy_stack(config, gc_repository, dry_run):
 
             cap.update_app(
                 app_name,
-                # set persistent volume mount to /mnt/persistent-storage
                 persistent_directories=[
-                    "files-database:/database",
-                    "/mnt/persistent-storage:/persistent-storage",
+                    f"{app_name}-database:/database",
+                    f"{app_name}-config:/config",
+                    "/mnt/persistent-storage:/srv",  # The files to be served up live here
                 ],
-                # set this path in the command.
-                serviceUpdateOverride="TaskTemplate:\n  ContainerSpec:\n    Args:\n      - -r\n      - /persistent-storage/datalake\n    Command:",
+                # NOTE: You will get warning pages in the filebrowser app before the `datalake` subdir is created in storage:
+                # https://github.com/ConservationMetrics/gc-deploy/pull/12#discussion_r2243697895
+                environment_variables={"FB_ROOT": "/mnt/persistent-storage/datalake"},
             )
 
             if redirect_from_domain := config[one_click_app_name].get(
@@ -330,18 +324,13 @@ def main():
     )
     parser.add_argument(
         "-c",
-        "--config",
+        "--config-file",
         help="Path to configuration YAML file (copy stack.example.yaml)",
     )
     parser.add_argument(
         "--repo",
-        default="http://localhost:8116/",
-        help=(
-            "GC one-click repository app path (default: http://localhost:8116/)\n"
-            "  To use local files:\n"
-            "  $ cd gc-forge/caprover/one-click-apps\n"
-            "  $ python -m http.server 8116"
-        ),
+        default="https://conservationmetrics.github.io/gc-deploy/one-click-apps/v4/apps/",
+        help="GC one-click repository app path (default: https://conservationmetrics.github.io/gc-deploy/one-click-apps/v4/apps/)",
     )
     parser.add_argument(
         "--dry-run",
@@ -352,7 +341,7 @@ def main():
     args = parser.parse_args()
 
     # Load configuration
-    config = load_config(args.config)
+    config = load_config(args.config_file)
 
     # Deploy application stack
     deploy_stack(config, args.repo, args.dry_run)
