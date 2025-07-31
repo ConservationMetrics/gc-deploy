@@ -1,0 +1,30 @@
+caproverUrl: "http://captain.localhost.test"
+caproverPassword: "test-captain-password"
+
+postgres:
+  deploy: true  # Use internal postgres for testing
+  user: "postgres"
+  pass: "test_pg_password"
+  database: postgres
+  version: 16
+
+windmill-only:
+  deploy: false  # Skip windmill for faster testing
+
+redis:
+  deploy: true
+  app_name: redis-test
+  redis_password: "test-redis-key"
+
+superset-only:
+  deploy: false  # Skip superset for faster testing
+
+gcexplorer:
+  deploy: false  # Skip gcexplorer for faster testing
+
+comapeo-cloud:
+  deploy: false  # Skip comapeo for faster testing
+
+filebrowser:
+  deploy: true  # Test a simple service
+  app_name: files-test

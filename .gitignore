@@ -1,3 +1,4 @@
 caprover/*.yml
 caprover/*.yaml
 !caprover/stack.example.yaml
+!caprover/stack.test.yaml
