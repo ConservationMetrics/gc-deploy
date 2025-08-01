@@ -58,6 +58,10 @@ jobs:
         echo "Waiting for CapRover to start..."
         ready=0
         for i in {1..30}; do
+          docker ps -q
+          someId=$(docker ps -q | head -1)
+          docker logs $someId
+
           if docker service logs captain-captain 2>&1 | grep -q "Captain is initialized"; then
             echo "CapRover is ready!"
             ready=1
@@ -68,6 +72,7 @@ jobs:
         done
 
         if [ "$ready" -ne 1 ]; then
+          docker service logs captain-captain
           echo "CapRover did not start in time."
           exit 1
         fi
