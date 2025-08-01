@@ -68,6 +68,7 @@ jobs:
         done
 
         if [ "$ready" -ne 1 ]; then
+          docker service logs captain-captain
           echo "CapRover did not start in time."
           exit 1
         fi
