@@ -44,42 +44,49 @@ jobs:
         npm install -g caprover
 
         # Install CapRover server
+        sudo mkdir -p /captain/data
+        sudo echo  "{\"skipVerifyingDomains\":\"true\"}" >  /captain/data/config-override.json
         docker run -d \
           --name captain-captain \
+          -e ACCEPTED_TERMS=true -e MAIN_NODE_IP_ADDRESS=127.0.0.1 \
           -p 80:80 -p 443:443 -p 3000:3000 \
           -v /var/run/docker.sock:/var/run/docker.sock \
-          -v captain-root-dir:/captain \
-          caprover/caprover:latest
+          -v /captain:/captain \
+          caprover/caprover
 
         # Wait for CapRover to be ready
         echo "Waiting for CapRover to start..."
+        ready=0
         for i in {1..30}; do
-          if docker logs captain-captain 2>&1 | grep -q "Captain is available"; then
+          if docker service logs captain-captain 2>&1 | grep -q "Captain is initialized"; then
             echo "CapRover is ready!"
+            ready=1
             break
           fi
           echo "Waiting... ($i/30)"
           sleep 5
         done
-        
+
+        if [ "$ready" -ne 1 ]; then
+          echo "CapRover did not start in time."
+          exit 1
+        fi
+
         # Verify DNS resolution
         echo "Testing DNS resolution:"
         nslookup captain.localhost.test || echo "nslookup failed"
         ping -c 1 captain.localhost.test || echo "ping failed"
-        
+
         # Wait for HTTP endpoint to be available
         echo "Waiting for CapRover HTTP endpoint..."
-        for i in {1..30}; do
-          if curl -f -s http://captain.localhost.test/api/v2/login >/dev/null 2>&1; then
-            echo "CapRover HTTP endpoint is ready!"
-            break
-          elif curl -f -s http://127.0.0.1:3000/api/v2/login >/dev/null 2>&1; then
-            echo "CapRover HTTP endpoint is ready on localhost!"
-            break
-          fi
-          echo "Waiting for HTTP endpoint... ($i/30)"
-          sleep 5
-        done
+        if curl -f -s http://captain.localhost.test/api/v2/login >/dev/null 2>&1; then
+          echo "CapRover HTTP endpoint is ready!"
+        elif curl -f -s http://127.0.0.1:3000/api/v2/login >/dev/null 2>&1; then
+          echo "CapRover HTTP endpoint is ready on localhost!"
+        else:
+          echo "No HTTP response"
+          exit 1
+        fi
 
         # Setup CapRover
         echo "Setting up CapRover..."
@@ -87,7 +94,7 @@ jobs:
           --captainPassword test-captain-password \
           --rootDomain localhost.test \
           --skipVerifyingDomains \
-          --force || echo "Setup may have failed, continuing..."
+          --force
 
     - name: Install Python dependencies
       run: |
