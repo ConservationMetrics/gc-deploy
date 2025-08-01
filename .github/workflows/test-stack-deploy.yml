@@ -45,7 +45,7 @@ jobs:
 
         # Install CapRover server
         sudo mkdir -p /captain/data
-        sudo echo  "{\"skipVerifyingDomains\":\"true\"}" >  /captain/data/config-override.json
+        echo  "{\"skipVerifyingDomains\":\"true\"}" | sudo tee /captain/data/config-override.json > /dev/null
         docker run -d \
           --name captain-captain \
           -e ACCEPTED_TERMS=true -e MAIN_NODE_IP_ADDRESS=127.0.0.1 \
