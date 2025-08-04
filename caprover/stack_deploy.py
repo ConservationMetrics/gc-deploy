@@ -210,8 +210,36 @@ def deploy_stack(config, gc_repository, dry_run):
                 except Exception as e:
                     logger.error(f"Verification failed: {e}")
 
-    # Deploy GCExplorer if specified in config
-    one_click_app_name = "gcexplorer"
+    # Deploy GC Landing Page if specified in config
+    one_click_app_name = "gc-landing-page"
+    if config.get(one_click_app_name, {}).get("deploy", False):
+        app_name = config[one_click_app_name].get("app_name", one_click_app_name)
+        variables = construct_app_variables(config, one_click_app_name)
+        logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
+        if not dry_run:
+            cap.deploy_one_click_app(
+                one_click_app_name,
+                app_name,
+                app_variables=variables,
+                automated=True,
+                one_click_repository=gc_repository,
+            )
+            cap.enable_ssl(app_name)
+            cap.update_app(
+                app_name, force_ssl=True, redirectDomain=f"{app_name}.{cap.root_domain}"
+            )
+
+            if redirect_from_domain := config[one_click_app_name].get(
+                "redirect_from_domain"
+            ):
+                try:
+                    cap.add_domain(app_name, redirect_from_domain)
+                    cap.enable_ssl(app_name, redirect_from_domain)
+                except Exception as e:
+                    logger.error(f"Verification failed: {e}")
+
+    # Deploy GC Explorer if specified in config
+    one_click_app_name = "gc-explorer"
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
         variables = {
