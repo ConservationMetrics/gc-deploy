@@ -49,44 +49,54 @@ caproverOneClickApp:
         start: |-
             Windmill is an open-source alternative to Retool, Airplane and n8n to build all your internal tools (endpoints, workflows, UIs) through simple scripts - in Typescript, Python, Go & Bash - and low code builders.
 
-            Before Deploying, you must set up a database and login for Windmill to use, as follows.
+            Before Deploying, you must set up a database for Windmill to use. Instructions differ depending on whether
+            you have access to the Postgres superuser.
 
-            ## Database Setup
+            ## Database you completely control (e.g. running on caprover)
 
-            As as PostgreSQL database admin user, create the `windmill` database and the user that
-            Windmill will use to login to it:
+            As a PostgreSQL database admin user, all you need is to create a `windmill` database.
+
+            Example for database hosted in CapRover:
+            ```bash
+            PSQL_CONTAINER=$(sudo docker ps --filter "name=srv-captain--postgres" --format "{{.ID}}")
+            sudo docker exec -it $PSQL_CONTAINER psql -U postgres "CREATE DATABASE windmill;"
+            ```
+
+            Everything else:
             ```sql
             CREATE DATABASE windmill;
-            CREATE USER windmill_login PASSWORD 'changeme';
-            -- windmill_login needs admin permission on this database (but not on others)
-            GRANT ALL PRIVILEGES ON DATABASE windmill TO windmill_login;
-
-            -- Connect to the windmill DB as admin user, in order to modify schema-level perms
-            \c windmill
-            -- Give ownership or USAGE/CREATE on the schema
-            GRANT USAGE, CREATE ON SCHEMA public TO windmill_login;
-
-            -- The new user "windmill_login" cannot read tables in other databases
-            -- but can connect to them and list the tables.  To prevent that you may optionally
-            -- run this for all other databases on your server:
-            --   REVOKE CONNECT ON DATABASE some_other_db FROM windmill_login;
             ```
 
-            On Azure PostgreSQL only:
-            1. `GRANT azure_pg_admin TO windmill_login; ALTER USER windmill_login CREATEROLE;`
-            2. In Azure's portal, navigate to database and open "Server parameters". Set `azure.extensions = UUID-OSSP`
-            3. You will need to edit the `init-db-as-superuser.sql` to remove "WITH BYPASSRLS"
+            ## Database setup without using a Postgres superuser (AWS, GCP, Azure, Neon)
 
-            If your database is does not have access to the PG superuser (Azure PostgreSQL, GCP Postgresql, etc),
-            you will need to set the initial role manually. You can do so by following the recipe below.
-            ```
-            psql <DATABASE_URL> -c 'GRANT azure_pg_admin TO windmill_login; ALTER USER windmill_login CREATEROLE;'  # for Azure only
+            Cloud-hosted database servers typically do not let you access the Postgres superuser, but
+            only a lesser "admin" user.
 
-            curl https://raw.githubusercontent.com/windmill-labs/windmill/main/init-db-as-superuser.sql -o init-db-as-superuser.sql
-            psql <DATABASE_URL> -f init-db-as-superuser.sql  # run this in the new 'windmill' logical database
-            ```
+            Azure-specific steps:
+            1. In Azure's portal, navigate to database and open "Server parameters". Set `azure.extensions = UUID-OSSP`
+            2. Login to database as admin to create a `windmill` database and the user that Windmill will use to login to it:
+                ```sql
+                CREATE DATABASE windmill;
+                CREATE USER windmill_login PASSWORD 'changeme';
+                -- windmill_login needs admin permission on this database (but not on others)
+                GRANT ALL PRIVILEGES ON DATABASE windmill TO windmill_login;
 
-            Make sure that the user used in the `DATABASE_URL` passed to Windmill has the role `windmill_admin` and `windmill_user`:
+                -- The new user "windmill_login" cannot read tables in other databases
+                -- but can connect to them and list the tables.  To prevent that you may optionally
+                -- run this for all other databases on your server:
+                --   REVOKE CONNECT ON DATABASE some_other_db FROM windmill_login;
+
+                GRANT azure_pg_admin TO windmill_login;
+                ALTER USER windmill_login CREATEROLE;
+                ```
+            3. Keep following the continued instructions below, editing the `init-db-as-superuser.sql` to remove "WITH BYPASSRLS".
+
+            On all cloud-hosted databases (including Azure, after following the steps above),
+            follow this, connecting as `windmill_login` if you created it above, otherwise connecting as the admin user:
+            https://www.windmill.dev/docs/advanced/self_host#run-windmill-without-using-a-postgres-superuser
+
+
+            4. If you used `windmill_login``, make sure that the user used in the `DATABASE_URL` passed to Windmill has the role `windmill_admin` and `windmill_user`:
 
             ```sql
             GRANT windmill_admin TO windmill_login;

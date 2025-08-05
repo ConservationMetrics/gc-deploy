@@ -82,16 +82,18 @@ def deploy_stack(config, gc_repository, dry_run):
     one_click_app_name = "windmill-only"
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
-        windmill_db_user = config[one_click_app_name].pop("db_user")
-        windmill_db_pass = config[one_click_app_name].pop("db_pass")
+        windmill_db_user = config[one_click_app_name].pop("azure_db_user", config['postgres']['user'])
+        windmill_db_pass = config[one_click_app_name].pop("azure_db_pass", config['postgres']['pass'])
+        is_using_azure_db = "azure_db_user" in config[one_click_app_name]
+        if is_using_azure_db:
+            input("Before continuing, enable UUID-OSSP extension on the Azure database...")
+
         variables = {
             "$$cap_database_url": f"postgres://{windmill_db_user}:{windmill_db_pass}@{postgres_host}:{postgres_port}/windmill"
         }
 
         variables = construct_app_variables(config, one_click_app_name, variables)
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
-
-        input("Before continuing, enable UUID-OSSP extension on the Azure database...")
 
         # As superadmin, create a user windmill_admin and create a windmill database
         with psycopg.connect(
@@ -103,17 +105,18 @@ def deploy_stack(config, gc_repository, dry_run):
                 with conn.cursor() as cur:
                     # Execute a command: this creates a new table
                     cur.execute("CREATE DATABASE windmill;")
-                    cur.execute(
-                        f"CREATE USER {windmill_db_user} PASSWORD '{windmill_db_pass}';"
-                    )
-                    cur.execute(
-                        f"GRANT ALL PRIVILEGES ON DATABASE windmill TO {windmill_db_user};"
-                    )
-                    # Azure only:
-                    cur.execute(f"GRANT azure_pg_admin TO {windmill_db_user};")
-                    cur.execute(f"ALTER USER {windmill_db_user} CREATEROLE;")
+                    if is_using_azure_db:
+                        cur.execute(
+                            f"CREATE USER {windmill_db_user} PASSWORD '{windmill_db_pass}';"
+                        )
+                        cur.execute(
+                            f"GRANT ALL PRIVILEGES ON DATABASE windmill TO {windmill_db_user};"
+                        )
+                        # Azure only:
+                        cur.execute(f"GRANT azure_pg_admin TO {windmill_db_user};")
+                        cur.execute(f"ALTER USER {windmill_db_user} CREATEROLE;")
 
-        if not dry_run:
+        if is_using_azure_db and not dry_run:
             # As windmill_login
             with psycopg.connect(
                 f"host={postgres_host} port={postgres_port} user={windmill_db_user} password={windmill_db_pass} dbname=windmill"
