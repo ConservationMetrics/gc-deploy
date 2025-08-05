@@ -138,12 +138,12 @@ caproverOneClickApp:
 
         - id: $$cap_server_database_connections
           label: The max number of connections in the server's database connection pool
-          defaultValue: 5
+          defaultValue: "5"
           validRegex: /^[1-9][0-9]?$/
 
         - id: $$cap_worker_database_connections
           label: The max number of connections in a worker's database connection pool.
-          defaultValue: 5
+          defaultValue: "5"
           description: |-
               Note that there are multiple worker processes, each one creating its own pool.
               This value is per worker.
