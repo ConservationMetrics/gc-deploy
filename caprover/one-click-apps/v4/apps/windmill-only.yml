@@ -96,7 +96,7 @@ caproverOneClickApp:
             https://www.windmill.dev/docs/advanced/self_host#run-windmill-without-using-a-postgres-superuser
 
 
-            4. If you used `windmill_login``, make sure that the user used in the `DATABASE_URL` passed to Windmill has the role `windmill_admin` and `windmill_user`:
+            4. If you used `windmill_login`, make sure that the user used in the `DATABASE_URL` passed to Windmill has the role `windmill_admin` and `windmill_user`:
 
             ```sql
             GRANT windmill_admin TO windmill_login;
