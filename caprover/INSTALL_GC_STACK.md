@@ -91,10 +91,10 @@ If you don't want to sweat the details, it's much quicker to deploy the Guardian
 Set up a Python environment:
 
 ```sh
-git clone git@github.com:IamJeffG/Caprover-API.git
+git clone https://github.com/IamJeffG/Caprover-API.git
+cd Caprover-API/
 git checkout fix-oneclick-repo
-python setup.py install
-pip install 'psycopg[binary]'
+pip install 'psycopg[binary]' .
 ```
 
 The `stack_deploy.py` script requires you to create a `stack.yaml` file of variable values by
