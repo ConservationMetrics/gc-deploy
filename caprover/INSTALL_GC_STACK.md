@@ -170,24 +170,26 @@ These commands can be found inside the `stack_deploy.py` script and include crea
 
 #### After Install
 
+
 ##### Code assistants
 
 To enable [code assistants](https://www.windmill.dev/docs/code_editor/assistants),
-please change the following settings before using the service (Change `windmill` in the codeblock to
-the app name you gave it):
+you will need to install the Language Server Protocol (LSP):
 
-1. Go to the settings for the app.
-2. Ensure **Websocket Support** is enabled.
-3. Ensure **Force HTTPS** is enabled.
-4. Click on **Edit Default Nginx Configurations** and paste the following content before the last closing bracket "}":
-    ```
-    location /ws/ {
-        proxy_pass http://srv-captain--windmill-lsp:3001/ws/;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-    }
-    ```
+1. Deploy a new Caprover App, the Windmill LSP: `ghcr.io/windmill-labs/windmill-lsp:1.518.2`
+2. Route Windmill HTTP requests intended for LSP:
+    1. Go to the settings for the core windmill web server
+    2. Ensure **Websocket Support** is enabled.
+    3. Ensure **Force HTTPS** is enabled.
+    4. Click on **Edit Default Nginx Configurations** and paste the following content before the last closing bracket "}" (Change `windmill-lsp` in the codeblock to the app name you gave it):
+        ```
+        location /ws/ {
+            proxy_pass http://srv-captain--windmill-lsp:3001/ws/;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+        }
+        ```
 
 ##### For first-time login:
 
