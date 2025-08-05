@@ -325,6 +325,7 @@ def main():
     parser.add_argument(
         "-c",
         "--config-file",
+        required=True,
         help="Path to configuration YAML file (copy stack.example.yaml)",
     )
     parser.add_argument(
