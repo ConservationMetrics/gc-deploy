@@ -44,6 +44,24 @@ def construct_app_variables(config, service_name, init=None):
     return variables
 
 
+def run_psql_command_on_docker_service_container(service_name, sql_command, pguser, pgpassword):
+    logger.info(f"Running caprover-hosted DB [{service_name}]: {sql_command}")
+
+    # Get container ID of {service_name}
+    result = subprocess.run(
+        ['sudo', 'docker', 'ps', '--filter', f'name={service_name}', '--format', '{{.ID}}'],
+        stdout=subprocess.PIPE, check=True, text=True
+    )
+    container_id = result.stdout.strip()
+
+    # Run CREATE DATABASE inside the container
+    create_db_cmd = ['psql', '-U', pguser, '-c', sql_command]
+    subprocess.run(
+        ['sudo', 'docker', 'exec', '-e', f"PGPASSWORD={pgpassword}", '-i', container_id] + create_db_cmd,
+        check=True
+    )
+
+
 def deploy_stack(config, gc_repository, dry_run):
     """Deploy application stack based on the configuration file."""
 
@@ -100,21 +118,12 @@ def deploy_stack(config, gc_repository, dry_run):
 
         # As superadmin, create a windmill database
         if is_using_caprover_db:
-            logger.info(f"Using caprover DB: {postgres_host}")
-            # Get container ID
-            result = subprocess.run(
-                ['sudo', 'docker', 'ps', '--filter', f'name={postgres_host}', '--format', '{{.ID}}'],
-                stdout=subprocess.PIPE, check=True, text=True
+            run_psql_command_on_docker_service_container(
+                postgres_host,
+                "CREATE DATABASE windmill;",
+                config['postgres']['user'],
+                config['postgres']['pass'],
             )
-            container_id = result.stdout.strip()
-
-            # Run CREATE DATABASE inside the container
-            create_db_cmd = ['psql', '-U', 'postgres', '-c', 'CREATE DATABASE windmill;']
-            subprocess.run(
-                ['sudo', 'docker', 'exec', '-e', f"PGPASSWORD={config['postgres']['pass']}", '-i', container_id] + create_db_cmd,
-                check=True
-            )
-
         else:
             logger.info(f"Using external DB: {postgres_host} ({is_using_azure_db=})")
             with psycopg.connect(
@@ -193,6 +202,14 @@ def deploy_stack(config, gc_repository, dry_run):
     one_click_app_name = "superset-only"
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
+        is_using_caprover_db = postgres_host.startswith("srv-captain--")
+        if is_using_caprover_db:
+            run_psql_command_on_docker_service_container(
+                postgres_host,
+                "CREATE DATABASE superset_metastore;",
+                config['postgres']['user'],
+                config['postgres']['pass'],
+            )
         variables = {
             "$$cap_postgres_host": postgres_host,
             "$$cap_postgres_port": postgres_port,
