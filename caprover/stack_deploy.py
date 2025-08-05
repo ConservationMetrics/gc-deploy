@@ -64,7 +64,6 @@ def deploy_stack(config, gc_repository, dry_run):
         if not dry_run:
             cap.deploy_one_click_app(
                 one_click_app_name="postgres",
-                namespace=None,
                 app_variables=postgres_variables,
                 automated=True,
             )
