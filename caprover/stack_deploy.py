@@ -150,7 +150,6 @@ def deploy_stack(config, gc_repository, dry_run):
             )
             cap.enable_ssl(app_name)
             cap.update_app(app_name, force_ssl=True, support_websocket=True)
-            input("INSTALL IS NOT FINISHED -  YOU MUST EDIT THE CUSTOM NGINX CONFIG!")
 
     # Deploy Redis if specified in config
     one_click_app_name = "redis"
