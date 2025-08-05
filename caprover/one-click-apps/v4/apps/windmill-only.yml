@@ -71,6 +71,11 @@ caproverOneClickApp:
             -- windmill_login needs admin permission on this database (but not on others)
             GRANT ALL PRIVILEGES ON DATABASE windmill TO windmill_login;
 
+            -- Connect to the windmill DB as admin user, in order to modify schema-level perms
+            \c windmill
+            -- Give ownership or USAGE/CREATE on the schema
+            GRANT USAGE, CREATE ON SCHEMA public TO windmill_login;
+
             -- The new user "windmill_login" cannot read tables in other databases
             -- but can connect to them and list the tables.  To prevent that you may optionally
             -- run this for all other databases on your server:
