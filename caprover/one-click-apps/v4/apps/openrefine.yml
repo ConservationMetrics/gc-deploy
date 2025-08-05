@@ -1,0 +1,41 @@
+captainVersion: 4
+services:
+  # OpenRefine
+  $$cap_appname:
+    image: easypi/openrefine:$$cap_version
+    container_name: openrefine
+    hostname: openrefine
+    volumes:
+      - $$cap_appname-data:/data
+    environment:
+      REFINE_INTERFACE: 0.0.0.0
+      REFINE_PORT: 3333
+      REFINE_MIN_MEMORY: 1024M
+      REFINE_MEMORY: 1024M
+      REFINE_DATA_DIR: /data
+      REFINE_EXTRA_OPTS: refine.headless=true
+    healthcheck:
+      test: curl --fail -I http://localhost:3333 || exit 1
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    caproverExtra:
+        containerHttpPort: '3333'
+caproverOneClickApp:
+    variables:
+        - id: $$cap_version
+          label: Application Version
+          defaultValue: '3.9.3'
+          description: Check out their docker page for the valid tags
+
+    instructions:
+        start: |-
+            OpenRefine is a powerful free, open source tool for working with messy data: cleaning it; transforming it from one format into another; and extending it with web services and external data.
+        end: |-
+            Aaaand you're done! 😄
+            Your service is available at http://$$cap_appname.$$cap_root_domain
+    displayName: 'OpenRefine'
+    isOfficial: false
+    description: OpenRefine
+    documentation: https://github.com/OpenRefine/OpenRefine/wiki
+
