@@ -130,7 +130,7 @@ caproverOneClickApp:
     variables:
         - id: $$cap_app_version
           label: Windmill Version
-          defaultValue: '1.491.4'
+          defaultValue: '1.518.2'
           description: Checkout their github page for the valid tags https://github.com/windmill-labs/windmill/releases
           validRegex: /^([^\s^\/])+$/
 
