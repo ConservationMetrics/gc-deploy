@@ -2,7 +2,7 @@ captainVersion: 4
 
 services:
   $$cap_appname:
-    image: guardiancr.azurecr.io/gc-landing-page:latest
+    image: $$cap_gc_landing_page_docker_image
     restart: unless-stopped
     environment:
       HOST: "0.0.0.0"
@@ -28,6 +28,13 @@ services:
 
 caproverOneClickApp:
   variables:
+    - id: '$$cap_gc_landing_page_docker_image'
+      label: GC Landing Page Docker Image
+      defaultValue: 'communityfirst/guardianconnector-landing-page:latest'
+      validRegex: /^communityfirst\/guardianconnector-landing-page:[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/
+      description: Check out the container registry for valid tags
+
+
     - id: '$$cap_community_name'
       label: Community Name (slug)
       description: The "slug" of the community used for Guardian Connector (e.g. {community_name}.guardianconnector.net)
