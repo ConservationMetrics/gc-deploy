@@ -54,25 +54,25 @@ caproverOneClickApp:
 
             ## Database you completely control (e.g. running on caprover)
 
-            As a PostgreSQL database admin user, all you need is to create a `windmill` database.
+            As a PostgreSQL database admin user, all you need is to create a `windmill` database:
+            ```sql
+            CREATE DATABASE windmill;
+            ```
 
-            Example for database hosted in CapRover:
+            **Example** for database hosted in CapRover:
             ```bash
             PSQL_CONTAINER=$(sudo docker ps --filter "name=srv-captain--postgres" --format "{{.ID}}")
             sudo docker exec -it $PSQL_CONTAINER psql -U postgres "CREATE DATABASE windmill;"
             ```
 
-            Everything else:
-            ```sql
-            CREATE DATABASE windmill;
-            ```
+            Then use the database admin login in the "Database URL" variable below.
 
             ## Database setup without using a Postgres superuser (AWS, GCP, Azure, Neon)
 
             Cloud-hosted database servers typically do not let you access the Postgres superuser, but
             only a lesser "admin" user.
 
-            Azure-specific steps:
+            **Azure-specific steps:**
             1. In Azure's portal, navigate to database and open "Server parameters". Set `azure.extensions = UUID-OSSP`
             2. Login to database as admin to create a `windmill` database and the user that Windmill will use to login to it:
                 ```sql
@@ -91,13 +91,12 @@ caproverOneClickApp:
                 ```
             3. Keep following the continued instructions below, editing the `init-db-as-superuser.sql` to remove "WITH BYPASSRLS".
 
-            On all cloud-hosted databases (including Azure, after following the steps above),
+            **On all cloud-hosted databases (including Azure, after following the steps above):**
             follow this, connecting as `windmill_login` if you created it above, otherwise connecting as the admin user:
             https://www.windmill.dev/docs/advanced/self_host#run-windmill-without-using-a-postgres-superuser
 
-
-            4. If you used `windmill_login`, make sure that the user used in the `DATABASE_URL` passed to Windmill has the role `windmill_admin` and `windmill_user`:
-
+            **If you used `windmill_login`,**
+            make sure that the user used in the `DATABASE_URL` passed to Windmill has the role `windmill_admin` and `windmill_user`:
             ```sql
             GRANT windmill_admin TO windmill_login;
             GRANT windmill_user TO windmill_login;
