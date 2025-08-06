@@ -264,7 +264,10 @@ def deploy_stack(config, gc_repository, dry_run):
             )
             cap.enable_ssl(app_name)
             cap.update_app(
-                app_name, force_ssl=True, redirectDomain=f"{app_name}.{cap.root_domain}"
+                app_name,
+                force_ssl=True,
+                support_websocket=True,
+                redirectDomain=f"{app_name}.{cap.root_domain}",
             )
 
             if redirect_from_domain := config[one_click_app_name].get(
