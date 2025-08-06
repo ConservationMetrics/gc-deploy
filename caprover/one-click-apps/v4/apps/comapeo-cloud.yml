@@ -23,7 +23,7 @@ caproverOneClickApp:
     end: |-
         CoMapeo Archive Server is deploying and will be available within a minute.
   displayName: CoMapeo Archive Server
-  isOfficial: false   # Only if all images used here are official or from a trusted source.
+  isOfficial: true   # Only if all images used here are official or from a trusted source.
   description: A self-hosted archive server for CoMapeo.
   documentation: https://github.com/digidem/comapeo-cloud
   variables:
@@ -44,4 +44,4 @@ caproverOneClickApp:
 
   - id: '$$cap_allowed_projects'
     label: Number of projects allowed to register with the server
-    defaultValue: '1'
+    defaultValue: '5'

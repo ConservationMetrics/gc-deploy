@@ -19,8 +19,7 @@ services:
       MAPBOX_API_KEY: $$cap_mapbox_api_key
       APP_ICON: $$cap_app_icon
       APP_NAME: $$cap_app_title
-      USER_ROLE: Gamma
-      USER_ROLE_PERMISSIONS: "(all_datasource_access,all_datasource_access),(all_database_access,all_database_access),(all_query_access,all_query_access)"
+      USER_ROLE: Alpha
       LANGUAGES: "{\"en\": {\"flag\": \"us\", \"name\": \"English\"}, \"pt_BR\": {\"flag\": \"br\", \"name\": \"Português\"}, \"es\": {\"flag\": \"mx\", \"name\": \"Español\"}, \"fr\": {\"flag\": \"fr\", \"name\": \"Français\"}, \"nl\": {\"flag\": \"sr\", \"name\": \"Nederlands\"}}"
       FRAME_ANCESTORS: "https://*.guardianconnector.net"
     caproverExtra:
