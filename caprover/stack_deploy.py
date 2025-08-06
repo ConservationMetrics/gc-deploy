@@ -303,7 +303,7 @@ def deploy_stack(config, gc_repository, dry_run):
                 ],
                 # NOTE: You will get warning pages in the filebrowser app before the `datalake` subdir is created in storage:
                 # https://github.com/ConservationMetrics/gc-deploy/pull/12#discussion_r2243697895
-                environment_variables={"FB_ROOT": "/mnt/persistent-storage/datalake"},
+                environment_variables={"FB_ROOT": "/srv/datalake"},
             )
 
             if redirect_from_domain := config[one_click_app_name].get(
