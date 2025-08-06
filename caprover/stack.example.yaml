@@ -45,7 +45,21 @@ superset-only:
   # superset_docker_image:
   # secret_key:
 
-gcexplorer:
+gc-landing-page:
+  deploy: true
+  app_name: landing-page  # IMPORTANT so that your app doesn't get deployed as "gc-landing-page"
+  ### Required
+  community_name:
+  auth0_domain:
+  auth0_clientid:
+  auth0_client_secret:
+  ### Optional: should be set according to services available in the community
+  superset_enabled: 
+  filebrowser_enabled: 
+  windmill_enabled: 
+  explorer_enabled: 
+
+gc-explorer:
   deploy: true
   app_name: explorer  # IMPORTANT so that your app doesn't get deployed as "gcexplorer"
   ### Required:
