@@ -44,4 +44,4 @@ caproverOneClickApp:
 
   - id: '$$cap_allowed_projects'
     label: Number of projects allowed to register with the server
-    defaultValue: '1'
+    defaultValue: '5'
