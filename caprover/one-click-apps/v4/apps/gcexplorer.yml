@@ -15,10 +15,10 @@ services:
       NUXT_DB_SSL: $$cap_postgres_ssl
       NUXT_DATABASE: $$cap_postgres_database
 
+      NUXT_PUBLIC_AUTH_STRATEGY: $$cap_auth_stratgy
       NUXT_OAUTH_AUTH0_DOMAIN: $$cap_auth0_domain
       NUXT_OAUTH_AUTH0_CLIENT_ID: $$cap_auth0_clientid
       NUXT_OAUTH_AUTH0_CLIENT_SECRET: $$cap_auth0_client_secret
-      NUXT_PUBLIC_AUTH_STRATEGY: "none"
 
       NUXT_PUBLIC_APP_API_KEY: $$cap_public_app_api_key
       NUXT_PUBLIC_BASE_URL: https://$$cap_appname.$$cap_root_domain
@@ -38,7 +38,7 @@ caproverOneClickApp:
       defaultValue: '5432'
     - id: '$$cap_postgres_ssl'
       label: Use SSL to connect to postgres?
-      defaultValue: 'true'
+      defaultValue: 'false'
       description: Likely to be true if using an external PostgreSQL server, or false if hosting postgres in Caprover.
     - id: '$$cap_postgres_user'
       label: Postgres user
@@ -50,6 +50,10 @@ caproverOneClickApp:
       label: 'Name of database inside Postgres'
       defaultValue: 'warehouse'
 
+    - id: '$$cap_auth_strategy'
+      label: Auth Strategy
+      defaultValue: 'auth0'
+      description: \'none\' if you don't want to use authentication, \'auth0\' if you want to use Auth0
     - id: '$$cap_auth0_domain'
       label: Auth0 Domain
       description: optional, to login using Auth0
