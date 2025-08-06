@@ -62,7 +62,7 @@ caproverOneClickApp:
             **Example** for database hosted in CapRover:
             ```bash
             PSQL_CONTAINER=$(sudo docker ps --filter "name=srv-captain--postgres" --format "{{.ID}}")
-            sudo docker exec -it $PSQL_CONTAINER psql -U postgres "CREATE DATABASE windmill;"
+            sudo docker exec -it $PSQL_CONTAINER psql -U postgres -c "CREATE DATABASE windmill;"
             ```
 
             Then use the database admin login in the "Database URL" variable below.
