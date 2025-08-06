@@ -52,7 +52,7 @@ caproverOneClickApp:
             Before Deploying, you must set up a database for Windmill to use. Instructions differ depending on whether
             you have access to the Postgres superuser.
 
-            ## Database you completely control (e.g. running on caprover)
+            ## OPTION 1: Database you completely control (e.g. running on caprover)
 
             As a PostgreSQL database admin user, all you need is to create a `windmill` database:
             ```sql
@@ -67,7 +67,7 @@ caproverOneClickApp:
 
             Then use the database admin login in the "Database URL" variable below.
 
-            ## Database setup without using a Postgres superuser (AWS, GCP, Azure, Neon)
+            ## OPTION 2: Database setup without using a Postgres superuser (AWS, GCP, Azure, Neon)
 
             Cloud-hosted database servers typically do not let you access the Postgres superuser, but
             only a lesser "admin" user.
