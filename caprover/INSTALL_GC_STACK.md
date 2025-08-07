@@ -122,7 +122,7 @@ Install each of the following apps in turn, paying attention to the **App-specif
 
 ### CoMapeo Archive Server
 
-Turn on Websocket Support.
+No additional steps needed, but you can ensure that **Websocket Support** is enabled.
 
 ### Filebrowser
 
@@ -148,7 +148,7 @@ No additional steps needed.
 
 ### Redis
 
-If you plan to install Superset, install the Redis application from the one click app install menu.
+If you plan to install Superset, install the Redis application from the one-click app install menu.
 
 Your redis connection string can then be: `redis://:«password»@srv-captain--redis:6379` (assuming your app is called "redis").
 
@@ -195,10 +195,6 @@ you will need to install the Language Server Protocol (LSP):
 
 Instance Settings Page
 
-* **Global Users** tab > Add users Jeff and Rudo
-    - with password; we do not share passwords between Windmill deploys
-    - both as superadmin
-
 * **Core** tab > Default timeout = 30 Min
 
 * **Telemetry** tab > Disable telemetry
@@ -208,6 +204,10 @@ Instance Settings Page
 
   Note: after a domain-approved user has registered with SSO, they must be
   manually added to workspaces by an instance admin.
+
+#### Setting up superadmin users
+
+After you set up your Instance, you can navigate back to the Instance Settings page to the **Users** tab, and add any users you want to have access to Windmill with the superadmin role.
 
 ##### Persistent Directories
 
