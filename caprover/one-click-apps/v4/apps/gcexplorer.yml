@@ -15,7 +15,7 @@ services:
       NUXT_DB_SSL: $$cap_postgres_ssl
       NUXT_DATABASE: $$cap_postgres_database
 
-      NUXT_PUBLIC_AUTH_STRATEGY: $$cap_auth_stratgy
+      NUXT_PUBLIC_AUTH_STRATEGY: $$cap_auth_strategy
       NUXT_OAUTH_AUTH0_DOMAIN: $$cap_auth0_domain
       NUXT_OAUTH_AUTH0_CLIENT_ID: $$cap_auth0_clientid
       NUXT_OAUTH_AUTH0_CLIENT_SECRET: $$cap_auth0_client_secret
