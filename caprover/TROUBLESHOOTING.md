@@ -98,22 +98,14 @@ CREATE DATABASE superset_metastore;
 
 Apache Superset requires a `SECRET_KEY` for securing sessions and other cryptographic functions such as encrypting sensitive information in the database.
 
-Our [Superset one-click app](one-click-apps/superset.yml) generates a new `SECRET_KEY` using openssl. 
-
-If you relaunch Superset with a different `SECRET_KEY`, you will see an error on the front end: "An error occurred while fetching databases: Invalid decryption key,' and in the logs the same ValueError will be raised:
-
-```
-superset_app          | UnicodeDecodeError: 'utf-8' codec can't decode byte 0x8f in position 0: invalid start byte
-superset_app          | 
-superset_app          | During handling of the above exception, another exception occurred:
-superset_app          | 
-superset_app          | Traceback (most recent call last):
-...
-superset_app          | ValueError: Invalid decryption key
-```
+Our [Superset one-click app](one-click-apps/v4/apps/superset-only.yml) defaults to using a new `SECRET_KEY` on each deploy. If you re-deploy Superset against an existing database with a different `SECRET_KEY`, you will see an error on the front end: "An error occurred while fetching databases: Invalid decryption key,' and in the logs the same ValueError will be raised.
 
 If you need to retrieve a lost `SECRET_KEY` from a previous CapRover deployment (e.g. if CapRover has fatally crashed and you need to re-set up CapRover and Superset), one option is to find it in `config-captain.json` as described in [CapRover has crashed and you need to access app config](#caprover-has-crashed-and-you-need-to-access-app-config).
 
-Barring that, the best way seems to be to [downgrade Superset to 2.x.x and retrieve the secret key from the Docker shell](https://github.com/apache/superset/issues/8538#issuecomment-2364575556). 
-
-There is also some [documentation for exporting assets out of Superset](https://www.restack.io/docs/superset-knowledge-apache-superset-invalid-decryption-key#clow7rydn00u30v0uq7fj8ycx) when a secret key has been lost.
+Barring that, know that very few tables in the Superset metastore use this SECRET_KEY, the
+most critical one being `dbs` (to encrypt its columns "password" and "encrypted_extra").
+And `dbs` stores the Database Connections, which presumably you are able to create from scratch
+via the Superset webapp > Settings > "Database Connections" -- this time with the correct (new) SECRET_KEY.
+If charts and dashboards rely on an old Database Connection that was encrypted with a different SECRET_KEY,
+you could then modify that old entry in the `dbs` table by overwriting its "password" and "encrypted_extra"
+with the values of the new entry you just created.
