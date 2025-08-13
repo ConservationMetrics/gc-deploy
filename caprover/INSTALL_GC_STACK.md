@@ -215,6 +215,12 @@ After you set up your Instance, you can navigate back to the Instance Settings p
 
 ### Superset
 
+#### First-time admin login
+
+You can log in with the email and password you set as ADMIN_EMAIL and ADMIN_PASSWORD. If you are using Auth0, you can log in with the email account (either as username/password or as a social login) - the ADMIN_PASSWORD is not used in this case.
+
+#### After Install
+
 Consider following the post-install instructions of adding the following lines
 to the new `-worker` and `-init-and-beat` services.
 
@@ -223,7 +229,6 @@ to the new `-worker` and `-init-and-beat` services.
       Test: ["NONE"]
 ```
 See [`./one-click-apps/README.md`](./one-click-apps/README.md) for full example.
-
 
 ## Upgrade Apps
 
