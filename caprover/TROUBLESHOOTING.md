@@ -20,6 +20,33 @@ $ sudo shutdown --reboot now
 Note that I have _not_ had great luck trying to "only" restart the Docker service (`systemctl restart docker`) without rebooting.
 
 
+## Disk is full
+
+First confirm that disk is full by running `df`:
+
+```
+$ df /dev/root
+Filesystem 	1K-blocks 	  Used Available Use% Mounted
+/dev/root   	29379712 29345064 	18264 100% /
+```
+
+The most common culprits are:
+* Old, unused Docker images. To fix:
+    `$ sudo docker image prune`
+* One of our Docker services writing lots to one of its Docker volumes. To find which volume:
+    ```
+    $ du --max-depth=1 /var/lib/docker/volumes/
+    # Find an offending folder and try to clean it up
+    $ cd «the folder you want to clean up»
+    # Delete all files 2+ weeks old
+    $ find . -type f -mtime +14 -delete
+    ```
+
+If those don’t fix it, you can scan how much disk is used by each root-level folder (this takes tens of minutes to run):
+
+    $ du --exclude=/mnt -h --max-depth=2 / | sort -h
+
+
 ## Missing Volume Mount on VM
 
 - Check log files after VM boot, to confirm the mount script is executed as expected:
