@@ -11,6 +11,7 @@ Guardian Connector stack.  The script is able to inject the same variable value
 
 import argparse
 import logging
+import subprocess
 import sys
 
 import psycopg
@@ -41,6 +42,24 @@ def construct_app_variables(config, service_name, init=None):
             continue
         variables[f"$$cap_{key}"] = val
     return variables
+
+
+def run_psql_command_on_docker_service_container(service_name, sql_command, pguser, pgpassword):
+    logger.info(f"Running caprover-hosted DB [{service_name}]: {sql_command}")
+
+    # Get container ID of {service_name}
+    result = subprocess.run(
+        ['sudo', 'docker', 'ps', '--filter', f'name={service_name}', '--format', '{{.ID}}'],
+        stdout=subprocess.PIPE, check=True, text=True
+    )
+    container_id = result.stdout.strip()
+
+    # Run CREATE DATABASE inside the container
+    create_db_cmd = ['psql', '-U', pguser, '-c', sql_command]
+    subprocess.run(
+        ['sudo', 'docker', 'exec', '-e', f"PGPASSWORD={pgpassword}", '-i', container_id] + create_db_cmd,
+        check=True
+    )
 
 
 def deploy_stack(config, gc_repository, dry_run):
@@ -81,38 +100,52 @@ def deploy_stack(config, gc_repository, dry_run):
     one_click_app_name = "windmill-only"
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
-        windmill_db_user = config[one_click_app_name].pop("db_user")
-        windmill_db_pass = config[one_click_app_name].pop("db_pass")
+        windmill_db_user = config[one_click_app_name].pop("azure_db_user", config['postgres']['user'])
+        windmill_db_pass = config[one_click_app_name].pop("azure_db_pass", config['postgres']['pass'])
+        is_using_caprover_db = postgres_host.startswith("srv-captain--")
+        is_using_azure_db = (not is_using_caprover_db) and ("azure_db_user" in config[one_click_app_name])
+        if is_using_azure_db:
+            input("Before continuing, enable UUID-OSSP extension on the Azure database...")
+
         variables = {
             "$$cap_database_url": f"postgres://{windmill_db_user}:{windmill_db_pass}@{postgres_host}:{postgres_port}/windmill"
         }
 
         variables = construct_app_variables(config, one_click_app_name, variables)
+
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
 
-        input("Before continuing, enable UUID-OSSP extension on the Azure database...")
+        # As superadmin, create a windmill database
+        if is_using_caprover_db:
+            run_psql_command_on_docker_service_container(
+                postgres_host,
+                "CREATE DATABASE windmill;",
+                config['postgres']['user'],
+                config['postgres']['pass'],
+            )
+        else:
+            logger.info(f"Using external DB: {postgres_host} ({is_using_azure_db=})")
+            with psycopg.connect(
+                f"host={postgres_host} port={postgres_port} user={config['postgres']['user']} password={config['postgres']['pass']} dbname=postgres",
+                autocommit=True,
+            ) as conn:
+                logger.info("Connected to database as superadmin")
+                if not dry_run:
+                    with conn.cursor() as cur:
+                        # Execute a command: this creates a new table
+                        cur.execute("CREATE DATABASE windmill;")
+                        if is_using_azure_db:
+                            cur.execute(
+                                f"CREATE USER {windmill_db_user} PASSWORD '{windmill_db_pass}';"
+                            )
+                            cur.execute(
+                                f"GRANT ALL PRIVILEGES ON DATABASE windmill TO {windmill_db_user};"
+                            )
+                            # Azure only:
+                            cur.execute(f"GRANT azure_pg_admin TO {windmill_db_user};")
+                            cur.execute(f"ALTER USER {windmill_db_user} CREATEROLE;")
 
-        # As superadmin, create a user windmill_admin and create a windmill database
-        with psycopg.connect(
-            f"host={postgres_host} port={postgres_port} user={config['postgres']['user']} password={config['postgres']['pass']} dbname=postgres",
-            autocommit=True,
-        ) as conn:
-            logger.info("Connected to database as superadmin")
-            if not dry_run:
-                with conn.cursor() as cur:
-                    # Execute a command: this creates a new table
-                    cur.execute("CREATE DATABASE windmill;")
-                    cur.execute(
-                        f"CREATE USER {windmill_db_user} PASSWORD '{windmill_db_pass}';"
-                    )
-                    cur.execute(
-                        f"GRANT ALL PRIVILEGES ON DATABASE windmill TO {windmill_db_user};"
-                    )
-                    # Azure only:
-                    cur.execute(f"GRANT azure_pg_admin TO {windmill_db_user};")
-                    cur.execute(f"ALTER USER {windmill_db_user} CREATEROLE;")
-
-        if not dry_run:
+        if is_using_azure_db and not dry_run:
             # As windmill_login
             with psycopg.connect(
                 f"host={postgres_host} port={postgres_port} user={windmill_db_user} password={windmill_db_pass} dbname=windmill"
@@ -168,6 +201,14 @@ def deploy_stack(config, gc_repository, dry_run):
     one_click_app_name = "superset-only"
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
+        is_using_caprover_db = postgres_host.startswith("srv-captain--")
+        if is_using_caprover_db:
+            run_psql_command_on_docker_service_container(
+                postgres_host,
+                "CREATE DATABASE superset_metastore;",
+                config['postgres']['user'],
+                config['postgres']['pass'],
+            )
         variables = {
             "$$cap_postgres_host": postgres_host,
             "$$cap_postgres_port": postgres_port,
