@@ -6,23 +6,6 @@ This guide walks you through setting up your custom Guardian Connector software 
 
 See [INSTALL_CAPROVER_ON_NEW_VM.md](INSTALL_CAPROVER_ON_NEW_VM.md) if you haven't already configured a new VM running CapRover.
 
-## Set Up a Conservation Metrics private container registry
-
-The Guardian Connector stack still uses some Docker images that are not published publicly (namely, Superset).
-
-> [!NOTE]
-> We are working to eliminate this requirement.
->
-
-1. On the CapRover dashboard, navigate to **Cluster**, then the "Docker Registry Configuration" section.
-2. **Add Remote Registry**
-    - Username: guardiancr
-    - Password: [redacted]
-    - Domain: guardiancr.azurecr.io
-    - Image Prefix: (leave blank)
-3. Once installed, disable push:
-    - Click the pencil icon next to "Docker Registry for Pushing New Images:", and in the modal's dropdown select "disabled push". Save and Update.
-
 ## Set Up PostgreSQL Database
 
 You have two options for the PostgreSQL database
