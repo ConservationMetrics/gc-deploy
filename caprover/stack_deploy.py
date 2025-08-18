@@ -209,9 +209,13 @@ def deploy_stack(config, gc_repository, dry_run):
                     logger.error(f"Verification failed: {e}")
 
     # Deploy GC Landing Page if specified in config
+    # Note: as GC Landing Page is intended to be the default landing page, we don't need to add a redirect domain, and instead, we set the redirectDomain to the root domain. (e.g. so that the landing page will load when a user accesses "your-captain-root.net")
     one_click_app_name = "gc-landing-page"
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
+        redirect_to_domain = config[one_click_app_name].get(
+            "redirect_to_domain", cap.root_domain
+        )
         variables = construct_app_variables(config, one_click_app_name)
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
         if not dry_run:
@@ -223,18 +227,7 @@ def deploy_stack(config, gc_repository, dry_run):
                 one_click_repository=gc_repository,
             )
             cap.enable_ssl(app_name)
-            cap.update_app(
-                app_name, force_ssl=True, redirectDomain=f"{app_name}.{cap.root_domain}"
-            )
-
-            if redirect_from_domain := config[one_click_app_name].get(
-                "redirect_from_domain"
-            ):
-                try:
-                    cap.add_domain(app_name, redirect_from_domain)
-                    cap.enable_ssl(app_name, redirect_from_domain)
-                except Exception as e:
-                    logger.error(f"Verification failed: {e}")
+            cap.update_app(app_name, force_ssl=True, redirectDomain=redirect_to_domain)
 
     # Deploy GC Explorer if specified in config
     one_click_app_name = "gc-explorer"
