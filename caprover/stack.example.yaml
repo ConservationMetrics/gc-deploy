@@ -49,9 +49,9 @@ superset-only:
 
 gc-landing-page:
   deploy: true
-  app_name: landing-page  # IMPORTANT so that your app doesn't get deployed as "gc-landing-page"
+  app_name: landing-page # optional override 
   ### Required
-  community_name:
+  community_name: # this is the URL slug of the community, e.g. "springfield" in "springfield.guardianconnector.net". It must not contain any special characters or spaces.
   auth0_domain:
   auth0_clientid:
   auth0_client_secret:
