@@ -18,7 +18,7 @@ postgres:
 windmill-only:
   deploy: true
   app_name: windmill  # IMPORTANT so that your app doesn't get deployed as "windmill-only"
-  app_version: 1.435.2
+  # app_version: 1.518.2  # Optional: one-click app already has a sane default
   db_user: windmill_login
   db_pass: changeme
 
@@ -38,6 +38,8 @@ superset-only:
   auth0_domain:
   auth0_clientid:
   auth0_client_secret:
+  admin_email: admin@guardianconnector.net
+  admin_password: changeme
   mapbox_api_key:
   app_icon:
   app_title: "Dashboard: Biocultural Monitoring Demo"

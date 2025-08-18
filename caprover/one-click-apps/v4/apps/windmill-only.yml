@@ -44,16 +44,6 @@ services:
         caproverExtra:
             notExposeAsWebApp: 'true'
 
-    $$cap_appname-lsp:
-        image: ghcr.io/windmill-labs/windmill-lsp:latest  # some labels appear broken
-        volumes:
-            - $$cap_appname-lsp-cache:/root/.cache
-        expose:
-            - 3001
-        caproverExtra:
-            containerHttpPort: 3001
-            notExposeAsWebApp: 'true'
-
 caproverOneClickApp:
     instructions:
         start: |-
@@ -101,22 +91,13 @@ caproverOneClickApp:
         end: |-
             Windmill has been successfully deployed!
 
-            Please change the following settings before using the service:
-            1. Go to the settings for `$$cap_appname`
-            2. Enable **Websocket Support**
-            3. Enable **HTTPS**
-            4. Click on **Edit Default Nginx Configurations** and paste the following content before the last closing bracket "}":
-                ```
-                location /ws/ {
-                    proxy_pass http://srv-captain--$$cap_appname-lsp:3001/ws/;
-                    proxy_http_version 1.1;
-                    proxy_set_header Upgrade $http_upgrade;
-                    proxy_set_header Connection "upgrade";
-                }
-                ```
             Now you can access it at `https://$$cap_appname.$$cap_root_domain`
 
             Follow the instructions for first-time login: https://www.windmill.dev/docs/advanced/self_host#first-time-login
+
+            Language Server Protocol (LSP) support was not installed. If you desire code assistants
+            and additional language-specific functionality, follow the instructions at
+            https://github.com/ConservationMetrics/gc-deploy/blob/main/caprover/INSTALL_GC_STACK.md#code-assistants
 
     displayName: Windmill - No Database
     isOfficial: true
@@ -125,7 +106,7 @@ caproverOneClickApp:
     variables:
         - id: $$cap_app_version
           label: Windmill Version
-          defaultValue: '1.491.4'
+          defaultValue: '1.518.2'
           description: Checkout their github page for the valid tags https://github.com/windmill-labs/windmill/releases
           validRegex: /^([^\s^\/])+$/
 
@@ -138,12 +119,12 @@ caproverOneClickApp:
 
         - id: $$cap_server_database_connections
           label: The max number of connections in the server's database connection pool
-          defaultValue: 10
+          defaultValue: "5"
           validRegex: /^[1-9][0-9]?$/
 
         - id: $$cap_worker_database_connections
           label: The max number of connections in a worker's database connection pool.
-          defaultValue: 3
+          defaultValue: "5"
           description: |-
               Note that there are multiple worker processes, each one creating its own pool.
               This value is per worker.

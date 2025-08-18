@@ -26,11 +26,11 @@ You will need a Google Cloud Platform (GCP) OAuth 2.0 Client in order to [avoid 
 
 1.  In **Applications**, create a separate Regular Web Application for each tool (e.g., Superset, GC-Explorer). Add appropriate production domain values under Callback URLs, Web Origins, and CORS.
     * For **Superset** (assuming Superset is hosted at the root of your subdomain; otherwise, use the appropriate subdomain i.e. `superset.{domain}`):
-      * **Callback URL**: `http://{domain}.guardianconnector.net/oauth-authorized/auth0`
+      * **Callback URL**: `http://{domain}.guardianconnector.net/oauth-authorized/auth0` # https://github.com/ConservationMetrics/superset-deployment/issues/51
       * **Allowed Web Origins**: `https://{domain}.guardianconnector.net/`
     * For **GC-Explorer**:
-      * **Callback URL**: `http://explorer.{domain}.guardianconnector.net/login`
-      * **Allowed Web Origins**: `http://explorer.{domain}.guardianconnector.net`
+      * **Callback URL**: `https://explorer.{domain}.guardianconnector.net/login`
+      * **Allowed Web Origins**: `https://explorer.{domain}.guardianconnector.net`
     * For **Windmill**:
       * **Callback URL**: `https://windmill.{domain}.guardianconnector.net/user/login_callback/auth0`
       * **Allowed Web Origins**: `https://windmill.{domain}.guardianconnector.net/`

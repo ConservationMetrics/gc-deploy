@@ -64,7 +64,6 @@ def deploy_stack(config, gc_repository, dry_run):
         if not dry_run:
             cap.deploy_one_click_app(
                 one_click_app_name="postgres",
-                namespace=None,
                 app_variables=postgres_variables,
                 automated=True,
             )
@@ -150,7 +149,6 @@ def deploy_stack(config, gc_repository, dry_run):
             )
             cap.enable_ssl(app_name)
             cap.update_app(app_name, force_ssl=True, support_websocket=True)
-            input("INSTALL IS NOT FINISHED -  YOU MUST EDIT THE CUSTOM NGINX CONFIG!")
 
     # Deploy Redis if specified in config
     one_click_app_name = "redis"
@@ -293,7 +291,10 @@ def deploy_stack(config, gc_repository, dry_run):
             )
             cap.enable_ssl(app_name)
             cap.update_app(
-                app_name, force_ssl=True, redirectDomain=f"{app_name}.{cap.root_domain}"
+                app_name,
+                force_ssl=True,
+                support_websocket=True,
+                redirectDomain=f"{app_name}.{cap.root_domain}",
             )
 
             if redirect_from_domain := config[one_click_app_name].get(
@@ -333,7 +334,7 @@ def deploy_stack(config, gc_repository, dry_run):
                 ],
                 # NOTE: You will get warning pages in the filebrowser app before the `datalake` subdir is created in storage:
                 # https://github.com/ConservationMetrics/gc-deploy/pull/12#discussion_r2243697895
-                environment_variables={"FB_ROOT": "/mnt/persistent-storage/datalake"},
+                environment_variables={"FB_ROOT": "/srv/datalake"},
             )
 
             if redirect_from_domain := config[one_click_app_name].get(
@@ -353,6 +354,7 @@ def main():
     parser.add_argument(
         "-c",
         "--config-file",
+        required=True,
         help="Path to configuration YAML file (copy stack.example.yaml)",
     )
     parser.add_argument(

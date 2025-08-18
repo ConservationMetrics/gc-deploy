@@ -19,8 +19,7 @@ services:
       MAPBOX_API_KEY: $$cap_mapbox_api_key
       APP_ICON: $$cap_app_icon
       APP_NAME: $$cap_app_title
-      USER_ROLE: Gamma
-      USER_ROLE_PERMISSIONS: "(all_datasource_access,all_datasource_access),(all_database_access,all_database_access),(all_query_access,all_query_access)"
+      USER_ROLE: Alpha
       LANGUAGES: "{\"en\": {\"flag\": \"us\", \"name\": \"English\"}, \"pt_BR\": {\"flag\": \"br\", \"name\": \"Português\"}, \"es\": {\"flag\": \"mx\", \"name\": \"Español\"}, \"fr\": {\"flag\": \"fr\", \"name\": \"Français\"}, \"nl\": {\"flag\": \"sr\", \"name\": \"Nederlands\"}}"
       FRAME_ANCESTORS: "https://*.guardianconnector.net"
     caproverExtra:
@@ -59,7 +58,7 @@ services:
       CACHE_KEY_PREFIX: $$cap_redis_key_prefix
       DATABASE_URI: postgresql://$$cap_postgres_userpassword@$$cap_postgres_host:$$cap_postgres_port/superset_metastore
       # For init only:
-      ADMIN_EMAIL: admin@guardianconnector.net
+      ADMIN_EMAIL: $$cap_admin_email
       ADMIN_PASSWORD: $$cap_gen_random_hex(64)
     caproverExtra:
       notExposeAsWebApp: 'true'
@@ -72,7 +71,7 @@ caproverOneClickApp:
   variables:
     - id: '$$cap_superset_docker_image'
       label: Superset Docker Image
-      defaultValue: 'guardiancr.azurecr.io/superset-docker:4.1.2_20250519-1315'
+      defaultValue: 'communityfirst/superset-deployment:4.1.2_20250519-1315'
       description: Check out the container registry for valid tags
     - id: '$$cap_secret_key'
       label: Superset Secret Key
@@ -93,6 +92,9 @@ caproverOneClickApp:
       label: Postgres user:password
       validRegex: /:/
       description: user:password, copy the values from /#/apps/details/postgres
+    - id: '$$cap_admin_email'
+      label: Admin Email
+      description: Email address for the first admin user (can be used with auth0)
 
     # TODO: run redis on local VM: https://github.com/ConservationMetrics/gc-forge/issues/18
     - id: '$$cap_redis_url'

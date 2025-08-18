@@ -6,23 +6,6 @@ This guide walks you through setting up your custom Guardian Connector software 
 
 See [INSTALL_CAPROVER_ON_NEW_VM.md](INSTALL_CAPROVER_ON_NEW_VM.md) if you haven't already configured a new VM running CapRover.
 
-## Set Up a Conservation Metrics private container registry
-
-The Guardian Connector stack still uses some Docker images that are not published publicly (namely, Superset).
-
-> [!NOTE]
-> We are working to eliminate this requirement.
->
-
-1. On the CapRover dashboard, navigate to **Cluster**, then the "Docker Registry Configuration" section.
-2. **Add Remote Registry**
-    - Username: guardiancr
-    - Password: [redacted]
-    - Domain: guardiancr.azurecr.io
-    - Image Prefix: (leave blank)
-3. Once installed, disable push:
-    - Click the pencil icon next to "Docker Registry for Pushing New Images:", and in the modal's dropdown select "disabled push". Save and Update.
-
 ## Set Up PostgreSQL Database
 
 You have two options for the PostgreSQL database
@@ -91,10 +74,10 @@ If you don't want to sweat the details, it's much quicker to deploy the Guardian
 Set up a Python environment:
 
 ```sh
-git clone git@github.com:IamJeffG/Caprover-API.git
+git clone https://github.com/IamJeffG/Caprover-API.git
+cd Caprover-API/
 git checkout fix-oneclick-repo
-python setup.py install
-pip install 'psycopg[binary]'
+pip install 'psycopg[binary]' .
 ```
 
 The `stack_deploy.py` script requires you to create a `stack.yaml` file of variable values by
@@ -122,7 +105,7 @@ Install each of the following apps in turn, paying attention to the **App-specif
 
 ### CoMapeo Archive Server
 
-Turn on Websocket Support.
+No additional steps needed, but you can ensure that **Websocket Support** is enabled.
 
 ### Filebrowser
 
@@ -151,7 +134,7 @@ No additional steps needed.
 
 ### Redis
 
-If you plan to install Superset, install the Redis application from the one click app install menu.
+If you plan to install Superset, install the Redis application from the one-click app install menu.
 
 Your redis connection string can then be: `redis://:«password»@srv-captain--redis:6379` (assuming your app is called "redis").
 
@@ -173,32 +156,30 @@ These commands can be found inside the `stack_deploy.py` script and include crea
 
 #### After Install
 
+
 ##### Code assistants
 
 To enable [code assistants](https://www.windmill.dev/docs/code_editor/assistants),
-please change the following settings before using the service (Change `windmill` in the codeblock to
-the app name you gave it):
+you will need to install the Language Server Protocol (LSP):
 
-1. Go to the settings for the app.
-2. Ensure **Websocket Support** is enabled.
-3. Ensure **Force HTTPS** is enabled.
-4. Click on **Edit Default Nginx Configurations** and paste the following content before the last closing bracket "}":
-    ```
-    location /ws/ {
-        proxy_pass http://srv-captain--windmill-lsp:3001/ws/;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-    }
-    ```
+1. Deploy a new Caprover App, the Windmill LSP: `ghcr.io/windmill-labs/windmill-lsp:1.518.2`
+2. Route Windmill HTTP requests intended for LSP:
+    1. Go to the settings for the core windmill web server
+    2. Ensure **Websocket Support** is enabled.
+    3. Ensure **Force HTTPS** is enabled.
+    4. Click on **Edit Default Nginx Configurations** and paste the following content before the last closing bracket "}" (Change `windmill-lsp` in the codeblock to the app name you gave it):
+        ```
+        location /ws/ {
+            proxy_pass http://srv-captain--windmill-lsp:3001/ws/;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+        }
+        ```
 
 ##### For first-time login:
 
 Instance Settings Page
-
-* **Global Users** tab > Add users Jeff and Rudo
-    - with password; we do not share passwords between Windmill deploys
-    - both as superadmin
 
 * **Core** tab > Default timeout = 30 Min
 
@@ -210,11 +191,21 @@ Instance Settings Page
   Note: after a domain-approved user has registered with SSO, they must be
   manually added to workspaces by an instance admin.
 
+#### Setting up superadmin users
+
+After you set up your Instance, you can navigate back to the Instance Settings page to the **Users** tab, and add any users you want to have access to Windmill with the superadmin role.
+
 ##### Persistent Directories
 
 - For the `windmill-worker` and `windmill-worker-native` apps' CapRover "App Configs", change the Persistent Directory for `/persistent-storage` to specific host path, and then the local path of your datalake on the VM.
 
 ### Superset
+
+#### First-time admin login
+
+You can log in with the email and password you set as ADMIN_EMAIL and ADMIN_PASSWORD. If you are using Auth0, you can log in with the email account (either as username/password or as a social login) - the ADMIN_PASSWORD is not used in this case.
+
+#### After Install
 
 Consider following the post-install instructions of adding the following lines
 to the new `-worker` and `-init-and-beat` services.
@@ -224,7 +215,6 @@ to the new `-worker` and `-init-and-beat` services.
       Test: ["NONE"]
 ```
 See [`./one-click-apps/README.md`](./one-click-apps/README.md) for full example.
-
 
 ## Upgrade Apps
 
