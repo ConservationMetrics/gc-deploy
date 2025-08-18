@@ -48,8 +48,8 @@ superset-only:
 
 gc-landing-page:
   deploy: true
-  app_name: landing-page # optional override 
-  redirect_to_domain: your-captain-root.net  # make gc-landing-page the landing page when no subdomain specified
+  app_name: landing-page # optional override
+  redirect_to_root: true  # make gc-landing-page the landing page when no subdomain specified
   ### Required
   community_name: # this is the URL slug of the community, e.g. "springfield" in "springfield.your-captain-root.net". It must not contain any special characters or spaces.
   auth0_domain:
