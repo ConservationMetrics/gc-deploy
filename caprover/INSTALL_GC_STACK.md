@@ -124,8 +124,11 @@ and that folder hasnt been created yet. You may do any of the following:
 - create that folder in Azure Storage Explorer, or
 - upload any file anyway - this will implictly create the necessary folder. Then you can delete it.
 
-
 ### GuardianConnector Explorer
+
+No additional steps needed.
+
+### GuardianConnector Landing Page
 
 No additional steps needed.
 
