@@ -65,7 +65,29 @@ To restrict access until a user is approved, a Post-Login Trigger Action is used
   B --> C[Complete: Token Issued]
   ```
 
-## auth0 approval process
+## Setting up RBAC
+
+Role-Based Access Control (RBAC) allows you to control user access to different features based on assigned roles. Several of the Guardian Connector applications (e.g. GC-Explorer and GC-Landing Page) use three roles: **Admin**, **Member**, and **Viewer**.
+
+### API **Configuration**
+
+1. Go to **Dashboard > Applications > APIs** and find the "Auth0 Management API" API
+2. For that API, go to the **"Machine to Machine Applications"** tab
+3. Find your application in the list and **Authorize** it
+4. For each application, select the required scopes:
+   * `read:users` - to fetch user information
+   * `read:user_idp_tokens` - to read user roles
+
+### Role Setup
+
+1. Navigate to **User Management > Roles** in the Auth0 dashboard
+2. Click **"+ Create Role"** and create the following roles:
+   * **Admin**: "can access anything a member can, plus `/config`"
+   * **Member**: "can access both unrestricted and restricted views routes"
+
+**Note**: Users without any assigned roles are treated as having Viewer-level access.
+
+## Auth0 approval process
 
 1. A user signs up for one of the applications using Auth0, either by email/password or a third-party service (e.g., Google, GitHub).
 2. If the user is not yet approved, they will encounter a message such as:
@@ -81,8 +103,7 @@ To restrict access until a user is approved, a Post-Login Trigger Action is used
      }
      ```
 4. Once approved, the user can log in to GuardianConnector services.
-5. For Superset, the user is initially assigned the **Alpha** role by default (controlled via the `USER_ROLE` environment variable).
-
-    A Superset admin can then upgrade the user’s role or share specific dashboards.
+5. For the GC-Explorer and GC-Landing Page applications: in the **Roles** tab for the user, assign the appropriate role. (Or, alternatively, on the **User Management > Roles** page, you can assign the user to the role.)
+6. For Superset, the user is initially assigned the **Alpha** role by default (controlled via the `USER_ROLE` environment variable). A Superset admin can then upgrade the user’s role or share specific dashboards.
 
 TODO: Figure out a more user-friendly way to approve new users that doesn't require logging in to auth0 and editing App Metadata JSON.
