@@ -12,12 +12,9 @@ done
 # echo "🐳 Initializing Docker Swarm..."
 # docker swarm init --advertise-addr 127.0.0.1 || echo "Swarm already initialized or failed to initialize. Continuing..."
 
-# echo "📝 Adding CapRover domain to /etc/hosts..."
+echo "📝 Adding CapRover domain to /etc/hosts..."
 echo "127.0.0.1 captain.test-gc-deploy.localhost" | sudo tee -a /etc/hosts
 echo "127.0.0.1 test-gc-deploy.localhost" | sudo tee -a /etc/hosts
-
-# echo "📟 Installing CapRover CLI..."
-# pnpm install -g caprover
 
 echo "🚀 Installing CapRover server..."
 sudo mkdir -p /captain/data
