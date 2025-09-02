@@ -53,7 +53,7 @@ sleep 10  # Wait a bit more for the API to be fully available
 echo "⚙️ Setting up CapRover..."
 # Do not use `caprover serversetup` as it will try to require SSL on your local domain:
 # https://caprover.com/docs/run-locally.html#setup
-COOKIESTXT=`mktemp`
+COOKIESTXT=$(mktemp)
 TOKEN=$(curl -s 'http://captain.test-gc-deploy.localhost:3000/api/v2/login' \
   -X POST \
   -H 'Content-Type: application/json' \
