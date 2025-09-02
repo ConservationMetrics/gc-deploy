@@ -1,5 +1,10 @@
 SHELL := /bin/bash
+
+# This preamble inspired by https://tech.davis-hansson.com/p/make/
 .SHELLFLAGS := -eu -o pipefail -c  #
+.DELETE_ON_ERROR
+MAKEFLAGS += --warn-undefined-variables
+MAKEFLAGS += --no-builtin-rules
 
 REPO_ROOT := $(shell git rev-parse --show-toplevel)
 BUILT_REPO_PATH := $(REPO_ROOT)/build/one-click-apps/v4/apps/
