@@ -53,17 +53,25 @@ jobs:
         echo "Waiting for CapRover to start..."
         ready=0
         for i in {1..10}; do
-          docker ps
-          someId=$(docker ps | grep -- '-captain' | head -1 | cut -d' ' -f1)
-          echo "docker logs $someId"
-          docker logs $someId
+          echo "Current services:"
+          docker service ls || true
 
-          if docker service logs captain-captain 2>&1 | grep -q "Captain is initialized"; then
-            echo "CapRover is ready!"
-            ready=1
-            break
+          # docker ps
+          # someId=$(docker ps | grep -- '-captain' | head -1 | cut -d' ' -f1)
+          # echo "docker logs $someId"
+          # docker logs $someId
+
+          if docker service ls --format '{{.Name}}' | grep -q "^captain-captain$"; then
+            if docker service logs captain-captain 2>&1 | grep -q "Captain is initialized"; then
+              echo "CapRover is ready!"
+              ready=1
+              break
+            fi
+          else
+            echo "Service captain-captain not found yet"
           fi
-          echo "Waiting... ($i/30)"
+
+          echo "Waiting... ($i/10)"
           sleep 5
         done
 
