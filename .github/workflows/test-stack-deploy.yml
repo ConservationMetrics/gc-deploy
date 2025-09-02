@@ -19,11 +19,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-
     - name: Install Docker
       run: |
         # Docker is pre-installed on GitHub Actions runners
@@ -57,9 +52,10 @@ jobs:
         # Wait for CapRover to be ready
         echo "Waiting for CapRover to start..."
         ready=0
-        for i in {1..30}; do
-          docker ps -q
-          someId=$(docker ps -q | head -1)
+        for i in {1..10}; do
+          docker ps
+          someId=$(docker ps | grep -- '-captain' | head -1 | cut -d' ' -f1)
+          echo "docker logs $someId"
           docker logs $someId
 
           if docker service logs captain-captain 2>&1 | grep -q "Captain is initialized"; then
@@ -100,6 +96,11 @@ jobs:
           --rootDomain localhost.test \
           --skipVerifyingDomains \
           --force
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
 
     - name: Install Python dependencies
       run: |
