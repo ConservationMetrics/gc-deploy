@@ -38,5 +38,4 @@ deploy-stack:
 # Clean up build artifacts
 clean:
 	@echo "🗑️ Cleaning build artifacts..."
-	@rm -rf $(REPO_ROOT)/build
-	@rm -rf $(REPO_ROOT)/temp-one-click-apps
+	@rm -rf $(REPO_ROOT)/build/one-click-apps
