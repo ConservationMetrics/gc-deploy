@@ -19,8 +19,10 @@ windmill-only:
   deploy: true
   app_name: windmill  # IMPORTANT so that your app doesn't get deployed as "windmill-only"
   # app_version: 1.518.2  # Optional: one-click app already has a sane default
-  db_user: windmill_login
-  db_pass: changeme
+
+  # Set azure_db_user and azure_db_pass if using Azure Flexible DB for Postgresql. Otherwise leave blank.
+  # azure_db_user: windmill_login
+  # azure_db_pass: changeme
 
 redis:
   deploy: true
