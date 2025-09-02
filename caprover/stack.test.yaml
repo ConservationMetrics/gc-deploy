@@ -1,5 +1,5 @@
-caproverUrl: "http://captain.localhost.test"
-caproverPassword: "test-captain-password"
+caproverUrl: "http://captain.test-gc-deploy.localhost"
+caproverPassword: "captain42"
 
 postgres:
   deploy: true  # Use internal postgres for testing

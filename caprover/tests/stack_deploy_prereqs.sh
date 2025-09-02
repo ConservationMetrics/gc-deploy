@@ -4,6 +4,13 @@ set -e
 # This script sets up the Python virtual environment and installs dependencies
 # required for stack_deploy.py, including a forked version of Caprover-API.
 
+# Check for Python 3.9+
+python3 -c 'import sys;
+if sys.version_info < (3, 9):
+    sys.stderr.write(f"Error: Python 3.9 or greater is required. You have {sys.version.split()[0]}.\n")
+    sys.exit(1)
+' || exit 1
+
 # Ensure we are in the script's directory to resolve paths correctly.
 cd "$(dirname "$0")"
 

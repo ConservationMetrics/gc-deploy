@@ -22,7 +22,7 @@ This approach encapsulates all prerequisites and test steps into simple `make` t
 
 Before running the tests, ensure you have the following installed on your system:
 - Docker
-- Python 3.11+ and `pip`
+- Python 3.9+
 - `make`
 
 #### Running the Tests
