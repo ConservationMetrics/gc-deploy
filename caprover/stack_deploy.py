@@ -213,9 +213,7 @@ def deploy_stack(config, gc_repository, dry_run):
     one_click_app_name = "gc-landing-page"
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
-        redirect_to_root = config[one_click_app_name].get(
-            "redirect_to_root", True
-        )
+        redirect_to_root = config[one_click_app_name].get("redirect_to_root", True)
         variables = construct_app_variables(config, one_click_app_name)
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
         if not dry_run:
@@ -230,12 +228,13 @@ def deploy_stack(config, gc_repository, dry_run):
             cap.update_app(app_name, force_ssl=True)
 
         if redirect_to_root:
-            logger.info(f"Will serve {app_name} at the root domain: [{cap.root_domain}]")
+            logger.info(
+                f"Will serve {app_name} at the root domain: [{cap.root_domain}]"
+            )
             if not dry_run:
                 cap.add_domain(app_name, cap.root_domain)
                 cap.enable_ssl(app_name, cap.root_domain)
                 cap.update_app(app_name, redirectDomain=cap.root_domain)
-
 
     # Deploy GC Explorer if specified in config
     one_click_app_name = "gc-explorer"
@@ -277,9 +276,7 @@ def deploy_stack(config, gc_repository, dry_run):
     one_click_app_name = "comapeo-cloud"
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
-        variables = {
-            "$$cap_server_bearer_token": "$$cap_gen_random_hex(100)",
-        }
+        variables = {}
         variables = construct_app_variables(config, one_click_app_name, variables)
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
         if not dry_run:
