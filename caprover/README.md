@@ -25,12 +25,6 @@ Before running the tests, ensure you have the following installed on your system
 - Python 3.11+ and `pip`
 - `make`
 
-You will also need to install the Python dependencies for the deployment script:
-```bash
-cd caprover
-pip install -r requirements.txt
-```
-
 #### Running the Tests
 
 To run the full end-to-end test suite, which will:
