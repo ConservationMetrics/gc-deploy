@@ -51,12 +51,15 @@ jobs:
 
         # Wait for CapRover to be ready
         echo "Waiting for CapRover to start..."
+        sleep 40
         ready=0
-        for i in {1..10}; do
-          echo "Current services:"
-          docker service ls || true
+        for i in {1..20}; do
+          echo "Current processes:"
+          docker ps
 
-          # docker ps
+          echo "Current services:"
+          docker service ls
+
           # someId=$(docker ps | grep -- '-captain' | head -1 | cut -d' ' -f1)
           # echo "docker logs $someId"
           # docker logs $someId
@@ -72,7 +75,7 @@ jobs:
           fi
 
           echo "Waiting... ($i/10)"
-          sleep 5
+          sleep 20
         done
 
         if [ "$ready" -ne 1 ]; then
