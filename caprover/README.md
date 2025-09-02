@@ -8,41 +8,4 @@
 ## Developers Reference
 
 * [Developing One-Click-Apps](./one-click-apps/README.md)
-
-### End-to-end Testing
-
-The stack deployment code, including `stack_deploy.py` and the custom one-click apps, has a hard
-dependency on a running CapRover server. Since CapRover requires Docker Swarm, which is not
-commonly available in hosted CI runners, we have developed a Makefile-based end-to-end testing
-framework that can be run locally or on any machine with Docker.
-
-This approach encapsulates all prerequisites and test steps into simple `make` targets.
-
-#### Prerequisites
-
-Before running the tests, ensure you have the following installed on your system:
-- Docker
-- Python 3.9+
-- `make`
-
-#### Running the Tests
-
-To run the full end-to-end test suite, which will:
-1. Install a fresh CapRover instance locally.
-2. Build the custom one-click app repository.
-3. Deploy a minimal stack using `stack_deploy.py`.
-4. Uninstall the local CapRover instance.
-
-(WARNING: this will teardown any caprover you already have running)
-
-...run:
-```bash
-make -C caprover/tests test-e2e
-```
-
-To skip the CapRover server setup and teardown, and deploy the minimal stack against
-an already running CapRover:
-
-```bash
-make -C caprover/tests quick-test-e2e
-```
+* [End-to-end testing CapRover-facing deliverables](./tests/README.md)

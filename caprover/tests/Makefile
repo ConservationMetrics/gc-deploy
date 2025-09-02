@@ -1,8 +1,8 @@
 SHELL := /bin/bash
 
 # This preamble inspired by https://tech.davis-hansson.com/p/make/
-.SHELLFLAGS := -eu -o pipefail -c  #
-.DELETE_ON_ERROR
+.SHELLFLAGS := -eu -o pipefail -c
+.DELETE_ON_ERROR:
 MAKEFLAGS += --warn-undefined-variables
 MAKEFLAGS += --no-builtin-rules
 

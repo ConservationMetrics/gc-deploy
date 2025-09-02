@@ -29,7 +29,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Use an LTS version
+          node-version: 'latest'
 
       - name: Build one-click-apps repository
         run: make -C caprover/tests build-one-click-apps-repo
