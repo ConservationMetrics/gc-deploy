@@ -11,21 +11,44 @@
 
 ### End-to-end Testing
 
-All the Stack deployment code — the suite of one-click app definitions, and also the stack_deploy.py "glue" code — is very high-level, and has a hard requirement of installing against a CapRover server.  Unfortunately CapRover requires Swarm, which GitHub Actions cannot run. This leaves a few alternate options for testing this repo's code:
+The stack deployment code, including `stack_deploy.py` and the custom one-click apps, has a hard
+dependency on a running CapRover server. Since CapRover requires Docker Swarm, which is not
+commonly available in hosted CI runners, we have developed a Makefile-based end-to-end testing
+framework that can be run locally or on any machine with Docker.
 
-1. Stub out the CapRover server with mock endpoints. CapRover accumulates so much state over the course of an install that I don't think it will be a very good test.
-2. Find an alternate CI test runner that can run CapRover. Maybe CircleCI?
-3. Run tests on any (non-CI) machine that can run CapRover.
+This approach encapsulates all prerequisites and test steps into simple `make` targets.
 
-Even if we find an adequate CapRover server, a secondary requirement is this repo's custom repository of one-click-apps needs to be
-built before `stack_deploy.py` can use it.
+#### Prerequisites
 
-We take the following approach to testing:
-1. One big ol' end-to-end test, to cover both stack_deploy.py and the one-click apps.
-2. Encapsulated with Makefile to handles pre-requisites:
-    - build one-click repo to some other local destination (CircleCI does this on merge to main and also it's a pre-requisite to test stack_deploy)
-    - Install a fresh CapRover locally (kinda a process)
-    - Destroy the local CapRover server (also kinda a process)
-    - Run stack_deploy.py against local CapRover server and using the built one-click repo. Assert non-failure exit.
+Before running the tests, ensure you have the following installed on your system:
+- Docker
+- Python 3.11+ and `pip`
+- `make`
 
-Recommend to run this locally or on a fresh VM (for now), and this leaves open the possibility to run the test script on a CI worker if we find one that supports Swarm.
+You will also need to install the Python dependencies for the deployment script:
+```bash
+cd caprover
+pip install -r requirements.txt
+```
+
+#### Running the Tests
+
+To run the full end-to-end test suite, which will:
+1. Install a fresh CapRover instance locally.
+2. Build the custom one-click app repository.
+3. Deploy a minimal stack using `stack_deploy.py`.
+4. Uninstall the local CapRover instance.
+
+(WARNING: this will teardown any caprover you already have running)
+
+...run:
+```bash
+make -C caprover/tests test-e2e
+```
+
+To skip the CapRover server setup and teardown, and deploy the minimal stack against
+an already running CapRover:
+
+```bash
+make -C caprover/tests quick-test-e2e
+```

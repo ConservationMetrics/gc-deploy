@@ -10,6 +10,7 @@ Our CapRover one-click app definitions are built and published automatically via
   https://conservationmetrics.github.io/gc-deploy/one-click-apps/v4/apps/
 
 - Workflow file: [.github/workflows/deploy-and-build.yml](../../.github/workflows/deploy-and-build.yml)
+- Make target: `make -C .. build-one-click-apps-repo`
 
 ### Adding this catalog to your CapRover
 
