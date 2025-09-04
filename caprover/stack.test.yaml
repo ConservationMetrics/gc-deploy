@@ -10,16 +10,18 @@ postgres:
   database: postgres
   version: 16
 
+redis:
+  deploy: true
+  app_name: test-redis
+  redis_password: "test-redis-key"
+
 windmill-only:
   deploy: false  # Skip windmill for faster testing
 
-redis:
-  deploy: true
-  app_name: redis-test
-  redis_password: "test-redis-key"
-
 superset-only:
-  deploy: false  # Skip superset for faster testing
+  deploy: false  # Skip windmill for faster testing
+  redis_url: "redis://:test-redis-key@srv-captain--test-redis:6379"
+  redis_key_prefix: ""
 
 gc-explorer:
   deploy: true
@@ -27,7 +29,8 @@ gc-explorer:
 
 comapeo-cloud:
   deploy: true
+  app_name: test-comapeo
 
 filebrowser:
   deploy: true
-  app_name: files-test
+  app_name: test-files
