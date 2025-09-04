@@ -14,30 +14,25 @@ REQUIREMENTS_FILE := $(REPO_ROOT)/caprover/requirements.txt
 
 .PHONY: all quick-test-e2e test-e2e install-caprover uninstall-caprover build-one-click-apps-repo deploy-stack clean setup-venv
 
+# Default target
 all: test-e2e
 
+# Main end-to-end test target
+test-e2e: uninstall-caprover install-caprover quick-test-e2e uninstall-caprover
+	@echo "✅ End-to-end test completed successfully"
+
 # Quick stack deployment on already-running CapRover
+# Can be run instead of `test-e2e` for faster testing
 quick-test-e2e: setup-venv build-one-click-apps-repo deploy-stack
 	@echo "✅ Quick deployment completed"
 
-# Main end-to-end test target
-test-e2e: uninstall-caprover install-caprover quick-test-e2e
-	@echo "✅ End-to-end test completed successfully"
-
-# Set up fresh CapRover instance
-install-caprover:
-	@echo "# Installing CapRover..."
-	@./install-caprover.sh
-
-# Clean up CapRover installation
+# CapRover setup and teardown targets (in order of invocation)
 uninstall-caprover:
 	@echo "# Uninstalling CapRover..."
 	@./uninstall-caprover.sh
-
-# Build the one-click app repository
-build-one-click-apps-repo:
-	@echo "# Building one-click app repository..."
-	@../one-click-apps/build-repo.sh
+install-caprover:
+	@echo "# Installing CapRover..."
+	@./install-caprover.sh
 
 # Set up Python virtual environment and dependencies.
 # This target is idempotent and will also re-run if requirements.txt changes.
@@ -47,13 +42,18 @@ $(VENV_READY_FILE): $(REQUIREMENTS_FILE)
 	@./stack_deploy_prereqs.sh "$(VENV_DIR)"
 	@touch $@
 
+# Build the one-click app repository
+build-one-click-apps-repo:
+	@echo "# Building one-click app repository..."
+	@../one-click-apps/build-repo.sh
+
 # Deploy the stack using your Python script
 deploy-stack: setup-venv
 	@echo "# Deploying Guardian Connector stack..."
 	@echo "Using one-click repository at: $(BUILT_REPO_PATH)"
 	@cd .. && $(VENV_DIR)/bin/python stack_deploy.py -c stack.test.yaml --repo "file://$(BUILT_REPO_PATH)"
 
-# Clean up build artifacts
+# Optional cleanup of build artifacts
 clean:
 	@echo "🗑️ Cleaning build artifacts..."
 	@rm -rf $(REPO_ROOT)/build/one-click-apps

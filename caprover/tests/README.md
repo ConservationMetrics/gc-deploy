@@ -12,6 +12,16 @@ Unfortunately, no assertions are made. The end-to-end test is merely a **smokete
 The `Makefile` includes targets for these, as well as for all prerequisities (e.g.
 setting up and tearing down a CapRover server).
 
+## When to run Tests
+
+Since we have not automated running tests (e.g. in CI), we provide a simple recommendation:
+
+* Run the tests locally for every change to `stack_deploy.py` or `stack.example.yaml`
+
+You probably do not need to run the tests when adding/modifying one-click app definitions,
+because that build step is in fact run automatically in CI.
+
+
 ## Prerequisites
 
 Before running the tests, ensure you have the following installed on your system:
@@ -21,7 +31,7 @@ Before running the tests, ensure you have the following installed on your system
 
 ## Running E2E Tests
 
-To run the full end-to-end test suite, which will:
+The full end-to-end test suite will:
 1. Install a fresh CapRover instance locally.
 2. Build the custom one-click app repository.
 3. Deploy a minimal stack using `stack_deploy.py`.
@@ -32,7 +42,6 @@ WARNINGS:
 * some of the targets (the ones that install or uninstall caprover) use `sudo` and therefore will require you to type a password.
   Please look at the relevant scripts to understand how they will use this permission.
 
-...run:
 ```bash
 # `-C caprover/tests` tells Make to change directories. Omit if already in the correct directory.
 make -C caprover/tests test-e2e
