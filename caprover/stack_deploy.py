@@ -11,7 +11,12 @@ Guardian Connector stack.  The script is able to inject the same variable value
 
 import argparse
 import logging
+import os
+import http.server
+import socketserver
+import threading
 import subprocess
+from contextlib import nullcontext
 import sys
 
 import psycopg
@@ -360,6 +365,41 @@ def deploy_stack(config, gc_repository, dry_run):
             )
 
 
+def is_local_path(path):
+    """Check if a path is a local file system path."""
+    return not (path.startswith("http://") or path.startswith("https://"))
+
+
+class LocalRepoServer:
+    """A context manager for serving a local repository over HTTP."""
+
+    def __init__(self, directory, port=0):
+        self.directory = directory
+        self.port = port
+        self.httpd = None
+        self.server_thread = None
+
+    def __enter__(self):
+        handler = http.server.SimpleHTTPRequestHandler
+        # Use a lambda to bind the directory to the handler
+        handler_class = lambda *args, **kwargs: handler(
+            *args, directory=self.directory, **kwargs
+        )
+        self.httpd = socketserver.TCPServer(("", self.port), handler_class)
+        self.port = self.httpd.server_address[1]
+        logger.info(f"Starting local server for repo at http://127.0.0.1:{self.port}")
+
+        self.server_thread = threading.Thread(target=self.httpd.serve_forever)
+        self.server_thread.daemon = True
+        self.server_thread.start()
+        return f"http://127.0.0.1:{self.port}/"
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.httpd:
+            logger.info("Shutting down local repo server...")
+            self.httpd.shutdown()
+            self.httpd.server_close()
+
 def main():
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawTextHelpFormatter
@@ -385,9 +425,25 @@ def main():
 
     # Load configuration
     config = load_config(args.config_file)
+    repo_path = args.repo
+
+    # Allow to resolve local one-click-app repos via HTTP (useful for testing).
+    # CapRoverAPI only supports http://, https:// URLs.
+    context_manager = None
+    if is_local_path(repo_path):
+        # It's a local path, serve it via HTTP
+        repo_dir = repo_path.replace("file://", "")
+        if not os.path.isdir(repo_dir):
+            logger.error(f"Local repository path does not exist or is not a directory: {repo_dir}")
+            sys.exit(1)
+        context_manager = LocalRepoServer(repo_dir)
+    else:
+        context_manager = nullcontext(repo_path)
 
     # Deploy application stack
-    deploy_stack(config, args.repo, args.dry_run)
+    with context_manager as repo_url:
+        deploy_stack(config, repo_url, args.dry_run)
+
 
 
 if __name__ == "__main__":
