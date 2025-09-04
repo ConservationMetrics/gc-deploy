@@ -1,6 +1,7 @@
 # caproverUrl hostname is hard-coded in `install-caprover.sh`
 caproverUrl: "http://captain.test-gc-deploy.localhost"
 caproverPassword: "captain42"  # the Caprover default
+webappsUseSsl: false
 
 postgres:
   deploy: true  # Use internal postgres for testing
@@ -21,11 +22,12 @@ superset-only:
   deploy: false  # Skip superset for faster testing
 
 gc-explorer:
-  deploy: false  # Skip gcexplorer for faster testing
+  deploy: true
+  postgres_database: "warehouse"
 
 comapeo-cloud:
-  deploy: false  # Skip comapeo for faster testing
+  deploy: true
 
 filebrowser:
-  deploy: false  # Test a simple service
+  deploy: true
   app_name: files-test

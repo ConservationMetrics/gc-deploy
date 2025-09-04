@@ -69,6 +69,7 @@ def deploy_stack(config, gc_repository, dry_run):
     cap = caprover_api.CaproverAPI(
         dashboard_url=config.get("caproverUrl"), password=config.get("caproverPassword")
     )
+    webapps_ssl = config.get("webappsUseSsl", True)
 
     # Deploy PostgreSQL if specified in config
     if config["postgres"].get("deploy", False):
@@ -180,8 +181,11 @@ def deploy_stack(config, gc_repository, dry_run):
                 automated=True,
                 one_click_repository=gc_repository,
             )
-            cap.enable_ssl(app_name)
-            cap.update_app(app_name, force_ssl=True, support_websocket=True)
+            cap.update_app(app_name, support_websocket=True)
+            if webapps_ssl:
+                cap.enable_ssl(app_name)
+                cap.update_app(app_name, force_ssl=True)
+
 
     # Deploy Redis if specified in config
     one_click_app_name = "redis"
@@ -224,9 +228,10 @@ def deploy_stack(config, gc_repository, dry_run):
                 automated=True,
                 one_click_repository=gc_repository,
             )
-            cap.enable_ssl(app_name)
+            if webapps_ssl:
+                cap.enable_ssl(app_name)
             cap.update_app(
-                app_name, force_ssl=True, redirectDomain=f"{app_name}.{cap.root_domain}"
+                app_name, force_ssl=webapps_ssl, redirectDomain=f"{app_name}.{cap.root_domain}"
             )
 
             # disable the healthcheck in Service Update Override, which will be maintained
@@ -256,8 +261,9 @@ def deploy_stack(config, gc_repository, dry_run):
                 automated=True,
                 one_click_repository=gc_repository,
             )
-            cap.enable_ssl(app_name)
-            cap.update_app(app_name, force_ssl=True)
+            if webapps_ssl:
+                cap.enable_ssl(app_name)
+                cap.update_app(app_name, force_ssl=True)
 
         if redirect_to_root:
             logger.info(
@@ -265,7 +271,8 @@ def deploy_stack(config, gc_repository, dry_run):
             )
             if not dry_run:
                 cap.add_domain(app_name, cap.root_domain)
-                cap.enable_ssl(app_name, cap.root_domain)
+                if webapps_ssl:
+                    cap.enable_ssl(app_name, cap.root_domain)
                 cap.update_app(app_name, redirectDomain=cap.root_domain)
 
     # Deploy GC Explorer if specified in config
@@ -290,9 +297,10 @@ def deploy_stack(config, gc_repository, dry_run):
                 automated=True,
                 one_click_repository=gc_repository,
             )
-            cap.enable_ssl(app_name)
+            if webapps_ssl:
+                cap.enable_ssl(app_name)
             cap.update_app(
-                app_name, force_ssl=True, redirectDomain=f"{app_name}.{cap.root_domain}"
+                app_name, force_ssl=webapps_ssl, redirectDomain=f"{app_name}.{cap.root_domain}"
             )
 
     # Deploy CoMapeo Cloud if specified in config
@@ -310,10 +318,11 @@ def deploy_stack(config, gc_repository, dry_run):
                 one_click_repository=gc_repository,
                 automated=True,
             )
-            cap.enable_ssl(app_name)
+            if webapps_ssl:
+                cap.enable_ssl(app_name)
             cap.update_app(
                 app_name,
-                force_ssl=True,
+                force_ssl=webapps_ssl,
                 support_websocket=True,
                 redirectDomain=f"{app_name}.{cap.root_domain}",
             )
@@ -332,9 +341,10 @@ def deploy_stack(config, gc_repository, dry_run):
                 app_variables=variables,
                 automated=True,
             )
-            cap.enable_ssl(app_name)
+            if webapps_ssl:
+                cap.enable_ssl(app_name)
             cap.update_app(
-                app_name, force_ssl=True, redirectDomain=f"{app_name}.{cap.root_domain}"
+                app_name, force_ssl=webapps_ssl, redirectDomain=f"{app_name}.{cap.root_domain}"
             )
 
             cap.update_app(
