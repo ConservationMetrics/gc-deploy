@@ -240,15 +240,6 @@ def deploy_stack(config, gc_repository, dry_run):
                 )
                 cap.update_app(appname, serviceUpdateOverride=new_suo)
 
-            if redirect_from_domain := config[one_click_app_name].get(
-                "redirect_from_domain"
-            ):
-                try:
-                    cap.add_domain(app_name, redirect_from_domain)
-                    cap.enable_ssl(app_name, redirect_from_domain)
-                except Exception as e:
-                    logger.error(f"Verification failed: {e}")
-
     # Deploy GC Landing Page if specified in config
     # Note: as GC Landing Page is intended to be the default landing page, we don't need to add a redirect domain, and instead, we set the redirectDomain to the root domain. (e.g. so that the landing page will load when a user accesses "your-captain-root.net")
     one_click_app_name = "gc-landing-page"
@@ -304,15 +295,6 @@ def deploy_stack(config, gc_repository, dry_run):
                 app_name, force_ssl=True, redirectDomain=f"{app_name}.{cap.root_domain}"
             )
 
-            if redirect_from_domain := config[one_click_app_name].get(
-                "redirect_from_domain"
-            ):
-                try:
-                    cap.add_domain(app_name, redirect_from_domain)
-                    cap.enable_ssl(app_name, redirect_from_domain)
-                except Exception as e:
-                    logger.error(f"Verification failed: {e}")
-
     # Deploy CoMapeo Cloud if specified in config
     one_click_app_name = "comapeo-cloud"
     if config.get(one_click_app_name, {}).get("deploy", False):
@@ -335,15 +317,6 @@ def deploy_stack(config, gc_repository, dry_run):
                 support_websocket=True,
                 redirectDomain=f"{app_name}.{cap.root_domain}",
             )
-
-            if redirect_from_domain := config[one_click_app_name].get(
-                "redirect_from_domain"
-            ):
-                try:
-                    cap.add_domain(app_name, redirect_from_domain)
-                    cap.enable_ssl(app_name, redirect_from_domain)
-                except Exception as e:
-                    logger.error(f"Verification failed: {e}")
 
     # Deploy Filebrowser if specified in config
     one_click_app_name = "filebrowser"
@@ -375,15 +348,6 @@ def deploy_stack(config, gc_repository, dry_run):
                 # https://github.com/ConservationMetrics/gc-deploy/pull/12#discussion_r2243697895
                 environment_variables={"FB_ROOT": "/srv/datalake"},
             )
-
-            if redirect_from_domain := config[one_click_app_name].get(
-                "redirect_from_domain"
-            ):
-                try:
-                    cap.add_domain(app_name, redirect_from_domain)
-                    cap.enable_ssl(app_name, redirect_from_domain)
-                except Exception as e:
-                    logger.error(f"Verification failed: {e}")
 
 
 def main():
