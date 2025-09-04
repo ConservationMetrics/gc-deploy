@@ -20,7 +20,7 @@ redis:
 superset-only:
   deploy: false  # Skip superset for faster testing
 
-gcexplorer:
+gc-explorer:
   deploy: false  # Skip gcexplorer for faster testing
 
 comapeo-cloud:
