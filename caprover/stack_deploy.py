@@ -11,7 +11,12 @@ Guardian Connector stack.  The script is able to inject the same variable value
 
 import argparse
 import logging
+import os
+import http.server
+import socketserver
+import threading
 import subprocess
+from contextlib import nullcontext
 import sys
 
 import psycopg
@@ -69,6 +74,7 @@ def deploy_stack(config, gc_repository, dry_run):
     cap = caprover_api.CaproverAPI(
         dashboard_url=config.get("caproverUrl"), password=config.get("caproverPassword")
     )
+    webapps_ssl = config.get("webappsUseSsl", True)
 
     # Deploy PostgreSQL if specified in config
     if config["postgres"].get("deploy", False):
@@ -180,8 +186,11 @@ def deploy_stack(config, gc_repository, dry_run):
                 automated=True,
                 one_click_repository=gc_repository,
             )
-            cap.enable_ssl(app_name)
-            cap.update_app(app_name, force_ssl=True, support_websocket=True)
+            cap.update_app(app_name, support_websocket=True)
+            if webapps_ssl:
+                cap.enable_ssl(app_name)
+                cap.update_app(app_name, force_ssl=True)
+
 
     # Deploy Redis if specified in config
     one_click_app_name = "redis"
@@ -224,9 +233,10 @@ def deploy_stack(config, gc_repository, dry_run):
                 automated=True,
                 one_click_repository=gc_repository,
             )
-            cap.enable_ssl(app_name)
+            if webapps_ssl:
+                cap.enable_ssl(app_name)
             cap.update_app(
-                app_name, force_ssl=True, redirectDomain=f"{app_name}.{cap.root_domain}"
+                app_name, force_ssl=webapps_ssl, redirectDomain=f"{app_name}.{cap.root_domain}"
             )
 
             # disable the healthcheck in Service Update Override, which will be maintained
@@ -256,8 +266,9 @@ def deploy_stack(config, gc_repository, dry_run):
                 automated=True,
                 one_click_repository=gc_repository,
             )
-            cap.enable_ssl(app_name)
-            cap.update_app(app_name, force_ssl=True)
+            if webapps_ssl:
+                cap.enable_ssl(app_name)
+                cap.update_app(app_name, force_ssl=True)
 
         if redirect_to_root:
             logger.info(
@@ -265,7 +276,8 @@ def deploy_stack(config, gc_repository, dry_run):
             )
             if not dry_run:
                 cap.add_domain(app_name, cap.root_domain)
-                cap.enable_ssl(app_name, cap.root_domain)
+                if webapps_ssl:
+                    cap.enable_ssl(app_name, cap.root_domain)
                 cap.update_app(app_name, redirectDomain=cap.root_domain)
 
     # Deploy GC Explorer if specified in config
@@ -290,9 +302,10 @@ def deploy_stack(config, gc_repository, dry_run):
                 automated=True,
                 one_click_repository=gc_repository,
             )
-            cap.enable_ssl(app_name)
+            if webapps_ssl:
+                cap.enable_ssl(app_name)
             cap.update_app(
-                app_name, force_ssl=True, redirectDomain=f"{app_name}.{cap.root_domain}"
+                app_name, force_ssl=webapps_ssl, redirectDomain=f"{app_name}.{cap.root_domain}"
             )
 
     # Deploy CoMapeo Cloud if specified in config
@@ -310,10 +323,11 @@ def deploy_stack(config, gc_repository, dry_run):
                 one_click_repository=gc_repository,
                 automated=True,
             )
-            cap.enable_ssl(app_name)
+            if webapps_ssl:
+                cap.enable_ssl(app_name)
             cap.update_app(
                 app_name,
-                force_ssl=True,
+                force_ssl=webapps_ssl,
                 support_websocket=True,
                 redirectDomain=f"{app_name}.{cap.root_domain}",
             )
@@ -332,9 +346,10 @@ def deploy_stack(config, gc_repository, dry_run):
                 app_variables=variables,
                 automated=True,
             )
-            cap.enable_ssl(app_name)
+            if webapps_ssl:
+                cap.enable_ssl(app_name)
             cap.update_app(
-                app_name, force_ssl=True, redirectDomain=f"{app_name}.{cap.root_domain}"
+                app_name, force_ssl=webapps_ssl, redirectDomain=f"{app_name}.{cap.root_domain}"
             )
 
             cap.update_app(
@@ -349,6 +364,41 @@ def deploy_stack(config, gc_repository, dry_run):
                 environment_variables={"FB_ROOT": "/srv/datalake"},
             )
 
+
+def is_local_path(path):
+    """Check if a path is a local file system path."""
+    return not (path.startswith("http://") or path.startswith("https://"))
+
+
+class LocalRepoServer:
+    """A context manager for serving a local repository over HTTP."""
+
+    def __init__(self, directory, port=0):
+        self.directory = directory
+        self.port = port
+        self.httpd = None
+        self.server_thread = None
+
+    def __enter__(self):
+        handler = http.server.SimpleHTTPRequestHandler
+        # Use a lambda to bind the directory to the handler
+        handler_class = lambda *args, **kwargs: handler(
+            *args, directory=self.directory, **kwargs
+        )
+        self.httpd = socketserver.TCPServer(("", self.port), handler_class)
+        self.port = self.httpd.server_address[1]
+        logger.info(f"Starting local server for repo at http://127.0.0.1:{self.port}")
+
+        self.server_thread = threading.Thread(target=self.httpd.serve_forever)
+        self.server_thread.daemon = True
+        self.server_thread.start()
+        return f"http://127.0.0.1:{self.port}/"
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.httpd:
+            logger.info("Shutting down local repo server...")
+            self.httpd.shutdown()
+            self.httpd.server_close()
 
 def main():
     parser = argparse.ArgumentParser(
@@ -375,9 +425,25 @@ def main():
 
     # Load configuration
     config = load_config(args.config_file)
+    repo_path = args.repo
+
+    # Allow to resolve local one-click-app repos via HTTP (useful for testing).
+    # CapRoverAPI only supports http://, https:// URLs.
+    context_manager = None
+    if is_local_path(repo_path):
+        # It's a local path, serve it via HTTP
+        repo_dir = repo_path.replace("file://", "")
+        if not os.path.isdir(repo_dir):
+            logger.error(f"Local repository path does not exist or is not a directory: {repo_dir}")
+            sys.exit(1)
+        context_manager = LocalRepoServer(repo_dir)
+    else:
+        context_manager = nullcontext(repo_path)
 
     # Deploy application stack
-    deploy_stack(config, args.repo, args.dry_run)
+    with context_manager as repo_url:
+        deploy_stack(config, repo_url, args.dry_run)
+
 
 
 if __name__ == "__main__":

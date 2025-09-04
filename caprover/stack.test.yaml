@@ -1,6 +1,7 @@
 # caproverUrl hostname is hard-coded in `install-caprover.sh`
 caproverUrl: "http://captain.test-gc-deploy.localhost"
 caproverPassword: "captain42"  # the Caprover default
+webappsUseSsl: false
 
 postgres:
   deploy: true  # Use internal postgres for testing
@@ -9,23 +10,27 @@ postgres:
   database: postgres
   version: 16
 
+redis:
+  deploy: true
+  app_name: test-redis
+  redis_password: "test-redis-key"
+
 windmill-only:
   deploy: false  # Skip windmill for faster testing
 
-redis:
-  deploy: true
-  app_name: redis-test
-  redis_password: "test-redis-key"
-
 superset-only:
-  deploy: false  # Skip superset for faster testing
+  deploy: false  # Skip windmill for faster testing
+  redis_url: "redis://:test-redis-key@srv-captain--test-redis:6379"
+  redis_key_prefix: ""
 
 gc-explorer:
-  deploy: false  # Skip gcexplorer for faster testing
+  deploy: true
+  postgres_database: "warehouse"
 
 comapeo-cloud:
-  deploy: false  # Skip comapeo for faster testing
+  deploy: true
+  app_name: test-comapeo
 
 filebrowser:
-  deploy: false  # Test a simple service
-  app_name: files-test
+  deploy: true
+  app_name: test-files
