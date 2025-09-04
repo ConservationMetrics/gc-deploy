@@ -27,7 +27,10 @@ To run the full end-to-end test suite, which will:
 3. Deploy a minimal stack using `stack_deploy.py`.
 4. Uninstall the local CapRover instance.
 
-(WARNING: this will teardown any CapRover server you may already have running)
+WARNINGS:
+* this will teardown any CapRover server you may already have running
+* some of the targets (the ones that install or uninstall caprover) use `sudo` and therefore will require you to type a password.
+  Please look at the relevant scripts to understand how they will use this permission.
 
 ...run:
 ```bash

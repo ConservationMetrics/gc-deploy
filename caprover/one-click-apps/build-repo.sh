@@ -28,7 +28,7 @@ echo "Injecting custom apps..."
 rm -rf "$TEMP_DIR/public"
 mkdir -p "$TEMP_DIR/public"
 cp -R "$CUSTOM_APPS_DIR" "$TEMP_DIR/public/"
-# The CNAME is for GitHub pages, not strictly necessary for local testing but good to keep for consistency
+# The CNAME is for GitHub pages
 echo "conservationmetrics.github.io/gc-deploy/one-click-apps" > "$TEMP_DIR/public/CNAME"
 
 echo "Installing dependencies and building..."
