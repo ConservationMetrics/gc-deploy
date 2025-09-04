@@ -8,3 +8,4 @@
 ## Developers Reference
 
 * [Developing One-Click-Apps](./one-click-apps/README.md)
+* [End-to-end testing CapRover-facing deliverables](./tests/README.md)

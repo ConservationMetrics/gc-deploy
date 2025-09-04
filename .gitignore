@@ -1,3 +1,11 @@
+# Built artifacts
+build/one-click-apps/
+
+# Deployment configurations
 caprover/*.yml
 caprover/*.yaml
 !caprover/stack.example.yaml
+!caprover/stack.test.yaml
+
+# Test artifacts
+caprover/.venv/
