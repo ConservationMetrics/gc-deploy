@@ -16,10 +16,11 @@ redis:
   redis_password: "test-redis-key"
 
 windmill-only:
-  deploy: false  # Skip windmill for faster testing
+  deploy: true
+  app_name: windmill
 
 superset-only:
-  deploy: false  # Skip windmill for faster testing
+  deploy: true
   redis_url: "redis://:test-redis-key@srv-captain--test-redis:6379"
   redis_key_prefix: ""
 
