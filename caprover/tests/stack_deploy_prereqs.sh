@@ -1,41 +1,23 @@
 #!/bin/bash
 set -e
 
-# This script sets up the Python virtual environment and installs dependencies
-# required for stack_deploy.py, including a forked version of Caprover-API.
+# This script installs the gc-stack-deploy tool into its own virtual environment.
 
-# Check for Python 3.9+
-python3 -c 'import sys;
-if sys.version_info < (3, 9):
-    sys.stderr.write(f"Error: Python 3.9 or greater is required. You have {sys.version.split()[0]}.\n")
-    sys.exit(1)
-' || exit 1
-
-# Ensure we are in the script's directory to resolve paths correctly.
-cd "$(dirname "$0")"
-
-REPO_ROOT=$(git rev-parse --show-toplevel)
+TOOL_DIR="$(dirname "$0")/../stack-deploy-tool"
 VENV_DIR="${1:-.venv}"   # take first arg, fallback to .venv
 
-# 1. Create virtual environment if it doesn't exist
-if [ ! -d "$VENV_DIR" ]; then
-    echo "Creating Python virtual environment at $VENV_DIR..."
-    python3 -m venv "$VENV_DIR"
-else
-    echo "Virtual environment at $VENV_DIR already exists."
+echo "Checking for uv..."
+if ! command -v uv &> /dev/null
+then
+    echo "uv could not be found."
+    exit 1
 fi
 
-# Activate venv for this script's context
-source "$VENV_DIR/bin/activate"
 
-# Install dependencies from requirements.txt
-pip install -r "$REPO_ROOT/caprover/requirements.txt"
+echo "Creating virtual environment at ${VENV_DIR}..."
+uv venv "${VENV_DIR}"
 
-# Install the forked Caprover-API and psycopg
-echo "Cloning & Installing forked Caprover-API..."
-CAPROVER_API_DIR=$(mktemp -d)
-trap 'echo "Cleaning up temporary Caprover-API clone..." && rm -rf "$CAPROVER_API_DIR"' EXIT
-git clone --depth 1 --branch fix-oneclick-repo https://github.com/IamJeffG/Caprover-API.git "$CAPROVER_API_DIR"
-pip install "$CAPROVER_API_DIR"
+echo "Installing stack-deploy-tool..."
+uv pip install -e "${TOOL_DIR}" --python "${VENV_DIR}/bin/python"
 
-echo "✅ Prerequisites setup complete."
+echo "✅ Installation complete. Run the tool with: ${VENV_DIR}/bin/stack-deploy"
