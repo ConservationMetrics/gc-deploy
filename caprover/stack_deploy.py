@@ -15,6 +15,7 @@ import os
 import http.server
 import socketserver
 import threading
+import time
 import subprocess
 from contextlib import nullcontext
 import sys
@@ -52,14 +53,22 @@ def construct_app_variables(config, service_name, init=None):
 def run_psql_command_on_docker_service_container(service_name, sql_command, pguser, pgpassword):
     logger.info(f"Running caprover-hosted DB [{service_name}]: {sql_command}")
 
-    # Get container ID of {service_name}
-    result = subprocess.run(
-        ['sudo', 'docker', 'ps', '--filter', f'name={service_name}', '--format', '{{.ID}}'],
-        stdout=subprocess.PIPE, check=True, text=True
-    )
-    container_id = result.stdout.strip()
+    # Get container ID of running {service_name}, retrying if needed
+    container_id = ""
+    for i in range(10):  # 10 retries * 5 seconds = 50 seconds
+        result = subprocess.run(
+            ['sudo', 'docker', 'ps', '--filter', f'name={service_name}', '--filter', 'status=running', '--format', '{{.ID}}'],
+            stdout=subprocess.PIPE, check=True, text=True
+        )
+        container_id = result.stdout.strip()
+        if container_id:
+            break
+        logger.info(f"Waiting for {service_name=}... ({i+1}/10)")
+        time.sleep(5)
+    else:
+        raise SystemError(f"Did not find a running container for {service_name=} after 45 seconds.")
 
-    # Run CREATE DATABASE inside the container
+    # Run sql_command inside the container
     create_db_cmd = ['psql', '-U', pguser, '-c', sql_command]
     subprocess.run(
         ['sudo', 'docker', 'exec', '-e', f"PGPASSWORD={pgpassword}", '-i', container_id] + create_db_cmd,
