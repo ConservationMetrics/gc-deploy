@@ -423,9 +423,7 @@ def main():
         description=__doc__, formatter_class=argparse.RawTextHelpFormatter
     )
 
-    # Mutually exclusive group: You must provide either --init or --config-file (and all the rest)
-    # group = parser.add_mutually_exclusive_group(required=True)
-
+    # OPTIONAL "init" or "deploy" subcommand
     parser.add_argument("command", nargs="?", choices=["init", "deploy"], default="deploy", help="Optional subcommand")
 
     parser.add_argument(
