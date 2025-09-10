@@ -24,4 +24,4 @@ build-backend = "hatchling.build"
 allow-direct-references = true  # TODO remove this once we no longer have a git-based dependency
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/stack_deploy"] # , "example_configs"]
+packages = ["src/stack_deploy"]

@@ -63,24 +63,19 @@ If you already have an external PostgreSQL instance (e.g., cloud-hosted), simply
 
 You have two options to install apps:
 
-1. install the entire stack in one script: `stack_deploy.py`
+1. install the entire stack in one script: **`stack-deploy-tool`**
 2. install apps one-at-a-time through the CapRover UI
 
-### Option 1. Installing the entire stack with `stack_deploy.py`
+### Option 1. Installing the entire stack with **`stack-deploy-tool`**
 
-If you don't want to sweat the details, it's much quicker to deploy the Guardian Connector stack of apps by running `stack_deploy.py`.
+If you don't want to sweat the details, it's much quicker to deploy the Guardian Connector stack of apps using the `stack-deploy-tool`.
 
+The following installer script will create a new Virtual Environment and install the tool:
 
-Set up a Python environment:
+    # The .venv argument is optional and lets you set the location of the new virtual env to create.
+    ./stack_deploy_prereqs.sh .venv
 
-```sh
-git clone https://github.com/IamJeffG/Caprover-API.git
-cd Caprover-API/
-git checkout fix-oneclick-repo
-pip install 'psycopg[binary]' .
-```
-
-The `stack_deploy.py` script requires you to create a `stack.yaml` file of variable values by
+Before you run the `stack-deploy` script you must create a `stack.yaml` file of variable values by
 copying `stack.example.yaml` and filling in the blanks.
 
 ```sh

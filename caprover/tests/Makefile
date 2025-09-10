@@ -9,7 +9,7 @@ MAKEFLAGS += --no-builtin-rules
 REPO_ROOT := $(shell git rev-parse --show-toplevel)
 BUILT_REPO_PATH := $(REPO_ROOT)/build/one-click-apps/v4/apps/
 TOOL_DIR := $(REPO_ROOT)/caprover/stack-deploy-tool
-VENV_DIR := $(REPO_ROOT)/tests/.venv
+VENV_DIR := $(REPO_ROOT)/caprover/tests/.venv
 VENV_READY_FILE := $(VENV_DIR)/bin/stack-deploy
 
 .PHONY: all quick-test-e2e test-e2e install-caprover uninstall-caprover build-one-click-apps-repo deploy-stack clean setup-venv

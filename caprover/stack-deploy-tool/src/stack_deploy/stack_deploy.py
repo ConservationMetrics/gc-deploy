@@ -10,10 +10,12 @@ Guardian Connector stack.  The script is able to inject the same variable value
 """
 
 import argparse
+import importlib.resources
 import logging
 import os
 import http.server
 import socketserver
+import shutil
 import threading
 import subprocess
 from contextlib import nullcontext
@@ -400,10 +402,32 @@ class LocalRepoServer:
             self.httpd.shutdown()
             self.httpd.server_close()
 
+
+def copy_example(dest):
+    """
+    Copy example config shipped with the package to a local destination
+
+    Parameters
+    ----------
+    dest : Path
+        Destination file to write
+    """
+    examples = importlib.resources.files("stack_deploy.example_configs")
+    for path in examples.iterdir():
+        if path.is_file() and path.name == "stack.example.yaml":
+            shutil.copy(path, dest)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawTextHelpFormatter
     )
+
+    # Mutually exclusive group: You must provide either --init or --config-file (and all the rest)
+    # group = parser.add_mutually_exclusive_group(required=True)
+
+    parser.add_argument("command", nargs="?", choices=["init", "deploy"], default="deploy", help="Optional subcommand")
+
     parser.add_argument(
         "-c",
         "--config-file",
@@ -422,6 +446,11 @@ def main():
         help="Enable or disable dry-run (default: disabled)",
     )
     args = parser.parse_args()
+
+    if args.command == "init":
+        print("init -> " + args.config_file)
+        copy_example(args.config_file)
+        return
 
     # Load configuration
     config = load_config(args.config_file)
