@@ -52,7 +52,7 @@ build-one-click-apps-repo:
 deploy-stack: setup-venv
 	@echo "# Deploying Guardian Connector stack..."
 	@echo "Using one-click repository at: file://$(BUILT_REPO_PATH)"
-	@cd .. && $(VENV_DIR)/bin/stack-deploy -c stack.test.yaml --repo "file://$(BUILT_REPO_PATH)"
+	@cd .. && $(VENV_DIR)/bin/stack-deploy -c $(REPO_ROOT)/caprover/tests/stack.test.yaml --repo "file://$(BUILT_REPO_PATH)"
 
 # Optional cleanup of build artifacts
 clean:

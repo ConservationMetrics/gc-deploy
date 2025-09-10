@@ -7,8 +7,14 @@ caprover/*.yaml
 !caprover/stack.example.yaml
 !caprover/stack.test.yaml
 
-# Test artifacts
-caprover/.venv/
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
 __pycache__
 
