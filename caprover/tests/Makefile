@@ -39,7 +39,8 @@ install-caprover:
 setup-venv: $(VENV_READY_FILE)
 $(VENV_READY_FILE): $(TOOL_DIR)/pyproject.toml
 	@echo "# Setting up Python virtual environment and dependencies..."
-	@./stack_deploy_prereqs.sh "$(VENV_DIR)"
+	@python3 -m venv "$(VENV_DIR)"
+	@"$(VENV_DIR)/bin/pip" install -e $(TOOL_DIR)
 	@touch $@
 
 # Build the one-click app repository

@@ -70,11 +70,10 @@ You have two options to install apps:
 
 If you don't want to sweat the details, it's much quicker to deploy the Guardian Connector stack of apps using the `stack-deploy-tool`.
 
-The following installer script will create a new Virtual Environment and install the tool:
+In most cases, the tool must be run on the same machine where CapRover is running. Install the tool:
 
 ```sh
-# The .venv argument is optional and lets you set the location of the new virtual env to create.
-./stack_deploy_prereqs.sh .venv
+pip install "stack-deploy @ git+https://github.com/ConservationMetrics/gc-deploy.git@14-self-install#subdirectory=caprover/stack-deploy-tool"
 ```
 
 You must create a `stack.yaml` configuration file of for your new deployment. The configuration
