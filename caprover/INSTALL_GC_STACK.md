@@ -72,15 +72,26 @@ If you don't want to sweat the details, it's much quicker to deploy the Guardian
 
 The following installer script will create a new Virtual Environment and install the tool:
 
-    # The .venv argument is optional and lets you set the location of the new virtual env to create.
-    ./stack_deploy_prereqs.sh .venv
+```sh
+# The .venv argument is optional and lets you set the location of the new virtual env to create.
+./stack_deploy_prereqs.sh .venv
+```
 
-Before you run the `stack-deploy` script you must create a `stack.yaml` file of variable values by
-copying `stack.example.yaml` and filling in the blanks.
+You must create a `stack.yaml` configuration file of for your new deployment. The configuration
+file lets you set secrets and API keys, and configure which apps you want.  Write an example template
+to your local directory by running `stack-deploy init --config-file «destination.yaml»`.
+
+```sh
+$ stack-deploy init --config-file stack.yaml
+```
+Then open the file and fill in the blanks.
+
+Finally you are ready to use this same configuration file to deploy the apps to CapRover,
+running on the same machine.
 
 ```sh
 # First, dry-run to check for misconfigurations
-python stack_deploy.py --config-file stack.yaml --dry-run
+$ stack-deploy --config-file stack.yaml --dry-run
 # Then repeat without --dry-run
 ```
 
@@ -141,13 +152,13 @@ instead of installing separate database servers for each app in the stack.
 
 #### Before Install
 
-Windmill installation involves some separate PostgreSQL setup. The `stack_deploy.py` script
+Windmill installation involves some separate PostgreSQL setup. The `stack-deploy-tool`
 handles this for you: you will need to set a second PostgreSQL username and password for Windmill,
 in addition to the admin password at the top of `stack.yaml`.
 
-
 If you want to set up Windmill manually, you must execute the necessary SQL commands directly on your PostgreSQL instance.
-These commands can be found inside the `stack_deploy.py` script and include creating the Windmill database, roles, and granting privileges.
+They include creating the Windmill database, roles, and granting privileges. Specific commands can
+be found inside the one-click-app's preamble.
 
 #### After Install
 
