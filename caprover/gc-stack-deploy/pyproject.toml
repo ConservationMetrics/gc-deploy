@@ -14,7 +14,7 @@ Documentation = "https://docs.guardianconnector.net"
 Repository = "https://github.com/ConservationMetrics/gc-deploy"
 
 [project.scripts]
-stack-deploy = "stack_deploy.stack_deploy:main"
+gc-stack-deploy = "gc-stack-deploy.stack_deploy:main"
 
 [build-system]
 requires = ["hatchling"]
@@ -24,4 +24,4 @@ build-backend = "hatchling.build"
 allow-direct-references = true  # TODO remove this once we no longer have a git-based dependency
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/stack_deploy"]
+packages = ["src/gc-stack-deploy"]
