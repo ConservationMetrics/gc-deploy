@@ -8,9 +8,9 @@ MAKEFLAGS += --no-builtin-rules
 
 REPO_ROOT := $(shell git rev-parse --show-toplevel)
 BUILT_REPO_PATH := $(REPO_ROOT)/build/one-click-apps/v4/apps/
-TOOL_DIR := $(REPO_ROOT)/caprover/stack-deploy-tool
+TOOL_DIR := $(REPO_ROOT)/caprover/gc-stack-deploy
 VENV_DIR := $(REPO_ROOT)/caprover/tests/.venv
-VENV_READY_FILE := $(VENV_DIR)/bin/stack-deploy
+VENV_READY_FILE := $(VENV_DIR)/bin/gc-stack-deploy
 
 .PHONY: all quick-test-e2e test-e2e install-caprover uninstall-caprover build-one-click-apps-repo deploy-stack clean setup-venv
 
@@ -52,7 +52,7 @@ build-one-click-apps-repo:
 deploy-stack: setup-venv
 	@echo "# Deploying Guardian Connector stack..."
 	@echo "Using one-click repository at: file://$(BUILT_REPO_PATH)"
-	@cd .. && $(VENV_DIR)/bin/stack-deploy -c $(REPO_ROOT)/caprover/tests/stack.test.yaml --repo "file://$(BUILT_REPO_PATH)"
+	@cd .. && $(VENV_DIR)/bin/gc-stack-deploy -c $(REPO_ROOT)/caprover/tests/stack.test.yaml --repo "file://$(BUILT_REPO_PATH)"
 
 # Optional cleanup of build artifacts
 clean:
