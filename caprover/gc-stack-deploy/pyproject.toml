@@ -14,7 +14,7 @@ Documentation = "https://docs.guardianconnector.net"
 Repository = "https://github.com/ConservationMetrics/gc-deploy"
 
 [project.scripts]
-stack-deploy = "gc-stack-deploy.stack_deploy:main"
+gc-stack-deploy = "gc-stack-deploy.stack_deploy:main"
 
 [build-system]
 requires = ["hatchling"]
