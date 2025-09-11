@@ -73,7 +73,7 @@ If you don't want to sweat the details, it's much quicker to deploy the Guardian
 Unless your SQL database is on another host, the tool must be run on the same machine where CapRover is running. Install the tool:
 
 ```sh
-pip install "gc-stack-deploy @ git+https://github.com/ConservationMetrics/gc-deploy.git@14-self-install#subdirectory=caprover/gc-stack-deploy"
+pip install "gc-stack-deploy @ git+https://github.com/ConservationMetrics/gc-deploy.git@main#subdirectory=caprover/gc-stack-deploy"
 ```
 
 You must create a `stack.yaml` configuration file of for your new deployment. The configuration
@@ -107,6 +107,8 @@ Install each of the following apps in turn, paying attention to the **App-specif
 - [Windmill](#windmill)
 - [Superset](#superset)
 
+
+## Post-install app configuration
 
 ### CoMapeo Archive Server
 
