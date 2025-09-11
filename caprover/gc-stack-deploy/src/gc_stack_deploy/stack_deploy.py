@@ -10,10 +10,12 @@ Guardian Connector stack.  The script is able to inject the same variable value
 """
 
 import argparse
+import importlib.resources
 import logging
 import os
 import http.server
 import socketserver
+import shutil
 import threading
 import time
 import subprocess
@@ -55,7 +57,7 @@ def run_psql_command_on_docker_service_container(service_name, sql_command, pgus
 
     # Get container ID of running {service_name}, retrying if needed
     container_id = ""
-    for i in range(10):  # 10 retries * 5 seconds = 50 seconds
+    for i in range(7):  # 7 retries * 8 seconds = 56 seconds
         result = subprocess.run(
             ['sudo', 'docker', 'ps', '--filter', f'name={service_name}', '--filter', 'status=running', '--format', '{{.ID}}'],
             stdout=subprocess.PIPE, check=True, text=True
@@ -63,8 +65,8 @@ def run_psql_command_on_docker_service_container(service_name, sql_command, pgus
         container_id = result.stdout.strip()
         if container_id:
             break
-        logger.info(f"Waiting for {service_name=}... ({i+1}/10)")
-        time.sleep(5)
+        logger.info(f"Waiting for {service_name=}... ({i+1}/7)")
+        time.sleep(8)
     else:
         raise SystemError(f"Did not find a running container for {service_name=} after 45 seconds.")
 
@@ -409,10 +411,30 @@ class LocalRepoServer:
             self.httpd.shutdown()
             self.httpd.server_close()
 
+
+def copy_example(dest):
+    """
+    Copy example config shipped with the package to a local destination
+
+    Parameters
+    ----------
+    dest : Path
+        Destination file to write
+    """
+    examples = importlib.resources.files("stack_deploy.example_configs")
+    for path in examples.iterdir():
+        if path.is_file() and path.name == "stack.example.yaml":
+            shutil.copy(path, dest)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawTextHelpFormatter
     )
+
+    # OPTIONAL "init" or "deploy" subcommand
+    parser.add_argument("command", nargs="?", choices=["init", "deploy"], default="deploy", help="Optional subcommand")
+
     parser.add_argument(
         "-c",
         "--config-file",
@@ -431,6 +453,11 @@ def main():
         help="Enable or disable dry-run (default: disabled)",
     )
     args = parser.parse_args()
+
+    if args.command == "init":
+        print("init -> " + args.config_file)
+        copy_example(args.config_file)
+        return
 
     # Load configuration
     config = load_config(args.config_file)

@@ -63,29 +63,34 @@ If you already have an external PostgreSQL instance (e.g., cloud-hosted), simply
 
 You have two options to install apps:
 
-1. install the entire stack in one script: `stack_deploy.py`
+1. install the entire stack in one script: **`gc-stack-deploy`**
 2. install apps one-at-a-time through the CapRover UI
 
-### Option 1. Installing the entire stack with `stack_deploy.py`
+### Option 1. Installing the entire stack with **`gc-stack-deploy`**
 
-If you don't want to sweat the details, it's much quicker to deploy the Guardian Connector stack of apps by running `stack_deploy.py`.
+If you don't want to sweat the details, it's much quicker to deploy the Guardian Connector stack of apps using the `gc-stack-deploy`.
 
-
-Set up a Python environment:
+Unless your SQL database is on another host, the tool must be run on the same machine where CapRover is running. Install the tool:
 
 ```sh
-git clone https://github.com/IamJeffG/Caprover-API.git
-cd Caprover-API/
-git checkout fix-oneclick-repo
-pip install 'psycopg[binary]' .
+pip install "gc-stack-deploy @ git+https://github.com/ConservationMetrics/gc-deploy.git@main#subdirectory=caprover/gc-stack-deploy"
 ```
 
-The `stack_deploy.py` script requires you to create a `stack.yaml` file of variable values by
-copying `stack.example.yaml` and filling in the blanks.
+You must create a `stack.yaml` configuration file of for your new deployment. The configuration
+file lets you set secrets and API keys, and configure which apps you want.  Write an example template
+to your local directory by running `gc-stack-deploy init --config-file «destination.yaml»`.
+
+```sh
+$ gc-stack-deploy init --config-file stack.yaml
+```
+Then open the file and fill in the blanks.
+
+Finally you are ready to use this same configuration file to deploy the apps to CapRover,
+running on the same machine.
 
 ```sh
 # First, dry-run to check for misconfigurations
-python stack_deploy.py --config-file stack.yaml --dry-run
+$ gc-stack-deploy --config-file stack.yaml --dry-run
 # Then repeat without --dry-run
 ```
 
@@ -102,6 +107,8 @@ Install each of the following apps in turn, paying attention to the **App-specif
 - [Windmill](#windmill)
 - [Superset](#superset)
 
+
+## Post-install app configuration
 
 ### CoMapeo Archive Server
 
@@ -146,13 +153,13 @@ instead of installing separate database servers for each app in the stack.
 
 #### Before Install
 
-Windmill installation involves some separate PostgreSQL setup. The `stack_deploy.py` script
+Windmill installation involves some separate PostgreSQL setup. The `gc-stack-deploy`
 handles this for you: you will need to set a second PostgreSQL username and password for Windmill,
 in addition to the admin password at the top of `stack.yaml`.
 
-
 If you want to set up Windmill manually, you must execute the necessary SQL commands directly on your PostgreSQL instance.
-These commands can be found inside the `stack_deploy.py` script and include creating the Windmill database, roles, and granting privileges.
+They include creating the Windmill database, roles, and granting privileges. Specific commands can
+be found inside the one-click-app's preamble.
 
 #### After Install
 

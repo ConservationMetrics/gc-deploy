@@ -1,0 +1,27 @@
+[project]
+name = "gc-stack-deploy"
+version = "0.1.0"
+description = "Deploy Guardian Connector stack of apps to the (locally running) Caprover instance."
+requires-python = ">=3.9"
+dependencies = [
+    "psycopg[binary]",
+    "Caprover-API @ git+https://github.com/IamJeffG/Caprover-API.git@fix-oneclick-repo",
+]
+
+[project.urls]
+Homepage = "https://guardianconnector.net/"
+Documentation = "https://docs.guardianconnector.net"
+Repository = "https://github.com/ConservationMetrics/gc-deploy"
+
+[project.scripts]
+gc-stack-deploy = "gc_stack_deploy.stack_deploy:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true  # TODO remove this once we no longer have a git-based dependency
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/gc_stack_deploy"]

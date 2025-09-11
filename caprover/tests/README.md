@@ -1,13 +1,13 @@
 # End-to-end Testing CapRover-facing deliverables
 
-The stack deployment code, including `stack_deploy.py` and the custom one-click apps, has a hard
+The stack deployment code, including `gc-stack-deploy` and the custom one-click apps, has a hard
 dependency on a running CapRover server. Since CapRover requires Docker Swarm, which is not
 commonly available in hosted CI runners, we have developed a Makefile-based end-to-end testing
 framework that can be run locally or on any machine with Docker.
 
 Unfortunately, no assertions are made. The end-to-end test is merely a **smoketest** that
 - ensures the repository of one-click-apps **can be built**;
-- ensures **`stack_deploy.py` can install** all one-click apps against a CapRover server from a configuration file.
+- ensures **`gc-stack-deploy` can install** all one-click apps against a CapRover server from a configuration file.
 
 The `Makefile` includes targets for these, as well as for all prerequisities (e.g.
 setting up and tearing down a CapRover server).
@@ -34,7 +34,7 @@ Before running the tests, ensure you have the following installed on your system
 The full end-to-end test suite will:
 1. Install a fresh CapRover instance locally.
 2. Build the custom one-click app repository.
-3. Deploy a minimal stack using `stack_deploy.py`.
+3. Deploy a minimal stack using `gc-stack-deploy`.
 4. Uninstall the local CapRover instance.
 
 WARNINGS:
