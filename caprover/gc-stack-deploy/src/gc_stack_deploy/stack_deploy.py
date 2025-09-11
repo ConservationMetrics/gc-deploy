@@ -57,7 +57,7 @@ def run_psql_command_on_docker_service_container(service_name, sql_command, pgus
 
     # Get container ID of running {service_name}, retrying if needed
     container_id = ""
-    for i in range(10):  # 10 retries * 5 seconds = 50 seconds
+    for i in range(7):  # 7 retries * 8 seconds = 56 seconds
         result = subprocess.run(
             ['sudo', 'docker', 'ps', '--filter', f'name={service_name}', '--filter', 'status=running', '--format', '{{.ID}}'],
             stdout=subprocess.PIPE, check=True, text=True
@@ -65,8 +65,8 @@ def run_psql_command_on_docker_service_container(service_name, sql_command, pgus
         container_id = result.stdout.strip()
         if container_id:
             break
-        logger.info(f"Waiting for {service_name=}... ({i+1}/10)")
-        time.sleep(5)
+        logger.info(f"Waiting for {service_name=}... ({i+1}/7)")
+        time.sleep(8)
     else:
         raise SystemError(f"Did not find a running container for {service_name=} after 45 seconds.")
 

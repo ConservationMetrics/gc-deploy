@@ -70,7 +70,7 @@ You have two options to install apps:
 
 If you don't want to sweat the details, it's much quicker to deploy the Guardian Connector stack of apps using the `gc-stack-deploy`.
 
-In most cases, the tool must be run on the same machine where CapRover is running. Install the tool:
+Unless your SQL database is on another host, the tool must be run on the same machine where CapRover is running. Install the tool:
 
 ```sh
 pip install "gc-stack-deploy @ git+https://github.com/ConservationMetrics/gc-deploy.git@14-self-install#subdirectory=caprover/gc-stack-deploy"
