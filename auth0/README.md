@@ -9,19 +9,20 @@ You will need a Google Cloud Platform (GCP) OAuth 2.0 Client in order to [avoid 
 *  If you need to create a new Google Cloud Platform (GCP) OAuth 2.0 Client:
    * Create a project on GCP.
    * Navigage to "Clients", and create a Client for a web application.
-   * Add the following settings:
+* If you already have a GCP OAuth 2.0 Client, then you can add the authorized JavaScript origin and redirect URI for your new tenant (per the formats above).
+   * You can find your client by navigating to **APIS & Services** -> **OAuth consent screen** -> **Clients**.
+* Add the following settings:
      * Authorized JavaScript origins:
 `https://{tenant}.us.auth0.com`
      * Authorized redirect URIs:
 `https://{tenant}.us.auth0.com/login/callback`
- * If you already have a GCP OAuth 2.0 Client, then you can add the authorized JavaScript origin and redirect URI for your new tenant (per the formats above).
- * Copy down the Client ID and Secret for your client.
+* Copy down the Client ID and Secret for your client.
 
 ## Tenant configuration
 
 1. In **Settings**, select “Production” as the Environment Tag.
 2. In **Actions**, configure a Login Flow Action to handle user approval. (See [ User Approval Flow](#user-approval-flow) below.)
-4. In **Authentication / Database**, ensure Sign Ups are enabled (enabled by default).
+4. In **Authentication / Database**, ensure Sign Ups are enabled (they should be enabled by default).
 5. In **Authentication / Social**, enable google-oauth2 under Social Connections. You will need to provide a Client ID and Secret (see [GCP OAuth client configuration](#gcp-oauth-client-configuration)).
 
 1.  In **Applications**, create a separate Regular Web Application for each tool (e.g., Superset, GC-Explorer). Add appropriate production domain values under Callback URLs, Web Origins, and CORS.
@@ -67,9 +68,9 @@ To restrict access until a user is approved, a Post-Login Trigger Action is used
 
 ## Setting up RBAC
 
-Role-Based Access Control (RBAC) allows you to control user access to different features based on assigned roles. Several of the Guardian Connector applications (e.g. GC-Explorer and GC-Landing Page) use three roles: **Admin**, **Member**, and **Viewer**.
+Role-Based Access Control (RBAC) allows you to control user access to different features based on assigned roles. Several of the Guardian Connector applications (e.g. GC-Explorer and GC-Landing Page) use four roles: **Admin**, **Member**, **Viewer**, and **Public**.
 
-### API **Configuration**
+### API Configuration
 
 1. Go to **Dashboard > Applications > APIs** and find the "Auth0 Management API" API
 2. For that API, go to the **"Machine to Machine Applications"** tab
@@ -82,10 +83,12 @@ Role-Based Access Control (RBAC) allows you to control user access to different 
 
 1. Navigate to **User Management > Roles** in the Auth0 dashboard
 2. Click **"+ Create Role"** and create the following roles:
-   * **Admin**: "can access anything a member can, plus `/config`"
-   * **Member**: "can access both unrestricted and restricted views routes"
+   * **Admin**: "can access anything a member can, plus `/config` (in GC Explorer) or user management (in GC Landing Page)"
+   * **Member**: "can access both unrestricted and restricted routes"
+   * **Viewer**: "can access only unrestricted routes"
+   * **Public**: "can access only routes that are set to public"
 
-**Note**: Users without any assigned roles are treated as having Viewer-level access.
+**Note**: Users without any assigned roles are treated as having Public-level access.
 
 ## Auth0 approval process
 
