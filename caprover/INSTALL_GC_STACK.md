@@ -70,11 +70,35 @@ You have two options to install apps:
 
 If you don't want to sweat the details, it's much quicker to deploy the Guardian Connector stack of apps using the `gc-stack-deploy`.
 
-Unless your SQL database is on another host, the tool must be run on the same machine where CapRover is running. Install the tool:
+Unless your SQL database is on another host, the tool must be run on the same machine where CapRover is running. 
+
+#### Install the tool
+
+On most systems you can install directly with pip:
 
 ```sh
 $ pip install "gc-stack-deploy @ git+https://github.com/ConservationMetrics/gc-deploy.git@main#subdirectory=caprover/gc-stack-deploy"
 ```
+
+#### If pip is blocked (common on some VMs)
+
+Some environments (like fresh Ubuntu VMs) restrict `pip install` into the system Python. In that case, use `pipx`
+to install the tool:
+```sh
+$ sudo apt install pipx -y
+$ pipx install "gc-stack-deploy @ git+https://github.com/ConservationMetrics/gc-deploy.git@main#subdirectory=caprover/gc-stack-deploy"
+```
+
+**Note**: pipx installs apps into `~/.local/bin`. If you see `gc-stack-deploy: command not found`, add it to your PATH:
+
+```sh
+$ export PATH=$HOME/.local/bin:$PATH
+$ echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.bashrc
+```
+
+Then, restart your shell or run `exec $SHELL -l`. Now you can run `gc-stack-deploy` from any directory.
+
+#### Create a `stack.yaml` configuration file
 
 You must create a `stack.yaml` configuration file of for your new deployment. The configuration
 file lets you set secrets and API keys, and configure which apps you want.  Write an example template
