@@ -136,7 +136,7 @@ Install each of the following apps in turn, paying attention to the **App-specif
 
 ### PostgreSQL
 
-TODO: Set up `warehouse` database.
+If you haven't already (i.e. through `gc-stack-deploy`), create the `warehouse` database.
 
 ### CoMapeo Archive Server
 
