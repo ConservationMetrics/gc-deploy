@@ -124,6 +124,7 @@ From the CapRover, navigate to **Apps** and "One-Click Apps/Database".
 
 Install each of the following apps in turn, paying attention to the **App-specific notes** at the links:
 
+- [PostgreSQL](#postgresql)
 - [CoMapeo Archive Server](#comapeo-archive-server)
 - [Filebrowser](#filebrowser)
 - [GuardianConnector Explorer](#guardianconnector-explorer)
@@ -132,6 +133,10 @@ Install each of the following apps in turn, paying attention to the **App-specif
 - [Superset](#superset)
 
 ## Post-install app configuration
+
+### PostgreSQL
+
+TODO: Set up `warehouse` database.
 
 ### CoMapeo Archive Server
 
