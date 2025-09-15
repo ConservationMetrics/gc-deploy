@@ -145,8 +145,9 @@ Install - for Docker image tag, just use `v2`.
 
 Carefully follow the post-installation instructions.
 
-Find the admin password in the CapRover web portal under Files > Logs.
-Then change the password inside Filebrowser app.
+Find the admin password in the CapRover web portal under Files > Logs. Then change the password inside 
+Filebrowser app. This has to be done immediately after installing the app. If the app restarts,
+the log message showing the password will not be shown again.
 
 When logging into Filebrowser app, you may see "This location can't be reached".
 This is because Filebrowser is configured to show files in a folder called "datalake"
