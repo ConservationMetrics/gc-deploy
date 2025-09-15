@@ -4,8 +4,8 @@ caproverPassword: "secret-captain-password"
 postgres:
   deploy: false  # Set to false to skip PostgreSQL deployment
   # Required in all cases
-  user: "postgres"
-  pass: "your_pg_password"
+  user: "postgres" # Do not change this
+  pass: "your_pg_password" # Set a secure password
 
   # Set only when deploy: true
   database: postgres

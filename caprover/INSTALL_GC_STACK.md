@@ -109,6 +109,8 @@ $ gc-stack-deploy init --config-file stack.yaml
 ```
 Then open the file and fill in the blanks.
 
+TODO: make it easier to populate `stack.yaml`, e.g. not needing to put in auth0 domain multiple times.
+
 Finally you are ready to use this same configuration file to deploy the apps to CapRover,
 running on the same machine.
 
@@ -130,7 +132,6 @@ Install each of the following apps in turn, paying attention to the **App-specif
 - [Redis](#redis)
 - [Windmill](#windmill)
 - [Superset](#superset)
-
 
 ## Post-install app configuration
 
