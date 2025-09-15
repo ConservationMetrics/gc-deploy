@@ -91,7 +91,7 @@ Many communities keep their data lake files on Azure Files. This is optional.
    - CMI uses the following naming conventions:
      - Storage Account Name: {alias}
      - Storage Account Folder: {alias}-files
-   - **Note:** check the standard quota for the file share, and adjust as needed. (CMI typically sets 5120 GB, or 5 TB)
+   - **Note:** check the standard quota for the file share, and adjust as needed. (CMI typically sets 1024 GB, or 1 TB)
 
 2. **To not use Azure Files:**
    - Delete the entire `write_files:` section from `cloud-config.yml`
