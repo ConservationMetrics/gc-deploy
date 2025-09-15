@@ -1,12 +1,11 @@
 # Post-Deployment Checklist
 
-Use this checklist to validate a successful Guardian Connector deployment before handoff.  
+Use this checklist to validate a successful Guardian Connector deployment before handoff.
 It covers the manual steps that are not already automated through the scripts and workflows in this repo, and is meant to complement — not replace — the deployment guides.
 
 ## VM
 
 - [ ] Did I set a `*.alias` A record in my DNS provider? (And can confirm it resolves to the VM's IP?)
-- [ ] Did I set an appropriate file quota (e.g. 1TB) for file shares?
 
 ## CapRover and services
 

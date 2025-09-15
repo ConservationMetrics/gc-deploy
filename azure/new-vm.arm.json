@@ -76,7 +76,10 @@
       "name": "[concat(parameters('storageAccountName'), '/default/', parameters('storageAccountFolder'))]",
       "dependsOn": [
         "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
-      ]
+      ],
+      "properties": {
+        "shareQuota": 1024
+      }
     },
     {
       "type": "Microsoft.Network/publicIPAddresses",
