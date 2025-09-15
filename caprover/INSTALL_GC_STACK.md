@@ -56,7 +56,7 @@ If you already have an external PostgreSQL instance (e.g., cloud-hosted), simply
 
 1. In your CapRover web dashboard, navigate to **Apps** → **Create A New App** → **One-Click Apps/Databases**.
 2. At the very bottom of the Apps list, find **3rd party repositories**. Enter the URL:
-    > `https://conservationmetrics.github.io/gc-deploy/one-click-apps/v4/apps/`
+    > `https://conservationmetrics.github.io/gc-deploy/one-click-apps`
 3. **Connect New Repostory** and refresh the page. You can now browse and install Guardian Connector apps directly from CapRover.
 
 ## Different ways to install apps
