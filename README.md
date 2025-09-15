@@ -40,7 +40,7 @@ High-level steps to spawn a new stack
     - The Azure deployment can automatically create an Azure Storage Account and Files share for you, or you can use an existing one. If you are storing files on the VM directly, you can skip Azure Files entirely.
 3. 🔐 If you plan on using auth0, set up an **auth0 tenant** with a user authorization workflow and client applications to help secure access to the apps you will deploy. See [`auth0/README.md`](auth0/README.md)
 
-4. 📦 Install the app stack by following [`caprover/README.md`](https://github.com/ConservationMetrics/gc-forge/blob/main/caprover/README.md).
+4. 📦 Install the app stack by following [`caprover/README.md`](caprover/README.md).
 5. Set up data pipelines & other scripts to run in Windmill.
     - See [**ConservationMetrics/gc-scripts-hub**](https://github.com/ConservationMetrics/gc-scripts-hub/)
 

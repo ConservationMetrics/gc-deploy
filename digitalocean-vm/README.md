@@ -51,7 +51,7 @@ CapRover's [Getting Started](https://caprover.com/docs/get-started.html#step-3-c
 
 ### IV. Install the Guardian Connector software stack
 
-Install the app stack by following [`caprover/README.md`](https://github.com/ConservationMetrics/gc-forge/blob/main/caprover/README.md).
+Install the app stack by following [`caprover/README.md`](../caprover/README.md).
 
 
 ## 👩‍💻 Maintenance
