@@ -54,8 +54,9 @@ For security reasons, initial configuration from another machine is disabled, bo
 
 ### IV. Install the Guardian Connector software stack
 
-Install the app stack by following [`../caprover/INSTALL_GC_STACK.md`](../caprover/INSTALL_GC_STACK.md).
-
+- Install the app stack by following [`../caprover/INSTALL_GC_STACK.md`](../caprover/INSTALL_GC_STACK.md).
+- Set up auth0 by following [`../auth0/README.md`](../auth0/README.md).
+- Set up a Mapbox account to provide the API key for the apps.
 
 ## 📖 More Information
 

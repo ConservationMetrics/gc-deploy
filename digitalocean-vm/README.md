@@ -49,10 +49,11 @@ CapRover's [Getting Started](https://caprover.com/docs/get-started.html#step-3-c
 4. Close port 3000 in the firewall. Do this in the DigitalOcean web interface under "Networking".
 
 
-### IV. Install the Guardian Connector software stacks and set up other services
+### IV. Install the Guardian Connector software stack
 
-- Install the app stack by following [`caprover/README.md`](../caprover/README.md).
-- Set up auth0 by following [`auth0/README.md`](../auth0/README.md).
+- Install the app stack by following [`../caprover/INSTALL_GC_STACK.md`](../caprover/INSTALL_GC_STACK.md).
+- Set up auth0 by following [`../auth0/README.md`](../auth0/README.md).
+- Set up a Mapbox account to provide the API key for the apps.
 
 ## 👩‍💻 Maintenance
 
