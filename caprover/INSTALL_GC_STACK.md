@@ -84,6 +84,7 @@ $ pip install "gc-stack-deploy @ git+https://github.com/ConservationMetrics/gc-d
 
 Some environments (like fresh Ubuntu VMs) restrict `pip install` into the system Python. In that case, use `pipx`
 to install the tool:
+
 ```sh
 $ sudo apt install pipx -y
 $ pipx install "gc-stack-deploy @ git+https://github.com/ConservationMetrics/gc-deploy.git@main#subdirectory=caprover/gc-stack-deploy"
@@ -97,6 +98,8 @@ $ echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.bashrc
 ```
 
 Then, restart your shell or run `exec $SHELL -l`. Now you can run `gc-stack-deploy` from any directory.
+
+(Alternatively, you could create a venv to install the tool into, and then add it to your PATH.)
 
 #### Create a `stack.yaml` configuration file
 
