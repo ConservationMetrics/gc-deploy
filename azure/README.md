@@ -40,7 +40,7 @@ For security reasons, initial configuration from another machine is disabled, bo
     ssh -i ~/.ssh/your-secret-key YOUR_USERNAME@mycommunity.guardianconnector.net
     ```
     (or use the IP address if your domain is not yet pointing to the VM)
-    
+
 2. Run the CapRover setup:
     ```bash
     caprover serversetup
@@ -48,6 +48,7 @@ For security reasons, initial configuration from another machine is disabled, bo
     - Answer "y" to the question "have you already started CapRover container on your server?"
     - When asked for "IP address of server": type `127.0.0.1`.
     - For "Root domain": enter your full domain (example: `mycommunity.guardianconnector.net`)
+    - For "Caprover machine name", enter your alias for the VM (example: `mycommunity`)
 
     Note that it may take the server a few minutes to install CapRover. If, when running this command, you get an error that `caprover: command not found`, wait a few minutes and try again.
 
