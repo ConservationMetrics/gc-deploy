@@ -78,6 +78,7 @@ Role-Based Access Control (RBAC) allows you to control user access to different 
 4. For each application, select the required scopes:
    * `read:users` - to fetch user information
    * `read:user_idp_tokens` - to read user roles
+   * `read:roles` and `read:role_members` - to read user roles
 
 ### Role Setup
 
