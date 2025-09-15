@@ -37,8 +37,10 @@ For security reasons, initial configuration from another machine is disabled, bo
 
 1. SSH into your new VM:
     ```bash
-    ssh -i ~/.ssh/your-secret-key YOUR_USERNAME@captain.mycommunity.guardianconnector.net
+    ssh -i ~/.ssh/your-secret-key YOUR_USERNAME@mycommunity.guardianconnector.net
     ```
+    (or use the IP address if your domain is not yet pointing to the VM)
+    
 2. Run the CapRover setup:
     ```bash
     caprover serversetup
