@@ -15,6 +15,7 @@ It covers the manual steps that are not already automated through the scripts an
 - [ ] Did I set up the Guardian Connector 3rd party repository?
 - [ ] Did I deploy all required apps?
 - [ ] Did I configure environment variables and settings for each app correctly? (c.f. [caprover/INSTALL_GC_STACK.md#post-install-app-configuration](caprover/INSTALL_GC_STACK.md#post-install-app-configuration))
+- [ ] Did I set the `{alias}.domain.net` to point to one of the applications (e.g. Superset or GC Landing Page)?
 
 ### Superset
 
