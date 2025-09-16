@@ -33,6 +33,7 @@ It covers the manual steps that are not already automated through the scripts an
 - [ ] Did I set a Mapbox API key and a logo in the environment variables?
 - [ ] Did I successfully log in as the initial admin account using auth0?
 - [ ] Did I configure a database connection to `warehouse`?
+- [ ] Did I copy down the `SECRET_KEY` from the environment variables and store it in Keepass?
 
 ## Filebrowser
 
