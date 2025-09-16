@@ -43,4 +43,4 @@ High-level steps to spawn a new stack
 4. 📦 Install the app stack by following [`caprover/README.md`](https://github.com/ConservationMetrics/gc-forge/blob/main/caprover/README.md).
 5. Set up data pipelines & other scripts to run in Windmill.
     - See [**ConservationMetrics/gc-scripts-hub**](https://github.com/ConservationMetrics/gc-scripts-hub/)
-
+6. Use the [Deployment Checklist](DEPLOYMENT-CHECKLIST.md) to validate your deployment.
