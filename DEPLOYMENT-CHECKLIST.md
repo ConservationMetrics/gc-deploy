@@ -25,8 +25,8 @@ It covers the manual steps that are not already automated through the scripts an
 
 ### Filebrowser
 
-- [ ] Did I change the Filebrowser admin password?
-- [ ] Did I store the admin credentials in Keepass?
+- [ ] Did I get the Filebrowser admin password from the logs in CapRover, and change it?
+- [ ] Did I store the updated admin credentials in Keepass?
 
 ### Windmill
 
@@ -43,7 +43,7 @@ It covers the manual steps that are not already automated through the scripts an
 
 ### CoMapeo
 
-- [ ] Did I set an appropriate project limit for the CoMapeo archive server?
+- [ ] Did I set an appropriate project limit for the CoMapeo archive server in the `ALLOWED_PROJECTS` environment variable?
 
 ### GC Explorer
 
