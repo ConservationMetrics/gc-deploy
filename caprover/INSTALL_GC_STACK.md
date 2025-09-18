@@ -56,7 +56,7 @@ If you already have an external PostgreSQL instance (e.g., cloud-hosted), simply
 
 1. In your CapRover web dashboard, navigate to **Apps** → **Create A New App** → **One-Click Apps/Databases**.
 2. At the very bottom of the Apps list, find **3rd party repositories**. Enter the URL:
-    > `https://conservationmetrics.github.io/gc-deploy/one-click-apps/v4/apps/`
+    > `https://conservationmetrics.github.io/gc-deploy/one-click-apps`
 3. **Connect New Repostory** and refresh the page. You can now browse and install Guardian Connector apps directly from CapRover.
 
 ## Different ways to install apps
@@ -70,11 +70,38 @@ You have two options to install apps:
 
 If you don't want to sweat the details, it's much quicker to deploy the Guardian Connector stack of apps using the `gc-stack-deploy`.
 
-Unless your SQL database is on another host, the tool must be run on the same machine where CapRover is running. Install the tool:
+Unless your SQL database is on another host, the tool must be run on the same machine where CapRover is running. 
+
+#### Install the tool
+
+On most systems you can install directly with pip:
 
 ```sh
-pip install "gc-stack-deploy @ git+https://github.com/ConservationMetrics/gc-deploy.git@main#subdirectory=caprover/gc-stack-deploy"
+$ pip install "gc-stack-deploy @ git+https://github.com/ConservationMetrics/gc-deploy.git@main#subdirectory=caprover/gc-stack-deploy"
 ```
+
+#### If pip is blocked (common on some VMs)
+
+Some environments (like fresh Ubuntu VMs) restrict `pip install` into the system Python. In that case, use `pipx`
+to install the tool:
+
+```sh
+$ sudo apt install pipx -y
+$ pipx install "gc-stack-deploy @ git+https://github.com/ConservationMetrics/gc-deploy.git@main#subdirectory=caprover/gc-stack-deploy"
+```
+
+**Note**: pipx installs apps into `~/.local/bin`. If you see `gc-stack-deploy: command not found`, add it to your PATH:
+
+```sh
+$ export PATH=$HOME/.local/bin:$PATH
+$ echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.bashrc
+```
+
+Then, restart your shell or run `exec $SHELL -l`. Now you can run `gc-stack-deploy` from any directory.
+
+(Alternatively, you could create a venv to install the tool into, and then add it to your PATH.)
+
+#### Create a `stack.yaml` configuration file
 
 You must create a `stack.yaml` configuration file of for your new deployment. The configuration
 file lets you set secrets and API keys, and configure which apps you want.  Write an example template
@@ -100,6 +127,7 @@ From the CapRover, navigate to **Apps** and "One-Click Apps/Database".
 
 Install each of the following apps in turn, paying attention to the **App-specific notes** at the links:
 
+- [PostgreSQL](#postgresql)
 - [CoMapeo Archive Server](#comapeo-archive-server)
 - [Filebrowser](#filebrowser)
 - [GuardianConnector Explorer](#guardianconnector-explorer)
@@ -107,8 +135,11 @@ Install each of the following apps in turn, paying attention to the **App-specif
 - [Windmill](#windmill)
 - [Superset](#superset)
 
-
 ## Post-install app configuration
+
+### PostgreSQL
+
+If you haven't already (i.e. through `gc-stack-deploy`), create the `warehouse` database.
 
 ### CoMapeo Archive Server
 
@@ -122,8 +153,9 @@ Install - for Docker image tag, just use `v2`.
 
 Carefully follow the post-installation instructions.
 
-Find the admin password in the CapRover web portal under Files > Logs.
-Then change the password inside Filebrowser app.
+Find the admin password in the CapRover web portal under Files > Logs. Then change the password inside 
+Filebrowser app. This has to be done immediately after installing the app. If the app restarts,
+the log message showing the password will not be shown again.
 
 When logging into Filebrowser app, you may see "This location can't be reached".
 This is because Filebrowser is configured to show files in a folder called "datalake"

@@ -1,11 +1,13 @@
+# TODO: make it easier to populate this file, e.g. not needing to put in auth0 domain multiple times.
+
 caproverUrl: "http[s]://captain.your-captain-root.net"
 caproverPassword: "secret-captain-password"
 
 postgres:
   deploy: false  # Set to false to skip PostgreSQL deployment
   # Required in all cases
-  user: "postgres"
-  pass: "your_pg_password"
+  user: "postgres" # Do not change this
+  pass: "your_pg_password" # Set a secure password
 
   # Set only when deploy: true
   database: postgres
