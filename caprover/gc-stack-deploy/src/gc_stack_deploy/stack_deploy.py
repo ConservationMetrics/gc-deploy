@@ -122,13 +122,13 @@ def deploy_stack(config, gc_repository, dry_run):
             )
         postgres_host = "srv-captain--postgres"
         postgres_port = "5432"
-        postgres_ssl = "false"
     else:
         # Using an external PostgreSQL instance
         logger.info("Using external PostgreSQL configuration.")
         postgres_host = config["postgres"]["host"]
         postgres_port = config["postgres"]["port"]
-        postgres_ssl = "true"
+    is_using_caprover_db = postgres_host.startswith("srv-captain--")
+    postgres_ssl = str(!is_using_caprover_db)  # as string "true" or "false"
 
     # Deploy Windmill if specified in config
     one_click_app_name = "windmill-only"
@@ -140,7 +140,6 @@ def deploy_stack(config, gc_repository, dry_run):
         windmill_db_pass = config[one_click_app_name].pop(
             "azure_db_pass", config["postgres"]["pass"]
         )
-        is_using_caprover_db = postgres_host.startswith("srv-captain--")
         is_using_azure_db = (not is_using_caprover_db) and (
             "azure_db_user" in config[one_click_app_name]
         )
@@ -245,7 +244,6 @@ def deploy_stack(config, gc_repository, dry_run):
     one_click_app_name = "superset-only"
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
-        is_using_caprover_db = postgres_host.startswith("srv-captain--")
         if is_using_caprover_db:
             run_psql_command_on_docker_service_container(
                 postgres_host,
