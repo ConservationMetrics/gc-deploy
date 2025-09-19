@@ -1,4 +1,4 @@
-# Deployment Checklist
+# Post-Deployment Checklist
 
 Use this checklist to validate a successful Guardian Connector deployment before handoff.  
 It covers the manual steps that are not already automated through the scripts and workflows in this repo, and is meant to complement — not replace — the deployment guides.
@@ -52,7 +52,7 @@ _No manual steps required until datasets exist._
 
 ## Third-party services
 
-###Auth0
+### Auth0
 
 - [ ] Did I add a GCP OAuth client for Google social login?
 - [ ] Did I set up the user approval flow?
