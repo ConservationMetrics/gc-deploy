@@ -182,7 +182,10 @@ def deploy_stack(config, gc_repository, dry_run):
         ) as conn,
         conn.cursor() as cur,
     ):
-        cur.execute("CREATE DATABASE warehouse;")
+        try:
+            cur.execute("CREATE DATABASE warehouse;")
+        except psycopg.errors.DuplicateDatabase:
+            pass
 
     # Deploy Windmill if specified in config
     one_click_app_name = "windmill-only"
