@@ -107,22 +107,22 @@ def deploy_stack(config, gc_repository, dry_run):
         # this is the connection to be used from this script (which runs on the host)
         postgres_from_vm = None
 
-        # OPTIONAL: expose the postgres server at this custom port on the VM.
-        if postgres_vm_port := config["postgres"]["exposePort"]:
-            postgres_vm_port = int(postgres_vm_port)
-            cap.update_app(
-                app_name,
-                port_mapping=[f"{postgres_vm_port}:{postgres_from_container.port}"],
-            )
+        # For Docker deployments, expose the postgres server at this custom port on the VM
+        postgres_vm_port = int(config["postgres"]["exposePort"])
+        cap.update_app(
+            app_name,
+            port_mapping=[f"{postgres_vm_port}:{postgres_from_container.port}"],
+        )
 
-            # this is the connection to be used from this script (which runs on the host)
-            postgres_from_vm = PostgresConnectionConfig(
-                "localhost",
-                config["postgres"]["user"],
-                config["postgres"]["pass"],
-                ssl=False,
-                port=postgres_vm_port,
-            )
+        # this is the connection to be used from this script (which runs on the host)
+        postgres_from_vm = PostgresConnectionConfig(
+            "localhost",
+            config["postgres"]["user"],
+            config["postgres"]["pass"],
+            ssl=False,
+            port=postgres_vm_port,
+        )
+
     else:
         # Using an external PostgreSQL instance
         logger.info("Using external PostgreSQL configuration.")
