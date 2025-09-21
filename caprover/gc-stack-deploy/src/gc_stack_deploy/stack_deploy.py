@@ -280,7 +280,9 @@ def deploy_stack(config, gc_repository, dry_run):
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
         with (
-            postgres_patient_connect(postgres_from_vm.connstr()) as conn,
+            postgres_patient_connect(
+                postgres_from_vm.connstr(), autocommit=True
+            ) as conn,
             conn.cursor() as cur,
         ):
             cur.execute("CREATE DATABASE superset_metastore;")
