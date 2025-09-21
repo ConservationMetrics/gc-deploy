@@ -16,12 +16,11 @@ import logging
 import os
 import shutil
 import socketserver
-import subprocess
 import sys
 import threading
 import time
-from contextlib import nullcontext
-from dataclasses import dataclass
+from contextlib import contextmanager, nullcontext
+from dataclasses import dataclass, replace
 
 import psycopg
 import yaml
@@ -51,6 +50,49 @@ def construct_app_variables(config, service_name, init=None):
             continue
         variables[f"$$cap_{key}"] = val
     return variables
+
+
+@contextmanager
+def postgres_patient_connect(*args, retries=10, delay_seconds=2, **kwargs):
+    """
+    Context manager that retries initial PostgreSQL connection (e.g. waits for server to be ready)
+
+    After successful connect, it does not retry or reconnect for subsequent errors
+    during the context block.
+
+    Parameters
+    ----------
+    *args :
+        Positional arguments passed directly to psycopg.connect.
+    retries : int, optional
+        Maximum number of connection attempts (default 10).
+    delay_seconds : int, optional
+        Base delay in seconds between retries (exponential backoff).
+    **kwargs :
+        Keyword arguments passed directly to psycopg.connect.
+
+    Yields
+    ------
+    psycopg.Connection
+        A live PostgreSQL connection object.
+
+    Raises
+    ------
+    psycopg.OperationalError
+        If connection cannot be established after the given retries.
+    """
+    last_exc = None
+    for attempt in range(1, retries + 1):
+        try:
+            with psycopg.connect(*args, **kwargs) as conn:
+                yield conn
+                return
+        except psycopg.OperationalError as e:
+            last_exc = e
+            if attempt < retries:
+                time.sleep(delay_seconds * (2 ** (attempt - 1)))
+            else:
+                raise last_exc
 
 
 @dataclass
@@ -159,7 +201,7 @@ def deploy_stack(config, gc_repository, dry_run):
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
 
         # As superadmin, create a windmill database
-        with psycopg.connect(
+        with postgres_patient_connect(
             postgres_from_vm.connstr("postgres"), autocommit=True
         ) as conn:
             logger.info("Connected to database as superadmin")
@@ -237,7 +279,10 @@ def deploy_stack(config, gc_repository, dry_run):
     one_click_app_name = "superset-only"
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
-        with psycopg.connect(postgres_from_vm.connstr()) as conn, conn.cursor() as cur:
+        with (
+            postgres_patient_connect(postgres_from_vm.connstr()) as conn,
+            conn.cursor() as cur,
+        ):
             cur.execute("CREATE DATABASE superset_metastore;")
 
         variables = {
