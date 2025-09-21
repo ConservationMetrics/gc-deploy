@@ -75,7 +75,7 @@ def deploy_stack(config, gc_repository, dry_run):
 
     # Initialize CapRover API with URL and password from config
     cap = caprover_api.CaproverAPI(
-        dashboard_url=config.get("caproverUrl"), password=config.get("caproverPassword")
+        dashboard_url=config["caproverUrl"], password=config["caproverPassword"]
     )
     webapps_ssl = config.get("webappsUseSsl", True)
 
@@ -116,7 +116,7 @@ def deploy_stack(config, gc_repository, dry_run):
 
         # this is the connection to be used from this script (which runs on the host)
         postgres_from_vm = PostgresConnectionConfig(
-            "localhost",
+            cap.root_domain,
             config["postgres"]["user"],
             config["postgres"]["pass"],
             ssl=False,
