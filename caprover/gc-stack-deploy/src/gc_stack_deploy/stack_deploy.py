@@ -16,11 +16,11 @@ import logging
 import os
 import shutil
 import socketserver
-import subprocess
 import sys
 import threading
 import time
-from contextlib import nullcontext
+from contextlib import contextmanager, nullcontext
+from dataclasses import dataclass, replace
 
 import psycopg
 import yaml
@@ -52,47 +52,64 @@ def construct_app_variables(config, service_name, init=None):
     return variables
 
 
-def run_psql_command_on_docker_service_container(
-    service_name, sql_command, pguser, pgpassword
-):
-    logger.info(f"Running caprover-hosted DB [{service_name}]: {sql_command}")
+@contextmanager
+def postgres_patient_connect(*args, retries=10, delay_seconds=2, **kwargs):
+    """
+    Context manager that retries initial PostgreSQL connection (e.g. waits for server to be ready)
 
-    # Get container ID of running {service_name}, retrying if needed
-    container_id = ""
-    for i in range(7):  # 7 retries * 8 seconds = 56 seconds
-        result = subprocess.run(
-            [
-                "sudo",
-                "docker",
-                "ps",
-                "--filter",
-                f"name={service_name}",
-                "--filter",
-                "status=running",
-                "--format",
-                "{{.ID}}",
-            ],
-            stdout=subprocess.PIPE,
-            check=True,
-            text=True,
-        )
-        container_id = result.stdout.strip()
-        if container_id:
-            break
-        logger.info(f"Waiting for {service_name=}... ({i + 1}/7)")
-        time.sleep(8)
-    else:
-        raise SystemError(
-            f"Did not find a running container for {service_name=} after 45 seconds."
-        )
+    After successful connect, it does not retry or reconnect for subsequent errors
+    during the context block.
 
-    # Run sql_command inside the container
-    create_db_cmd = ["psql", "-U", pguser, "-c", sql_command]
-    subprocess.run(
-        ["sudo", "docker", "exec", "-e", f"PGPASSWORD={pgpassword}", "-i", container_id]
-        + create_db_cmd,
-        check=True,
-    )
+    Parameters
+    ----------
+    *args :
+        Positional arguments passed directly to psycopg.connect.
+    retries : int, optional
+        Maximum number of connection attempts (default 10).
+    delay_seconds : int, optional
+        Base delay in seconds between retries (exponential backoff).
+    **kwargs :
+        Keyword arguments passed directly to psycopg.connect.
+
+    Yields
+    ------
+    psycopg.Connection
+        A live PostgreSQL connection object.
+
+    Raises
+    ------
+    psycopg.OperationalError
+        If connection cannot be established after the given retries.
+    """
+    last_exc = None
+    for attempt in range(1, retries + 1):
+        try:
+            with psycopg.connect(*args, **kwargs) as conn:
+                yield conn
+                return
+        except psycopg.OperationalError as e:
+            last_exc = e
+            if attempt < retries:
+                time.sleep(delay_seconds * (2 ** (attempt - 1)))
+            else:
+                raise last_exc
+
+
+@dataclass
+class PostgresConnectionConfig:
+    """Connection info for a PostgreSQL server in a Docker container."""
+
+    host: str
+    user: str
+    password: str
+    ssl: bool
+    port: int = 5432
+
+    def connstr(self, dbname=None):
+        s = f"host={self.host} port={self.port} user={self.user} password={self.password}"
+        if dbname:
+            s += f" dbname={dbname}"
+        return s
 
 
 def deploy_stack(config, gc_repository, dry_run):
@@ -100,13 +117,14 @@ def deploy_stack(config, gc_repository, dry_run):
 
     # Initialize CapRover API with URL and password from config
     cap = caprover_api.CaproverAPI(
-        dashboard_url=config.get("caproverUrl"), password=config.get("caproverPassword")
+        dashboard_url=config["caproverUrl"], password=config["caproverPassword"]
     )
     webapps_ssl = config.get("webappsUseSsl", True)
 
     # Deploy PostgreSQL if specified in config
     if config["postgres"].get("deploy", False):
         # Deploy internal PostgreSQL instance on CapRover
+        app_name = "postgres"
         postgres_variables = {
             "$$cap_pg_user": config["postgres"]["user"],
             "$$cap_pg_pass": config["postgres"]["pass"],
@@ -120,36 +138,62 @@ def deploy_stack(config, gc_repository, dry_run):
                 app_variables=postgres_variables,
                 automated=True,
             )
-        postgres_host = "srv-captain--postgres"
-        postgres_port = "5432"
+
+        # this is the connection to be used by inter-container networking
+        postgres_from_container = PostgresConnectionConfig(
+            "srv-captain--postgres",
+            config["postgres"]["user"],
+            config["postgres"]["pass"],
+            ssl=False,
+        )
+        # this is the connection to be used from this script (which runs on the host)
+        postgres_from_vm = None
+
+        # For Docker deployments, expose the postgres server at this custom port on the VM
+        postgres_vm_port = int(config["postgres"]["expose_port"])
+        cap.update_app(
+            app_name,
+            port_mapping=[f"{postgres_vm_port}:{postgres_from_container.port}"],
+        )
+
+        # this is the connection to be used from this script (which runs on the host)
+        postgres_from_vm = PostgresConnectionConfig(
+            cap.root_domain,
+            config["postgres"]["user"],
+            config["postgres"]["pass"],
+            ssl=False,
+            port=postgres_vm_port,
+        )
+
     else:
         # Using an external PostgreSQL instance
         logger.info("Using external PostgreSQL configuration.")
-        postgres_host = config["postgres"]["host"]
-        postgres_port = config["postgres"]["port"]
-    is_using_caprover_db = postgres_host.startswith("srv-captain--")
-    postgres_ssl = str(!is_using_caprover_db)  # as string "true" or "false"
+        postgres_from_container = postgres_from_vm = PostgresConnectionConfig(
+            config["postgres"]["host"],
+            config["postgres"]["user"],
+            config["postgres"]["pass"],
+            ssl=True,
+            port=config["postgres"]["port"],
+        )
 
     # Deploy Windmill if specified in config
     one_click_app_name = "windmill-only"
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
         windmill_db_user = config[one_click_app_name].pop(
-            "azure_db_user", config["postgres"]["user"]
+            "azure_db_user", postgres_from_container.user
         )
         windmill_db_pass = config[one_click_app_name].pop(
-            "azure_db_pass", config["postgres"]["pass"]
+            "azure_db_pass", postgres_from_container.password
         )
-        is_using_azure_db = (not is_using_caprover_db) and (
-            "azure_db_user" in config[one_click_app_name]
-        )
+        is_using_azure_db = "azure_db_user" in config[one_click_app_name]
         if is_using_azure_db:
             input(
                 "Before continuing, enable UUID-OSSP extension on the Azure database..."
             )
 
         variables = {
-            "$$cap_database_url": f"postgres://{windmill_db_user}:{windmill_db_pass}@{postgres_host}:{postgres_port}/windmill"
+            "$$cap_database_url": f"postgres://{windmill_db_user}:{windmill_db_pass}@{postgres_from_container.host}:{postgres_from_container.port}/windmill"
         }
 
         variables = construct_app_variables(config, one_click_app_name, variables)
@@ -157,41 +201,32 @@ def deploy_stack(config, gc_repository, dry_run):
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
 
         # As superadmin, create a windmill database
-        if is_using_caprover_db:
-            run_psql_command_on_docker_service_container(
-                postgres_host,
-                "CREATE DATABASE windmill;",
-                config["postgres"]["user"],
-                config["postgres"]["pass"],
-            )
-        else:
-            logger.info(f"Using external DB: {postgres_host} ({is_using_azure_db=})")
-            with psycopg.connect(
-                f"host={postgres_host} port={postgres_port} user={config['postgres']['user']} password={config['postgres']['pass']} dbname=postgres",
-                autocommit=True,
-            ) as conn:
-                logger.info("Connected to database as superadmin")
-                if not dry_run:
-                    with conn.cursor() as cur:
-                        # Execute a command: this creates a new table
-                        cur.execute("CREATE DATABASE windmill;")
-                        if is_using_azure_db:
-                            cur.execute(
-                                f"CREATE USER {windmill_db_user} PASSWORD '{windmill_db_pass}';"
-                            )
-                            cur.execute(
-                                f"GRANT ALL PRIVILEGES ON DATABASE windmill TO {windmill_db_user};"
-                            )
-                            # Azure only:
-                            cur.execute(f"GRANT azure_pg_admin TO {windmill_db_user};")
-                            cur.execute(f"ALTER USER {windmill_db_user} CREATEROLE;")
+        with postgres_patient_connect(
+            postgres_from_vm.connstr("postgres"), autocommit=True
+        ) as conn:
+            logger.info("Connected to database as superadmin")
+            if not dry_run:
+                with conn.cursor() as cur:
+                    # Execute a command: this creates a new table
+                    cur.execute("CREATE DATABASE windmill;")
+                    if is_using_azure_db:
+                        cur.execute(
+                            f"CREATE USER {windmill_db_user} PASSWORD '{windmill_db_pass}';"
+                        )
+                        cur.execute(
+                            f"GRANT ALL PRIVILEGES ON DATABASE windmill TO {windmill_db_user};"
+                        )
+                        # Azure only:
+                        cur.execute(f"GRANT azure_pg_admin TO {windmill_db_user};")
+                        cur.execute(f"ALTER USER {windmill_db_user} CREATEROLE;")
 
         if is_using_azure_db and not dry_run:
             # As windmill_login
-            with psycopg.connect(
-                f"host={postgres_host} port={postgres_port} user={windmill_db_user} password={windmill_db_pass} dbname=windmill"
-            ) as conn:
-                logger.info(f"Connected to database as {windmill_db_user}")
+            postgres_azure_user = replace(
+                postgres_from_vm, user=windmill_db_user, password=windmill_db_pass
+            )
+            with psycopg.connect(postgres_azure_user.connstr("windmill")) as conn:
+                logger.info(f"Connected to database as {postgres_azure_user.user}")
                 with conn.cursor() as cur:
                     # The following comes from https://raw.githubusercontent.com/windmill-labs/windmill/main/init-db-as-superuser.sql
                     cur.execute("CREATE ROLE windmill_user;")
@@ -211,8 +246,8 @@ def deploy_stack(config, gc_repository, dry_run):
                     cur.execute("GRANT windmill_user TO windmill_admin;")
 
                     # Going rogue again.
-                    cur.execute(f"GRANT windmill_admin TO {windmill_db_user};")
-                    cur.execute(f"GRANT windmill_user TO {windmill_db_user};")
+                    cur.execute(f"GRANT windmill_admin TO {postgres_azure_user.user};")
+                    cur.execute(f"GRANT windmill_user TO {postgres_azure_user.user};")
         if not dry_run:
             cap.deploy_one_click_app(
                 one_click_app_name,
@@ -244,17 +279,18 @@ def deploy_stack(config, gc_repository, dry_run):
     one_click_app_name = "superset-only"
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
-        if is_using_caprover_db:
-            run_psql_command_on_docker_service_container(
-                postgres_host,
-                "CREATE DATABASE superset_metastore;",
-                config["postgres"]["user"],
-                config["postgres"]["pass"],
-            )
+        with (
+            postgres_patient_connect(
+                postgres_from_vm.connstr(), autocommit=True
+            ) as conn,
+            conn.cursor() as cur,
+        ):
+            cur.execute("CREATE DATABASE superset_metastore;")
+
         variables = {
-            "$$cap_postgres_host": postgres_host,
-            "$$cap_postgres_port": postgres_port,
-            "$$cap_postgres_userpassword": f"{config['postgres']['user']}:{config['postgres']['pass']}",
+            "$$cap_postgres_host": postgres_from_container.host,
+            "$$cap_postgres_port": postgres_from_container.port,
+            "$$cap_postgres_userpassword": f"{postgres_from_container.user}:{postgres_from_container.password}",
         }
         variables = construct_app_variables(config, one_click_app_name, variables)
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
@@ -320,11 +356,11 @@ def deploy_stack(config, gc_repository, dry_run):
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
         variables = {
-            "$$cap_postgres_host": postgres_host,
-            "$$cap_postgres_port": postgres_port,
-            "$$cap_postgres_ssl": postgres_ssl,
-            "$$cap_postgres_user": config["postgres"]["user"],
-            "$$cap_postgres_pass": config["postgres"]["pass"],
+            "$$cap_postgres_host": postgres_from_container.host,
+            "$$cap_postgres_port": postgres_from_container.port,
+            "$$cap_postgres_ssl": postgres_from_container.ssl,
+            "$$cap_postgres_user": postgres_from_container.user,
+            "$$cap_postgres_pass": postgres_from_container.password,
             "$$cap_postgres_database": config[one_click_app_name]["postgres_database"],
         }
         variables = construct_app_variables(config, one_click_app_name, variables)

@@ -12,6 +12,7 @@ postgres:
   # Set only when deploy: true
   database: postgres
   version: 17
+  expose_port: 15432  # the container will map to this port on the host VM
 
   # Set only when deploy: false
   host: "srv-captain--postgres"
