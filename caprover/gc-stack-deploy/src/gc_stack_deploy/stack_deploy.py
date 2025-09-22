@@ -150,7 +150,7 @@ def deploy_stack(config, gc_repository, dry_run):
         postgres_from_vm = None
 
         # For Docker deployments, expose the postgres server at this custom port on the VM
-        postgres_vm_port = int(config["postgres"]["exposePort"])
+        postgres_vm_port = int(config["postgres"]["expose_port"])
         cap.update_app(
             app_name,
             port_mapping=[f"{postgres_vm_port}:{postgres_from_container.port}"],
