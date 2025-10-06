@@ -50,7 +50,7 @@ The most common culprits are:
 If those don’t fix it, you can explore disk usage by folder hierarchy:
 
     $ sudo apt install ncdu
-    $ ncdu
+    $ ncdu /
 
 
 ## Missing Volume Mount on VM
