@@ -4,7 +4,12 @@ caproverUrl: "http[s]://captain.your-captain-root.net"
 caproverPassword: "secret-captain-password"
 
 postgres:
-  deploy: false  # Set to false to skip PostgreSQL deployment
+  deploy: true  # Set to false to skip PostgreSQL deployment, then uncomment the next lines.
+
+  # Set only when deploy: false
+  # host: "srv-captain--postgres"
+  # port: 5432
+
   # Required in all cases
   user: "postgres" # Do not change this
   pass: "your_pg_password" # Set a secure password
@@ -13,10 +18,6 @@ postgres:
   database: postgres
   version: 17
   expose_port: 15432  # the container will map to this port on the host VM
-
-  # Set only when deploy: false
-  host: "srv-captain--postgres"
-  port: 5432
 
 windmill-only:
   deploy: true
