@@ -43,8 +43,7 @@ superset-only:
   auth0_domain:
   auth0_clientid:
   auth0_client_secret:
-  admin_email: admin@guardianconnector.net
-  admin_password: changeme
+  admin_email: "admin@guardianconnector.net"
   mapbox_api_key:
   app_icon:
   app_title: "Dashboard: Biocultural Monitoring Demo"
