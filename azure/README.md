@@ -31,12 +31,12 @@
     TTL: 3600
     ```
 
-3. Confirm: check if IP address resolves to the IP you set in your DNS.
+3. Confirm: check if these domains resolve to the IPs you set in your DNS.
     ```bash
-    nslookup random123.mycommunity.guardianconnector.net
+    nslookup random123.mycommunity.guardianconnector.net  # for the wildcard
+    nslookup mycommunity.guardianconnector.net
     ```
 (Note that `random123` is needed because you set a wildcard entry in your DNS by setting `*.mycommunity` as your host, not `mycommunity`)
-
 
 ### III. Set up CapRover
 
