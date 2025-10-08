@@ -370,6 +370,13 @@ def deploy_stack(config, gc_repository, dry_run):
     one_click_app_name = "gc-explorer"
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
+        if not dry_run:
+            with (
+                psycopg.connect(postgres_from_vm.connstr(), autocommit=True) as conn,
+                conn.cursor() as cur,
+            ):
+                cur.execute("CREATE DATABASE guardianconnector;")
+
         variables = {
             "$$cap_postgres_host": postgres_from_container.host,
             "$$cap_postgres_port": postgres_from_container.port,
