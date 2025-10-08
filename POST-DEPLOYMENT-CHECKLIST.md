@@ -5,7 +5,8 @@ It covers the manual steps that are not already automated through the scripts an
 
 ## VM
 
-- [ ] Did I set a `*.alias` A record in my DNS provider? (And can confirm it resolves to the VM's IP?)
+- [ ] Did I set the A records in my DNS provider? (And can confirm it resolves to the VM's IP?)
+- [ ] Did I add SSH keys to `~/.ssh/authorized_keys` for everyone who needs access to the VM?
 
 ## CapRover and services
 
@@ -15,6 +16,7 @@ It covers the manual steps that are not already automated through the scripts an
 - [ ] Did I deploy all required apps?
 - [ ] Did I configure environment variables and settings for each app correctly? (c.f. [caprover/INSTALL_GC_STACK.md#post-install-app-configuration](caprover/INSTALL_GC_STACK.md#post-install-app-configuration))
 - [ ] Did I set the `{alias}.domain.net` to point to one of the applications (e.g. Superset or GC Landing Page)?
+- [ ] Did I store the CapRover admin password in Keepass?
 
 ### Superset
 
@@ -33,6 +35,7 @@ It covers the manual steps that are not already automated through the scripts an
 - [ ] Did I set up auth0 for Windmill?
 - [ ] Did I create a Windmill workspace?
 - [ ] Did I push `gc-scripts-hub` content using the Windmill CLI (`wmill sync push`)?
+- [ ] Did I add the Windmill workspace to `gc-scripts-hub/.env` to be able to batch push updates to this workspace?
 - [ ] Did I create the standard Windmill resources (e.g. for alerts)?
   - [ ] Postgres database
   - [ ] Twilio message template
@@ -64,6 +67,7 @@ _No manual steps required until datasets exist._
 
 - [ ] Did I create a Mapbox account and set up an API key to use for the domain?
 - [ ] Did I set up any maps required i.e. for the alerts dashboard?
+- [ ] Did I store the credentials for Mapbox in Keepass?
 
 ### Uptime Robot
 
