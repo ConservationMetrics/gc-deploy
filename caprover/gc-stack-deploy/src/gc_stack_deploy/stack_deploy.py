@@ -67,7 +67,7 @@ def postgres_patient_connect(*args, retries=10, delay_seconds=2, **kwargs):
     retries : int, optional
         Maximum number of connection attempts (default 10).
     delay_seconds : int, optional
-        Base delay in seconds between retries (exponential backoff).
+        Base delay in seconds between retries.
     **kwargs :
         Keyword arguments passed directly to psycopg.connect.
 
@@ -90,7 +90,7 @@ def postgres_patient_connect(*args, retries=10, delay_seconds=2, **kwargs):
         except psycopg.OperationalError as e:
             last_exc = e
             if attempt < retries:
-                time.sleep(delay_seconds * (2 ** (attempt - 1)))
+                time.sleep(delay_seconds)
             else:
                 raise last_exc
 
