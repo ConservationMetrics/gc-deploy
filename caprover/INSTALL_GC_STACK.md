@@ -165,7 +165,8 @@ and that folder hasnt been created yet. You may do any of the following:
 
 ### GuardianConnector Explorer
 
-No additional steps needed.
+GuardianConnector Explorer installation involves some separate PostgreSQL setup:
+creating a `guardianconnector` database. The `gc-stack-deploy` handles this for you.
 
 ### GuardianConnector Landing Page
 
