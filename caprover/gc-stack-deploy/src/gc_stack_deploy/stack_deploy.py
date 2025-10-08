@@ -159,7 +159,7 @@ def deploy_stack(config, gc_repository, dry_run):
 
         # this is the connection to be used from this script (which runs on the host)
         postgres_from_vm = PostgresConnectionConfig(
-            cap.root_domain,
+            "127.0.0.1",
             config["postgres"]["user"],
             config["postgres"]["pass"],
             ssl=False,
