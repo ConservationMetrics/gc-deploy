@@ -157,6 +157,8 @@ Find the admin password in the CapRover web portal under Files > Logs. Then chan
 Filebrowser app. This has to be done immediately after installing the app. If the app restarts,
 the log message showing the password will not be shown again.
 
+If you are too late in retrieving the password, you can delete the app in the CapRover UI and redeploy it using the one-click app install menu.
+
 When logging into Filebrowser app, you may see "This location can't be reached".
 This is because Filebrowser is configured to show files in a folder called "datalake"
 and that folder hasnt been created yet. You may do any of the following:
