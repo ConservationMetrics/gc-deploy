@@ -24,7 +24,6 @@ From the CapRover, navigate to **Apps** and "One-Click Apps/Database". Find the 
 
 If you plan to expose the database to applications not hosted on this VM's CapRover,
 you will need to take some additional steps after installing the one-click-app:
-- Make sure "Do not expose as web-app externally" is checked.
 - Set a port mapping `5432:5432` for server to container.
 - Enable SSL by using the certs that come installed with `ssl-cert` on the Postgres Docker image. Modify the Service Update Override as follows:
     ```yaml
