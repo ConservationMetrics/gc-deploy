@@ -24,26 +24,7 @@ From the CapRover, navigate to **Apps** and "One-Click Apps/Database". Find the 
 
 If you plan to expose the database to applications not hosted on this VM's CapRover,
 you will need to take some additional steps after installing the one-click-app:
-- Uncheck "Do not expose as web-app externally".
-- Enable and force HTTPS.
-- Set a port mapping `5432:5432` for server to container.
-- Enable SSL by using the certs that come installed with `ssl-cert` on the Postgres Docker image. Modify the Service Update Override as follows:
-    ```yaml
-    TaskTemplate:
-        ContainerSpec:
-            User: "postgres"
-            Command:
-            - "postgres"
-            - "-c"
-            - "ssl=on"
-            - "-c"
-            - "ssl_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem"
-            - "-c"
-            - "ssl_key_file=/etc/ssl/private/ssl-cert-snakeoil.key"
-    ```
-
-     **TODO**: figure out how to use trusted certs for Postgres (for example, using Let's Encrypt for which CapRover has built-in support).
-
+- Set a port mapping `15432:5432` for server to container.
 - Make sure your hosting provider’s firewall or network security settings allow inbound traffic on port **5432** using the **TCP** protocol. For example, on **Azure**, inbound traffic on port 5432 is blocked by default and must be explicitly allowed through a Network Security Group (NSG) rule.
 
 ### Option 2: Use External PostgreSQL
