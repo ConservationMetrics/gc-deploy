@@ -16,19 +16,27 @@
 ### II. Set up DNS
 
 1. Get your VM's IP address from the Azure Portal
-2. In your domain provider's control panel, add an A record. Assuming you have a domain like `guardianconnector.net`, add a A record to your VM's public IP:
+2. In your domain provider's control panel, add A records. Assuming you have a domain like `guardianconnector.net`, add two A records to your VM's public IP:
     ```
     TYPE: A record
     HOST: *.mycommunity (.guardianconnector.net)
     POINTS TO: (IP Address of your VM)
     TTL: 3600
     ```
-3. Confirm: check if IP address resolves to the IP you set in your DNS.
+
+    ```
+    TYPE: A record
+    HOST: mycommunity (.guardianconnector.net)
+    POINTS TO: (IP Address of your VM)
+    TTL: 3600
+    ```
+
+3. Confirm: check if these domains resolve to the IPs you set in your DNS.
     ```bash
-    nslookup random123.mycommunity.guardianconnector.net
+    nslookup random123.mycommunity.guardianconnector.net  # for the wildcard
+    nslookup mycommunity.guardianconnector.net
     ```
 (Note that `random123` is needed because you set a wildcard entry in your DNS by setting `*.mycommunity` as your host, not `mycommunity`)
-
 
 ### III. Set up CapRover
 

@@ -67,7 +67,7 @@ def postgres_patient_connect(*args, retries=10, delay_seconds=2, **kwargs):
     retries : int, optional
         Maximum number of connection attempts (default 10).
     delay_seconds : int, optional
-        Base delay in seconds between retries (exponential backoff).
+        Base delay in seconds between retries.
     **kwargs :
         Keyword arguments passed directly to psycopg.connect.
 
@@ -90,7 +90,7 @@ def postgres_patient_connect(*args, retries=10, delay_seconds=2, **kwargs):
         except psycopg.OperationalError as e:
             last_exc = e
             if attempt < retries:
-                time.sleep(delay_seconds * (2 ** (attempt - 1)))
+                time.sleep(delay_seconds)
             else:
                 raise last_exc
 
@@ -151,14 +151,15 @@ def deploy_stack(config, gc_repository, dry_run):
 
         # For Docker deployments, expose the postgres server at this custom port on the VM
         postgres_vm_port = int(config["postgres"]["expose_port"])
-        cap.update_app(
-            app_name,
-            port_mapping=[f"{postgres_vm_port}:{postgres_from_container.port}"],
-        )
+        if not dry_run:
+            cap.update_app(
+                app_name,
+                port_mapping=[f"{postgres_vm_port}:{postgres_from_container.port}"],
+            )
 
         # this is the connection to be used from this script (which runs on the host)
         postgres_from_vm = PostgresConnectionConfig(
-            cap.root_domain,
+            "127.0.0.1",
             config["postgres"]["user"],
             config["postgres"]["pass"],
             ssl=False,
@@ -176,16 +177,17 @@ def deploy_stack(config, gc_repository, dry_run):
             port=config["postgres"]["port"],
         )
 
-    with (
-        postgres_patient_connect(
-            postgres_from_vm.connstr("postgres"), autocommit=True
-        ) as conn,
-        conn.cursor() as cur,
-    ):
-        try:
-            cur.execute("CREATE DATABASE warehouse;")
-        except psycopg.errors.DuplicateDatabase:
-            pass
+    if not dry_run:
+        with (
+            postgres_patient_connect(
+                postgres_from_vm.connstr("postgres"), autocommit=True
+            ) as conn,
+            conn.cursor() as cur,
+        ):
+            try:
+                cur.execute("CREATE DATABASE warehouse;")
+            except psycopg.errors.DuplicateDatabase:
+                pass
 
     # Deploy Windmill if specified in config
     one_click_app_name = "windmill-only"
@@ -211,31 +213,33 @@ def deploy_stack(config, gc_repository, dry_run):
 
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
 
-        # As superadmin, create a windmill database
-        with psycopg.connect(
-            postgres_from_vm.connstr("postgres"), autocommit=True
-        ) as conn:
-            logger.info("Connected to database as superadmin")
-            if not dry_run:
-                with conn.cursor() as cur:
-                    # Execute a command: this creates a new table
-                    cur.execute("CREATE DATABASE windmill;")
-                    if is_using_azure_db:
-                        cur.execute(
-                            f"CREATE USER {windmill_db_user} PASSWORD '{windmill_db_pass}';"
-                        )
-                        cur.execute(
-                            f"GRANT ALL PRIVILEGES ON DATABASE windmill TO {windmill_db_user};"
-                        )
-                        # Azure only:
-                        cur.execute(f"GRANT azure_pg_admin TO {windmill_db_user};")
-                        cur.execute(f"ALTER USER {windmill_db_user} CREATEROLE;")
+        if not dry_run:
+            # As superadmin, create a windmill database
+            with (
+                psycopg.connect(
+                    postgres_from_vm.connstr("postgres"), autocommit=True
+                ) as conn,
+                conn.cursor() as cur,
+            ):
+                logger.info("Connected to database as superadmin")
+                # Execute a command: this creates a new table
+                cur.execute("CREATE DATABASE windmill;")
+                if is_using_azure_db:
+                    cur.execute(
+                        f"CREATE USER {windmill_db_user} PASSWORD '{windmill_db_pass}';"
+                    )
+                    cur.execute(
+                        f"GRANT ALL PRIVILEGES ON DATABASE windmill TO {windmill_db_user};"
+                    )
+                    # Azure only:
+                    cur.execute(f"GRANT azure_pg_admin TO {windmill_db_user};")
+                    cur.execute(f"ALTER USER {windmill_db_user} CREATEROLE;")
 
+        # As windmill_login
+        postgres_azure_user = replace(
+            postgres_from_vm, user=windmill_db_user, password=windmill_db_pass
+        )
         if is_using_azure_db and not dry_run:
-            # As windmill_login
-            postgres_azure_user = replace(
-                postgres_from_vm, user=windmill_db_user, password=windmill_db_pass
-            )
             with psycopg.connect(postgres_azure_user.connstr("windmill")) as conn:
                 logger.info(f"Connected to database as {postgres_azure_user.user}")
                 with conn.cursor() as cur:
@@ -259,6 +263,7 @@ def deploy_stack(config, gc_repository, dry_run):
                     # Going rogue again.
                     cur.execute(f"GRANT windmill_admin TO {postgres_azure_user.user};")
                     cur.execute(f"GRANT windmill_user TO {postgres_azure_user.user};")
+
         if not dry_run:
             cap.deploy_one_click_app(
                 one_click_app_name,
@@ -290,11 +295,12 @@ def deploy_stack(config, gc_repository, dry_run):
     one_click_app_name = "superset-only"
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
-        with (
-            psycopg.connect(postgres_from_vm.connstr(), autocommit=True) as conn,
-            conn.cursor() as cur,
-        ):
-            cur.execute("CREATE DATABASE superset_metastore;")
+        if not dry_run:
+            with (
+                psycopg.connect(postgres_from_vm.connstr(), autocommit=True) as conn,
+                conn.cursor() as cur,
+            ):
+                cur.execute("CREATE DATABASE superset_metastore;")
 
         variables = {
             "$$cap_postgres_host": postgres_from_container.host,
@@ -364,6 +370,13 @@ def deploy_stack(config, gc_repository, dry_run):
     one_click_app_name = "gc-explorer"
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
+        if not dry_run:
+            with (
+                psycopg.connect(postgres_from_vm.connstr(), autocommit=True) as conn,
+                conn.cursor() as cur,
+            ):
+                cur.execute("CREATE DATABASE guardianconnector;")
+
         variables = {
             "$$cap_postgres_host": postgres_from_container.host,
             "$$cap_postgres_port": postgres_from_container.port,

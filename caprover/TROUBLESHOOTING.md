@@ -31,8 +31,13 @@ Filesystem 	1K-blocks 	  Used Available Use% Mounted
 ```
 
 The most common culprits are:
-* Old, unused Docker images. To fix:
-    `$ sudo docker image prune`
+* Old, unused Docker images.
+    - Quick fix:
+        `$ sudo docker image prune`
+    - To prevent it from happening again, configure automatic daily disk cleanup at **CapRover > Maintenance > Disk Cleanup**
+* System logs can accumulate lots of data, check in particular disk usage of files under `/var/log/`.
+    - Make sure to configure `SystemMaxUse` in `/etc/systemd/journald.conf.d/diskspace.conf`. [Some of our new VM recipes already do this.](/azure/README.md)
+    - Check that all CapRover apps are healthy & stable. If an app is crashing upon startup and in a reboot loop, then CapRover will reconfigure nginx on each crash and each restart, and that operation will push a lot of log lines related to `docker-overlay2` and/or `networkd-dispatcher` and/or Docker network virtual devices "unregistering".
 * One of our Docker services writing lots to one of its Docker volumes. To find which volume:
     ```
     $ du --max-depth=1 /var/lib/docker/volumes/
@@ -42,9 +47,10 @@ The most common culprits are:
     $ find . -type f -mtime +14 -delete
     ```
 
-If those don’t fix it, you can scan how much disk is used by each root-level folder (this takes tens of minutes to run):
+If those don’t fix it, you can explore disk usage by folder hierarchy:
 
-    $ du --exclude=/mnt -h --max-depth=2 / | sort -h
+    $ sudo apt install ncdu
+    $ ncdu /
 
 
 ## Missing Volume Mount on VM
