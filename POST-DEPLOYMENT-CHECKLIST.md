@@ -43,6 +43,8 @@ It covers the manual steps that are not already automated through the scripts an
   - [ ] GCP service account
   - [ ] CoMapeo archive server
 - [ ] Did I invite other required admin users to the Windmill instance and workspace?
+- [ ] Did I set up operator users with the appropriate permissions (e.g. disable all settings except Runs and Schedules)?
+- [ ] Did I add the group `g/all` to all of the folders containing the workspace scripts, flows, and apps (e.g. `export`, `connectors`, `apps`)?
 
 ### CoMapeo
 
