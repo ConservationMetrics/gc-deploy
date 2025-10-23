@@ -238,7 +238,7 @@ After you set up your Instance, you can navigate back to the Instance Settings p
 
 ##### Setting up operator users
 
-You may want to set up operator users to execute scripts and monitor their progress. See [Windmill README](https://github.com/ConservationMetrics/gc-scripts-hub/blob/main/README.md#user-roles) for more details on setting up operator users.
+You may want to set up operator users to execute scripts and monitor their progress. See [Guardian Connector Scripts Hub README](https://github.com/ConservationMetrics/gc-scripts-hub/blob/main/README.md#user-roles) for more details on setting up operator users.
 
 ##### Persistent Directories
 
