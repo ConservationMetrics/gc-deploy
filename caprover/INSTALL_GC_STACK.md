@@ -232,9 +232,13 @@ Instance Settings Page
   Note: after a domain-approved user has registered with SSO, they must be
   manually added to workspaces by an instance admin.
 
-#### Setting up superadmin users
+##### Setting up superadmin users
 
 After you set up your Instance, you can navigate back to the Instance Settings page to the **Users** tab, and add any users you want to have access to Windmill with the superadmin role.
+
+##### Setting up operator users
+
+You may want to set up operator users to execute scripts and monitor their progress. See [Guardian Connector Scripts Hub README](https://github.com/ConservationMetrics/gc-scripts-hub/blob/main/README.md#user-roles) for more details on setting up operator users.
 
 ##### Persistent Directories
 
