@@ -60,7 +60,7 @@ _No manual steps required until datasets exist._
 
 - [ ] Did I add a GCP OAuth client for Google social login?
 - [ ] Did I set up the user approval flow?
-- [ ] Is RBAC set up?
+- [ ] Is RBAC set up and did I create the required roles?
 - [ ] Did I assign the Admin role to my logged in user?
 - [ ] Did I invite other required admins to the Auth0 tenant?
 - [ ] Did I create applications for each GC Stack app?

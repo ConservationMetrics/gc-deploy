@@ -84,12 +84,14 @@ Role-Based Access Control (RBAC) allows you to control user access to different 
 
 1. Navigate to **User Management > Roles** in the Auth0 dashboard
 2. Click **"+ Create Role"** and create the following roles:
-   * **Admin**: "can access anything a member can, plus `/config` (in GC Explorer) or user management (in GC Landing Page)"
-   * **Member**: "can access both unrestricted and restricted routes"
-   * **Viewer**: "can access only unrestricted routes"
-   * **Public**: "can access only routes that are set to public"
+   * **Admin**: "All routes including `/config`"
+   * **Member**: "Restricted routes (cannot access `/config`)"
+   * **Guest**: "Guest and unrestricted routes only"
+   * **SignedIn**: "can access only routes that are set to public"
 
-**Note**: Users without any assigned roles are treated as having Public-level access.
+**Note**: Users without any assigned roles are assigned the **SignedIn** role by GC Explorer and GC Landing Page.
+
+See the GC Explorer [RBAC documentation](https://github.com/ConservationMetrics/gc-explorer/blob/main/docs/auth.md) for more details on role setup.
 
 ## Auth0 approval process
 
