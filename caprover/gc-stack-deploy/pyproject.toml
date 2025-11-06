@@ -5,7 +5,7 @@ description = "Deploy Guardian Connector stack of apps to the (locally running) 
 requires-python = ">=3.9"
 dependencies = [
     "psycopg[binary]",
-    "Caprover-API @ git+https://github.com/IamJeffG/Caprover-API.git@fix-oneclick-repo",
+    "Caprover-API @ git+https://github.com/IamJeffG/Caprover-API.git@all-patches-2025-nov",
 ]
 
 [project.urls]
