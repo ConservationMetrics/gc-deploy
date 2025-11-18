@@ -7,12 +7,12 @@ services:
       - 8000
     restart: unless-stopped
     volumes:
-      - $$cap_appname-data:/usr/src/app
+      - $$cap_appname-data:/data
     environment:
       SERVER_BEARER_TOKEN: $$cap_server_bearer_token
       SERVER_NAME: $$cap_server_name
       ALLOWED_PROJECTS: $$cap_allowed_projects
-      STORAGE_DIR: /usr/src/app
+      STORAGE_DIR: /data
     caproverExtra:
       containerHttpPort: 8080
 
@@ -25,12 +25,12 @@ caproverOneClickApp:
   displayName: CoMapeo Archive Server
   isOfficial: true   # Only if all images used here are official or from a trusted source.
   description: A self-hosted archive server for CoMapeo.
-  documentation: https://github.com/digidem/comapeo-cloud
+  documentation: https://github.com/conservationmetrics/gc-comapeo-cloud
   variables:
   - id: '$$cap_comapeocloud_docker_image'
     label: CoMapeo Archive Server Docker Image
-    defaultValue: 'communityfirst/comapeo-cloud:0.2.1'
-    validRegex: /^communityfirst\/comapeo-cloud:[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/
+    defaultValue: 'communityfirst/gc-comapeo-cloud:0.3.0'
+    validRegex: /^communityfirst\/gc-comapeo-cloud:[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/
     description: Check out the container registry for valid tags
 
   - id: '$$cap_server_bearer_token'
