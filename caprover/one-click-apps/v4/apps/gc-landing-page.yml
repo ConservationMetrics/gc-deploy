@@ -5,6 +5,8 @@ services:
     image: $$cap_gc_landing_page_docker_image
     restart: unless-stopped
     environment:
+      HOST: "0.0.0.0"
+      NODE_ENV: "production"
       NUXT_COMMUNITY_NAME: $$cap_community_name
       NUXT_OAUTH_AUTH0_DOMAIN: $$cap_auth0_domain
       NUXT_OAUTH_AUTH0_CLIENT_SECRET: $$cap_auth0_client_secret
