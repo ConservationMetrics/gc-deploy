@@ -8,7 +8,7 @@ Please read our [Contributor License Agreement and other Contributing Guidelines
 ## Screenshots
 
 
-## What I changed
+## What I changed and why
 
 
 ## What I'm not doing here
