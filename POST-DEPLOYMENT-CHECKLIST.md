@@ -7,6 +7,7 @@ It covers the manual steps that are not already automated through the scripts an
 
 - [ ] Did I set the A records in my DNS provider? (And can confirm it resolves to the VM's IP?)
 - [ ] Did I add SSH keys to `~/.ssh/authorized_keys` for everyone who needs access to the VM?
+- [ ] Did I enable auto-backups for the VM and/or the data warehouse?
 
 ## CapRover and services
 
