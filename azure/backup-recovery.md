@@ -18,7 +18,7 @@ There are [at least](https://learn.microsoft.com/en-us/azure/backup/backup-azure
 
 ### Restore target: Replace existing disks
 
-This is likely the one you want.
+This is likely the option you want.
 
 It restores a backed up hard disk to a new disk, which will replace the disk on the existing VM.
 
@@ -27,7 +27,7 @@ Use when:
 - You want to preserve the VM's identity, for example IP (and therefore DNS settings), resource name in Azure.
 - Minimal reconfiguration needed post-restore
 
-## How to do it
+#### How to do it
 
 1. You will need a Staging Storage Account:
     - This storage account must use flat blob storage (a.k.a."hierarchical namespace" disabled, a.k.a. Cannot be "ADLSv2"). Note that our community data warehouse accounts are all ADLSv2 so they cannot be used for this.

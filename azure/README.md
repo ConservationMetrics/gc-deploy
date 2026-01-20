@@ -105,6 +105,13 @@ Many communities keep their data lake files on Azure Files. This is optional.
    - Delete the entire `write_files:` section from `cloud-config.yml`
    - When deploying, set `createStorageAccount` to `false`
 
+### Backups
+
+It is possible to set up automated backups of a VM's disks.
+
+See our ["Recover from Backup"](backup-recovery.md) documentation to recover from backup.
+
+
 ## 🛠️ Building the Template
 
 The ARM template needs to be built before deployment to inject the cloud-init configuration:
