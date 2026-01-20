@@ -32,7 +32,7 @@ Use when:
 1. You will need a Staging Storage Account:
     - This storage account must use flat blob storage (a.k.a."hierarchical namespace" disabled, a.k.a. Cannot be "ADLSv2"). Note that our community data warehouse accounts are all ADLSv2 so they cannot be used for this.
     - **It needs to be in the same Azure region and the same Subscription as the VM.**
-        - CMI Staff: If your VM is in East US 2 and Subscription `CMI_Guardian`, use storage account `vmrestorestaginguseast2`, which we leave on-standby for you. However to restore VMs in other regions or other Subscriptions, you need to create a new storage account.
+        - CMI Staff: If your VM is in East US 2, use storage account `vmrestorestaginguseast2` or `vmrestorestaguseast2` which we leave on-standby for you (they are in different Subscriptions). However to restore VMs in other regions, you need to create a new storage account.
 1. In Azure Portal, find the VM. Click "Backup".
 1. Click **"Recover VM"**
 1. Select a restore point, then `Restore target: **"Replace Existing"**`
