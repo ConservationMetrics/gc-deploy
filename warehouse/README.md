@@ -23,9 +23,9 @@ Depending on the client and use case, structured data may also be stored as file
 
 ### 🔒 Access Control and Data Integrity
 
-We maintain data integrity by isolating user-accessible data in a `persisting-storage/datalake` directory, which is exposed through Filebrowser. 
+We maintain data integrity by isolating user-accessible data in a `persistent-storage/datalake` directory, which is exposed through Filebrowser. 
 
-Other application-related files—such as SQLite databases or other structured data files read by applications, temporary files, and logs—are stored elsewhere within `persisting-storage/`. This separation protects the integrity and functionality of applications while ensuring users only have access to data they need.
+Other application-related files—such as SQLite databases or other structured data files read by applications, temporary files, and logs—are stored elsewhere within `persistent-storage/`. This separation protects the integrity and functionality of applications while ensuring users only have access to data they need.
 
 ### 🧠 Application Metastores (Internal)
 
@@ -40,13 +40,13 @@ Examples include:
 
 Metastores are typically implemented as:
 - Dedicated databases on the same Postgres server (for example, `superset_metastore`, `windmill`, or `guardianconnector`)
-- Internal SQLite databases or files stored outside the exposed `persisting-storage/datalake` directory
+- Internal SQLite databases or files stored outside the exposed `persistent-storage/datalake` directory
 
 ## 👉 Examples
 
 ### Filebrowser
 
-[Filebrowser](https://docs.guardianconnector.net/reference/gc-toolkit/filebrowser/) has access to the `persisting-storage/datalake` directory and allows users to browse, upload, download, and share files within their Guardian Connector instance. It also uses its own SQLite database to store application metadata, currently stored as a persistent Docker volume on the VM.
+[Filebrowser](https://docs.guardianconnector.net/reference/gc-toolkit/filebrowser/) has access to the `persistent-storage/datalake` directory and allows users to browse, upload, download, and share files within their Guardian Connector instance. It also uses its own SQLite database to store application metadata, currently stored as a persistent Docker volume on the VM.
 
 ### GC Explorer
 
@@ -62,6 +62,6 @@ Metastores are typically implemented as:
 
 ### GC Wildlife Explorer
 
-[Guardian Connector Wildlife Explorer](https://github.com/conservationmetrics/gc-wildlife-explorer) reads data from a CSV file stored in the `persisting-storage/gc-wildlife` directory and renders media (such as camera trap photos or bioacoustic audio) from a specified subdirectory within `persisting-storage/datalake`.
+[Guardian Connector Wildlife Explorer](https://github.com/conservationmetrics/gc-wildlife-explorer) reads data from a CSV file stored in the `persistent-storage/gc-wildlife` directory and renders media (such as camera trap photos or bioacoustic audio) from a specified subdirectory within `persistent-storage/datalake`.
 
-On initialization, if no CSV file is found in `persisting-storage/gc-wildlife`, the application will attempt to locate the CSV in `persisting-storage/datalake` and copy it into place.
+On initialization, if no CSV file is found in `persistent-storage/gc-wildlife`, the application will attempt to locate the CSV in `persistent-storage/datalake` and copy it into place.

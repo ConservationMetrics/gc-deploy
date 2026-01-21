@@ -41,7 +41,7 @@ High-level steps to spawn a new stack
 
 2. 📂 Create your data warehouse: file storage & a SQL database.
     - The Azure deployment can automatically create an Azure Storage Account and Files share for you, or you can use an existing one. If you are storing files on the VM directly, you can skip Azure Files entirely.
-    - A PostgreSQL database is created automatically when you install the app stack (see step 4 below).
+    - A PostgreSQL database will be created automatically when you install the app stack (see step 4 below).
 
 3. 🔐 If you plan on using auth0, set up an **auth0 tenant** with a user authorization workflow and client applications to help secure access to the apps you will deploy. See [`auth0/README.md`](auth0/README.md)
 
