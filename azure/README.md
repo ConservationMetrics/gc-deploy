@@ -2,14 +2,21 @@
 
 ## 🚀 Quick Deployment (10 minutes)
 
+> [!IMPORTANT]
+>
+> Before you start, make sure that you have access to the right Subscriptions for **both** VM deployment and managing the DNS.
+
 ### I. Launch a VM with Warehouse Storage
 
 1. Click to deploy a new VM on Azure:
     > [<img src="https://aka.ms/deploytoazurebutton"/>](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fconservationmetrics.github.io%2Fgc-deploy%2Fazure%2Fnew-vm.arm.json)
 2. Fill in required parameters:
-    - **Resource Group:** Recommend creating new, so the only thing in the resource group is this Guardian Deployment deployment. See also ["Prerequisites"](#prerequisites) below for discussion about permission requirements.
+    - **Subscription:** Select the subscription you want to use.
+    - **Resource Group:** Recommend creating new, so the only thing in the resource group is this Guardian Deployment deployment. See also ["Prerequisites"](#prerequisites) below for discussion about permission requirements. 
+      - CMI's convention is to use `guardian-<alias>` for the resource group name, where `<alias>` is the alias chosen by the community.
     - **Region:** Where will this stack be hosted? e.g. for data about Brazil, choose "`Brazil South`" to adhere to [Brazilian Data Protection Laws](https://www.gov.br/esporte/pt-br/acesso-a-informacao/lgpd). The Instance (VM) "Region" will be same as the Resource group's region.
     - **Create Storage Account / Storage Account Name:** See ["Configuring Azure Files"](#configuring-azure-files-optional) below.
+      - CMI's convention is to use `guardian-<alias>` for the storage account name.
     - **Select SSH Public Key Source:** Select "Generate new key pair" to generate a new SSH key pair, or select "Use existing key pair stored in Azure" (which is what CMI does to avoid having to manage SSH keys in multiple places).
 3. Click "Review + Create". Wait for deployment (about 2 minutes).
 
@@ -19,24 +26,27 @@
 2. In your domain provider's control panel, add A records. Assuming you have a domain like `guardianconnector.net`, add two A records to your VM's public IP:
     ```
     TYPE: A record
-    HOST: *.mycommunity (.guardianconnector.net)
+    HOST: *.<alias> (.guardianconnector.net)
     POINTS TO: (IP Address of your VM)
-    TTL: 3600
+    TTL: 3600 (1 hour)
     ```
 
     ```
     TYPE: A record
-    HOST: mycommunity (.guardianconnector.net)
+    HOST: <alias> (.guardianconnector.net)
     POINTS TO: (IP Address of your VM)
-    TTL: 3600
+    TTL: 3600 (1 hour)
     ```
+
+    Alias record set can be left blank.
 
 3. Confirm: check if these domains resolve to the IPs you set in your DNS.
     ```bash
-    nslookup random123.mycommunity.guardianconnector.net  # for the wildcard
-    nslookup mycommunity.guardianconnector.net
+    nslookup random123.<alias>.guardianconnector.net  # for the wildcard
+    nslookup <alias>.guardianconnector.net
     ```
-(Note that `random123` is needed because you set a wildcard entry in your DNS by setting `*.mycommunity` as your host, not `mycommunity`)
+    
+   (Note that `random123` is needed because you set a wildcard entry in your DNS by setting `*.<alias>` as your host, not `<alias>`)
 
 ### III. Set up CapRover
 
@@ -45,7 +55,7 @@ For security reasons, initial configuration from another machine is disabled, bo
 
 1. SSH into your new VM:
     ```bash
-    ssh -i ~/.ssh/your-secret-key YOUR_USERNAME@captain.mycommunity.guardianconnector.net
+    ssh -i ~/.ssh/your-secret-key YOUR_USERNAME@captain.<alias>.guardianconnector.net
     ```
     (or use the IP address if your domain is not yet pointing to the VM)
 
@@ -55,8 +65,8 @@ For security reasons, initial configuration from another machine is disabled, bo
     ```
     - Answer "y" to the question "have you already started CapRover container on your server?"
     - When asked for "IP address of server": type `127.0.0.1`.
-    - For "Root domain": enter your full domain (example: `mycommunity.guardianconnector.net`)
-    - For "Caprover machine name", enter your alias for the VM (example: `mycommunity`)
+    - For "Root domain": enter your full domain (`<alias>.guardianconnector.net`)
+    - For "Caprover machine name", enter your alias for the VM (`<alias>`)
 
     Note that it may take the server a few minutes to install CapRover. If, when running this command, you get an error that `caprover: command not found`, wait a few minutes and try again.
 
@@ -97,8 +107,8 @@ Many communities keep their data lake files on Azure Files. This is optional.
    - The `cloud-config.yml` already contains the mount script with ARM parameter placeholders
    - You'll provide the storage account details as parameters during deployment
    - CMI uses the following naming conventions:
-     - Storage Account Name: {alias}
-     - Storage Account Folder: {alias}-files
+     - Storage Account Name: `<alias>`
+     - Storage Account Folder: `<alias>-files`
    - **Note:** check the standard quota for the file share, and adjust as needed. (CMI typically sets 1024 GB, or 1 TB)
 
 2. **To not use Azure Files:**
