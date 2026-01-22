@@ -76,7 +76,7 @@ Unless your SQL database is on another host, the tool must be run on the same ma
 On most systems you can install directly with pip:
 
 ```sh
-$ pip install "gc-stack-deploy @ git+https://github.com/ConservationMetrics/gc-deploy.git@main#subdirectory=caprover/gc-stack-deploy"
+pip install "gc-stack-deploy @ git+https://github.com/ConservationMetrics/gc-deploy.git@main#subdirectory=caprover/gc-stack-deploy"
 ```
 
 #### If pip is blocked (common on some VMs)
@@ -85,15 +85,15 @@ Some environments (like fresh Ubuntu VMs) restrict `pip install` into the system
 to install the tool:
 
 ```sh
-$ sudo apt install pipx -y
-$ pipx install "gc-stack-deploy @ git+https://github.com/ConservationMetrics/gc-deploy.git@main#subdirectory=caprover/gc-stack-deploy"
+sudo apt install pipx -y
+pipx install "gc-stack-deploy @ git+https://github.com/ConservationMetrics/gc-deploy.git@main#subdirectory=caprover/gc-stack-deploy"
 ```
 
 **Note**: pipx installs apps into `~/.local/bin`. If you see `gc-stack-deploy: command not found`, add it to your PATH:
 
 ```sh
-$ export PATH=$HOME/.local/bin:$PATH
-$ echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.bashrc
+export PATH=$HOME/.local/bin:$PATH
+echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.bashrc
 ```
 
 Then, restart your shell or run `exec $SHELL -l`. Now you can run `gc-stack-deploy` from any directory.
@@ -107,7 +107,7 @@ file lets you set secrets and API keys, and configure which apps you want.  Writ
 to your local directory by running `gc-stack-deploy init --config-file «destination.yaml»`.
 
 ```sh
-$ gc-stack-deploy init --config-file stack.yaml
+gc-stack-deploy init --config-file stack.yaml
 ```
 Then open the file and fill in the blanks.
 
@@ -116,7 +116,7 @@ running on the same machine.
 
 ```sh
 # First, dry-run to check for misconfigurations
-$ gc-stack-deploy --config-file stack.yaml --dry-run
+gc-stack-deploy --config-file stack.yaml --dry-run
 # Then repeat without --dry-run
 ```
 
