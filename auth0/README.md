@@ -4,6 +4,10 @@ GuardianConnector uses [Auth0](https://auth0.com/) for authentication and user m
 
 ## GCP OAuth client configuration
 
+> [!IMPORTANT]
+>
+> Before you start, make sure that you have access to the right project with the OAuth 2.0 Client on GCP.
+
 You will need a Google Cloud Platform (GCP) OAuth 2.0 Client in order to [avoid using development keys which is not recommended](https://community.auth0.com/t/confusing-dev-keys-error-message-when-using-production-keys/74273).
 
 - If you need to create a new Google Cloud Platform (GCP) OAuth 2.0 Client:
