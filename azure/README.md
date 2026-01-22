@@ -66,6 +66,7 @@ For security reasons, initial configuration from another machine is disabled, bo
     - Answer "y" to the question "have you already started CapRover container on your server?"
     - When asked for "IP address of server": type `127.0.0.1`.
     - For "Root domain": enter your full domain (`<alias>.guardianconnector.net`)
+    - For "Valid email addresses": enter an admin email address from your organization.
     - For "Caprover machine name", enter your alias for the VM (`<alias>`)
 
     Note that it may take the server a few minutes to install CapRover. If, when running this command, you get an error that `caprover: command not found`, wait a few minutes and try again.
