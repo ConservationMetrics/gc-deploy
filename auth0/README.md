@@ -17,9 +17,9 @@ You will need a Google Cloud Platform (GCP) OAuth 2.0 Client in order to [avoid 
   - You can find your client by navigating to **APIS & Services** -> **OAuth consent screen** -> **Clients**.
 - Add the following settings:
   _ Authorized JavaScript origins:
-  `https://{tenant}.us.auth0.com`
+  `https://<tenant>.us.auth0.com`
   _ Authorized redirect URIs:
-  `https://{tenant}.us.auth0.com/login/callback`
+  `https://<tenant>.us.auth0.com/login/callback`
 - Copy down the Client ID and Secret for your client.
 
 ## Auth0 tenant configuration, step by step
@@ -31,19 +31,19 @@ You will need a Google Cloud Platform (GCP) OAuth 2.0 Client in order to [avoid 
 4. In **Applications**, create a separate Regular Web Application for each tool (e.g., Superset, GC-Explorer). 
    - For each application, give a human readable name (e.g. "Superset", "GC-Explorer", "Windmill", "GC Landing Page").
    - Add appropriate production domain values under Callback URLs, Web Origins, and CORS:
-   - For **Superset** (assuming Superset is hosted at the root of your subdomain; otherwise, use the appropriate subdomain i.e. `superset.{domain}`):
-     - **Callback URL**: `http://superset.{domain}.guardianconnector.net/oauth-authorized/auth0`
+   - For **Superset** (assuming Superset is hosted at the root of your subdomain; otherwise, use the appropriate subdomain i.e. `superset.<domain>.guardianconnector.net`):
+     - **Callback URL**: `http://superset.<domain>.guardianconnector.net/oauth-authorized/auth0`
        - 🚨 Yes, you are reading that correctly - Superset requires `http://` instead of `https://` for the callback URL. [See this issue for more details](https://github.com/ConservationMetrics/superset-deployment/issues/51).
-     - **Allowed Web Origins**: `https://superset.{domain}.guardianconnector.net/`
+     - **Allowed Web Origins**: `https://superset.<domain>.guardianconnector.net/`
    - For **GC-Explorer**:
-     - **Callback URL**: `https://explorer.{domain}.guardianconnector.net/login`
-     - **Allowed Web Origins**: `https://explorer.{domain}.guardianconnector.net`
+     - **Callback URL**: `https://explorer.<domain>.guardianconnector.net/login`
+     - **Allowed Web Origins**: `https://explorer.<domain>.guardianconnector.net`
    - For **Windmill**:
-     - **Callback URL**: `https://windmill.{domain}.guardianconnector.net/user/login_callback/auth0`
-     - **Allowed Web Origins**: `https://windmill.{domain}.guardianconnector.net/`
+     - **Callback URL**: `https://windmill.<domain>.guardianconnector.net/user/login_callback/auth0`
+     - **Allowed Web Origins**: `https://windmill.<domain>.guardianconnector.net/`
    - For **GC Landing Page**:
-     - **Callback URL**: `https://{domain}.guardianconnector.net/login`
-     - **Allowed Web Origins**: `https://{domain}.guardianconnector.net`
+     - **Callback URL**: `https://<domain>.guardianconnector.net/login`
+     - **Allowed Web Origins**: `https://<domain>.guardianconnector.net`
 5. In **Actions**, configure a Login Flow Action to handle user approval. (See [ User Approval Flow](#user-approval-flow) below.)
 6. Set up **Role-Based Access Control** for the applications that use it. (See [RBAC Configuration](#rbac-configuration) below.)
 7. **Sign in** to an auth0 application with at least one user, who will serve as the initial admin user and can manage approval and roles for others using GC Landing Page. This user should be given the **Admin** role, and be approved (see [Auth0 approval process](#auth0-approval-process) below.)
