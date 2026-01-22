@@ -32,12 +32,14 @@ in Azure or DigitalOcean — in which case **you may skip the rest of the docume
 
 4. Optional: Set up an auth0 tenant, authorization flow (for example, an approval script for the `post-login` Trigger), and auth0 client applications for the apps that will be using auth0.
 
-5. Optional: Set up a Volume Mount (such as Azure Files Share)
+5. Optional: Set up a Mapbox account to provide the API key for the apps.
 
-6. Optional: Schedule automatic updates of packages and OS
+6. Optional: Set up a Volume Mount (such as Azure Files Share)
 
-7. Optional: Add SSH keys to `~/.ssh/authorized_keys` for everyone who needs access to the VM.
+7. Optional: Schedule automatic updates of packages and OS
 
-8. Set up CapRover on the VM
+8. Optional: Add SSH keys to `~/.ssh/authorized_keys` for everyone who needs access to the VM.
+
+9. Set up CapRover on the VM
 
    - With the right amount of knowledge, you can follow CapRover's own [Getting Started](https://caprover.com/docs/get-started.html#caprover-setup) guide to figure out how to install CapRover when the hosting platform didn't already do it for you.

@@ -45,7 +45,7 @@
     nslookup random123.<alias>.guardianconnector.net  # for the wildcard
     nslookup <alias>.guardianconnector.net
     ```
-    
+
    (Note that `random123` is needed because you set a wildcard entry in your DNS by setting `*.<alias>` as your host, not `<alias>`)
 
 ### III. Set up CapRover
@@ -72,9 +72,12 @@ For security reasons, initial configuration from another machine is disabled, bo
 
 ### IV. Install the Guardian Connector software stack
 
-- Install the app stack by following [`../caprover/INSTALL_GC_STACK.md`](../caprover/INSTALL_GC_STACK.md).
 - Set up auth0 by following [`../auth0/README.md`](../auth0/README.md).
 - Set up a Mapbox account to provide the API key for the apps.
+- Install the app stack by following [`../caprover/INSTALL_GC_STACK.md`](../caprover/INSTALL_GC_STACK.md).
+
+> [!TIP]
+> It is recommended to set up auth0 and Mapbox before you install the app stack, because you will need to input Client IDs, Client Secrets, and Mapbox API Keys in the app stack configuration.
 
 ## 📖 More Information
 
