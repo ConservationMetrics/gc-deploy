@@ -4,7 +4,6 @@ Guardian Connector provides a secure, dedicated data store for each user, combin
 
 At a high level, the Guardian Connector data warehouse is designed around a simple idea: **user data should be stable, portable, and independent of any single application**. Files are treated as the primary source of truth, while databases and application-specific stores exist to make that data easier to query, visualize, and work with in day-to-day workflows. This separation allows applications to evolve, be upgraded, or even replaced without putting community data at risk, while ensuring that data remains accessible both inside and outside the platform.
 
-
 ## Data Warehouse Structure
 
 ### 📂 File-first approach
@@ -40,7 +39,9 @@ Examples include:
 
 Metastores are typically implemented as:
 - Dedicated databases on the same Postgres server (for example, `superset_metastore`, `windmill`, or `guardianconnector`)
-- Internal SQLite databases or files stored outside the exposed `persistent-storage/datalake` directory
+- Internal SQLite databases or files stored outside the exposed `persistent-storage/datalake` directory, or as Docker volume mounts on the host VM.
+
+Docker volumes offer better performance for disk-intensive operations like SQLite databases and are backed up via VM backups, while network storage provides easier external access but may have higher latency and currently lacks automated backup in Azure deployments. At present, the choice of storage location is determined by the application and its requirements.
 
 ## 👉 Examples
 
