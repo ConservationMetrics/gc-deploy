@@ -15,7 +15,7 @@ postgres:
   pass: "your_pg_password"  # Set a secure password
 
   # Set only when deploy: true
-  database: postgres
+  database: postgres  # `warehouse` will be created in the stack deploy script
   version: 17
   expose_port: 15432  # the container will map to this port on the host VM
 
