@@ -43,7 +43,7 @@ superset-only:
   auth0_domain: 
   auth0_clientid: 
   auth0_client_secret: 
-  admin_email: "admin@guardianconnector.net"
+  admin_email: "admin@guardianconnector.net"  # this should be the email address of the first admin user who will log in with auth0
   mapbox_api_key: 
   app_icon: 
   app_title: "Dashboard: Biocultural Monitoring Demo"
