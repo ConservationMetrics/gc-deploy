@@ -31,8 +31,8 @@ caproverOneClickApp:
       description: Check out the container registry for valid tags
 
     - id: "$$cap_community_name"
-      label: Community Name (slug)
-      description: The "slug" of the community used for Guardian Connector (e.g. {community_name}.guardianconnector.net)
+      label: Community Name (alias)
+      description: The alias of the community used for Guardian Connector (e.g. {community_name}.guardianconnector.net)
     - id: "$$cap_auth0_domain"
 
       label: Auth0 Domain
