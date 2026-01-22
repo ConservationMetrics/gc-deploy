@@ -71,14 +71,21 @@ For security reasons, initial configuration from another machine is disabled, bo
 
     Note that it may take the server a few minutes to install CapRover. If, when running this command, you get an error that `caprover: command not found`, wait a few minutes and try again.
 
-### IV. Install the Guardian Connector software stack
+### IV. Set up SSH keys and backups
+
+Two additional steps you may wish to take to secure your deployment:
+
+1. Add SSH keys to `~/.ssh/authorized_keys` for everyone who needs access to the VM.
+2. Set up automatic backups for the VM.
+
+### V. Install the Guardian Connector software stack
+
+> [!TIP]
+> It is recommended to set up auth0 and Mapbox before you install the app stack, because you will need to input Client IDs, Client Secrets, and Mapbox API Keys in the app stack configuration.
 
 - Set up auth0 by following [`../auth0/README.md`](../auth0/README.md).
 - Set up a Mapbox account to provide the API key for the apps.
 - Install the app stack by following [`../caprover/INSTALL_GC_STACK.md`](../caprover/INSTALL_GC_STACK.md).
-
-> [!TIP]
-> It is recommended to set up auth0 and Mapbox before you install the app stack, because you will need to input Client IDs, Client Secrets, and Mapbox API Keys in the app stack configuration.
 
 ## 📖 More Information
 
