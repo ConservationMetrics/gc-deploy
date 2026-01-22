@@ -65,6 +65,7 @@ gc-landing-page:
   filebrowser_enabled: 
   windmill_enabled: 
   explorer_enabled: 
+  logo_url:
 
 gc-explorer:
   deploy: true

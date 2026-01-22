@@ -16,6 +16,7 @@ services:
       NUXT_PUBLIC_WINDMILL_ENABLED: $$cap_windmill_enabled
       NUXT_PUBLIC_EXPLORER_ENABLED: $$cap_explorer_enabled
       NUXT_PUBLIC_BASE_URL: https://$$cap_appname.$$cap_root_domain
+      NUXT_PUBLIC_LOGO_URL: $$cap_logo_url
       NUXT_SESSION_PASSWORD: $$cap_session_password
 
     caproverExtra:
@@ -46,7 +47,9 @@ caproverOneClickApp:
       label: Session Password
       defaultValue: "$$cap_gen_random_hex(50)"
       description: Password used for session encryption. Auto-generated if not provided.
-
+    - id: "$$cap_logo_url"
+      label: Logo URL
+      description: URL of the community logo to display on the landing page
     - id: "$$cap_superset_enabled"
       label: Enable Superset
       defaultValue: "true"
