@@ -78,8 +78,8 @@ Role-Based Access Control (RBAC) allows you to control user access to different 
 ### API Configuration
 
 1. Go to **Dashboard > Applications > APIs** and find the "Auth0 Management API" API
-2. For that API, go to the **"Machine to Machine Applications"** tab
-3. Find your application in the list and **Authorize** it
+2. For that API, go to the **"Application Access"** tab
+3. Find your application in the list and click edit navigating to **Client Credentials** tab.
 4. For each application, select the required scopes:
    - **GC-Explorer** (read-only access):
      - `read:users` - to fetch user information
