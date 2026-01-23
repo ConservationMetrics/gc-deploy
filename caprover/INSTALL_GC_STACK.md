@@ -72,7 +72,7 @@ If the script ran successfully, you can proceed to the [Post-install app configu
 
 > [!TIP]
 > If something goes wrong in the middle of the `gc-stack-deploy` script, you have several options:
-> - You can delete the app from CapRover and redeploy it using the `gc-stack-deploy` script. For any applications that were installed successfully, you can set `deploy: true` in the `stack.yaml` file to skip them in the next run. In doing so, please pay careful attention to any app-specific instructions (i.e., providing a host and port for Postgres).
+> - You can delete the app from CapRover and redeploy it using the `gc-stack-deploy` script. For any applications that were installed successfully, you can set `deploy: false` in the `stack.yaml` file to skip them in the next run. In doing so, please pay careful attention to any app-specific instructions (i.e., providing a host and port for Postgres).
 > - You can manually install the apps using the one-click app install menu. See [Manually installing apps section](#manually-installing-apps) for more details.
 
 #### What could go wrong?
