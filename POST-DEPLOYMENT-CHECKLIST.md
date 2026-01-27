@@ -16,7 +16,7 @@ It covers the manual steps that are not already automated through the scripts an
 - [ ] Did I set up the Guardian Connector 3rd party repository?
 - [ ] Did I deploy all required apps?
 - [ ] Did I configure environment variables and settings for each app correctly? (c.f. [caprover/INSTALL_GC_STACK.md#post-install-app-configuration](caprover/INSTALL_GC_STACK.md#post-install-app-configuration))
-- [ ] Did I set the `{alias}.domain.net` to point to one of the applications (e.g. Superset or GC Landing Page)?
+- [ ] Did I set the `<alias>.<domain>.net` to point to one of the applications (e.g. Superset or GC Landing Page)?
 - [ ] Did I store the CapRover admin password in Keepass?
 
 ### Superset
@@ -44,7 +44,7 @@ It covers the manual steps that are not already automated through the scripts an
   - [ ] GCP service account
   - [ ] CoMapeo archive server
 - [ ] Did I invite other required admin users to the Windmill instance and workspace?
-- [ ] Did I set up operator users with the appropriate permissions (e.g. disable all settings except Runs and Schedules)?
+- [ ] Did I set up operator users with the appropriate permissions (e.g. [disable all settings except Runs and Schedules](https://docs.guardianconnector.net/reference/gc-toolkit/gc-scripts-hub/user-roles#configuring-operator-roles))?
 - [ ] Did I add the group `g/all` to all of the folders containing the workspace scripts, flows, and apps (e.g. `export`, `connectors`, `apps`)?
 
 ### CoMapeo

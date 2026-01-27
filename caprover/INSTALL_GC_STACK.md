@@ -6,19 +6,109 @@ This guide walks you through setting up your custom Guardian Connector software 
 
 See [INSTALL_CAPROVER_ON_NEW_VM.md](INSTALL_CAPROVER_ON_NEW_VM.md) if you haven't already configured a new VM running CapRover.
 
-## Set Up PostgreSQL Database
+## Add apps to CapRover
 
-You have two options for the PostgreSQL database
+**You have two options to install apps:**
 
-### Option 1: Install PostgreSQL via CapRover:
+1. install the entire stack using one script: **`gc-stack-deploy`**
+2. install apps one-at-a-time through the CapRover UI
 
-From the CapRover, navigate to **Apps** and "One-Click Apps/Database". Find the **PostgreSQL** one-click app from the available list.
+### Option 1. Installing the entire stack with **`gc-stack-deploy`**
 
-- Version: 17-alpine
-- Set a database username and password
+If you don't want to sweat the details, it's much quicker to deploy the Guardian Connector stack of apps using the `gc-stack-deploy`.
+
+Unless your SQL database is on another host, the tool must be run on the same machine where CapRover is running. 
+
+#### Install the tool
+
+On most systems you can install directly with pip:
+
+```sh
+pip install "gc-stack-deploy @ git+https://github.com/ConservationMetrics/gc-deploy.git@main#subdirectory=caprover/gc-stack-deploy"
+```
+
+#### If pip is blocked (common on some VMs)
+
+Some environments (like fresh Ubuntu VMs) restrict `pip install` into the system Python. In that case, use `pipx`
+to install the tool:
+
+```sh
+sudo apt install pipx -y
+pipx install "gc-stack-deploy @ git+https://github.com/ConservationMetrics/gc-deploy.git@main#subdirectory=caprover/gc-stack-deploy"
+```
+
+**Note**: pipx installs apps into `~/.local/bin`. If you see `gc-stack-deploy: command not found`, add it to your PATH:
+
+```sh
+export PATH=$HOME/.local/bin:$PATH
+echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.bashrc
+```
+
+Then, restart your shell or run `exec $SHELL -l`. Now you can run `gc-stack-deploy` from any directory.
+
+(Alternatively, you could create a venv to install the tool into, and then add it to your PATH.)
+
+#### Create a `stack.yaml` configuration file
+
+You must create a `stack.yaml` configuration file of for your new deployment. The configuration
+file lets you set secrets and API keys, and configure which apps you want.  Write an example template
+to your local directory by running `gc-stack-deploy init --config-file «destination.yaml»`.
+
+```sh
+gc-stack-deploy init --config-file stack.yaml
+```
+Then open the file (you could use `nano` or `vi`) and fill in the blanks.
+
+Finally you are ready to use this same configuration file to deploy the apps to CapRover,
+running on the same machine.
+
+```sh
+# First, dry-run to check for misconfigurations
+gc-stack-deploy --config-file stack.yaml --dry-run
+# Then repeat without --dry-run
+```
+
+If the script ran successfully, you can proceed to the [Post-install app configuration section](#post-install-app-configuration).
+
+> [!TIP]
+> If something goes wrong in the middle of the `gc-stack-deploy` script, you have several options:
+> - You can delete the app from CapRover and redeploy it using the `gc-stack-deploy` script. For any applications that were installed successfully, you can set `deploy: false` in the `stack.yaml` file to skip them in the next run. In doing so, please pay careful attention to any app-specific instructions (i.e., providing a host and port for Postgres).
+> - You can manually install the apps using the one-click app install menu. See [Manually installing apps section](#manually-installing-apps) for more details.
+
+#### What could go wrong?
+
+It has been observed that...
+- the script can time out before a Docker image successfully pulls and builds
+- the script fails to enable SSL for a given webapp
+
+In both cases, trying to run the script again typically fixes the issue. For the case of the Docker image building, you can actually monitor the build progress in the CapRover web portal under **Apps** → **Deployment**.
+
+### Option 2. Install One-Click Apps through the CapRover UI
+
+#### Runtime Prerequisite
+
+1. In your CapRover web dashboard, navigate to **Apps** → **Create A New App** → **One-Click Apps/Databases**.
+2. At the very bottom of the Apps list, find **3rd party repositories**. Enter the URL:
+    > `https://conservationmetrics.github.io/gc-deploy/one-click-apps`
+3. **Connect New Repostory** and refresh the page. You can now browse and install Guardian Connector apps directly from CapRover.
+
+#### Install apps as One-Click Apps
+
+From the CapRover, navigate to **Apps** and "One-Click Apps/Database".
+
+Install each of the following apps in turn, paying attention to the **App-specific notes** in the [Manually installing apps section](#manually-installing-apps), followed by the post-install instructions in [Post-install app configuration section](#post-install-app-configuration).
+
+## Post-install app configuration
 
 > [!NOTE]
+> These post-install instructions are relevant no matter which option you used to install the apps.
+
+### PostgreSQL
+
+> [!TIP]
 > Your PostgreSQL app is internally available as `srv-captain--postgres` (assuming your app is called "postgres") to other apps as the hostname for a database connection.
+
+If you haven't already (i.e. through `gc-stack-deploy`), create the `warehouse` database.
 
 #### Expose database to the public internet (⚠️ Optional & Not recommended):
 
@@ -45,160 +135,89 @@ you will need to take some additional steps after installing the one-click-app:
 - Make sure your hosting provider’s firewall or network security settings allow inbound traffic on port **5432** using the **TCP** protocol. For example, on **Azure**, inbound traffic on port 5432 is blocked by default and must be explicitly allowed through a Network Security Group (NSG) rule.
 - Now, you will be able to connect to the database using the hostname of your VM (no subdomain needed), port 5432, and SSL enabled.
 
-### Option 2: Use External PostgreSQL
-
-If you already have an external PostgreSQL instance (e.g., cloud-hosted), simply configure the apps in your stack to connect to this external instance by setting the appropriate environment variables when installing those apps as described below.
-
-# Add apps to CapRover
-
-## Runtime Prerequisite
-
-1. In your CapRover web dashboard, navigate to **Apps** → **Create A New App** → **One-Click Apps/Databases**.
-2. At the very bottom of the Apps list, find **3rd party repositories**. Enter the URL:
-    > `https://conservationmetrics.github.io/gc-deploy/one-click-apps`
-3. **Connect New Repostory** and refresh the page. You can now browse and install Guardian Connector apps directly from CapRover.
-
-## Different ways to install apps
-
-You have two options to install apps:
-
-1. install the entire stack in one script: **`gc-stack-deploy`**
-2. install apps one-at-a-time through the CapRover UI
-
-### Option 1. Installing the entire stack with **`gc-stack-deploy`**
-
-If you don't want to sweat the details, it's much quicker to deploy the Guardian Connector stack of apps using the `gc-stack-deploy`.
-
-Unless your SQL database is on another host, the tool must be run on the same machine where CapRover is running. 
-
-#### Install the tool
-
-On most systems you can install directly with pip:
-
-```sh
-$ pip install "gc-stack-deploy @ git+https://github.com/ConservationMetrics/gc-deploy.git@main#subdirectory=caprover/gc-stack-deploy"
-```
-
-#### If pip is blocked (common on some VMs)
-
-Some environments (like fresh Ubuntu VMs) restrict `pip install` into the system Python. In that case, use `pipx`
-to install the tool:
-
-```sh
-$ sudo apt install pipx -y
-$ pipx install "gc-stack-deploy @ git+https://github.com/ConservationMetrics/gc-deploy.git@main#subdirectory=caprover/gc-stack-deploy"
-```
-
-**Note**: pipx installs apps into `~/.local/bin`. If you see `gc-stack-deploy: command not found`, add it to your PATH:
-
-```sh
-$ export PATH=$HOME/.local/bin:$PATH
-$ echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.bashrc
-```
-
-Then, restart your shell or run `exec $SHELL -l`. Now you can run `gc-stack-deploy` from any directory.
-
-(Alternatively, you could create a venv to install the tool into, and then add it to your PATH.)
-
-#### Create a `stack.yaml` configuration file
-
-You must create a `stack.yaml` configuration file of for your new deployment. The configuration
-file lets you set secrets and API keys, and configure which apps you want.  Write an example template
-to your local directory by running `gc-stack-deploy init --config-file «destination.yaml»`.
-
-```sh
-$ gc-stack-deploy init --config-file stack.yaml
-```
-Then open the file and fill in the blanks.
-
-Finally you are ready to use this same configuration file to deploy the apps to CapRover,
-running on the same machine.
-
-```sh
-# First, dry-run to check for misconfigurations
-$ gc-stack-deploy --config-file stack.yaml --dry-run
-# Then repeat without --dry-run
-```
-
-### Option 2. Install One-Click Apps through the CapRover UI
-
-From the CapRover, navigate to **Apps** and "One-Click Apps/Database".
-
-Install each of the following apps in turn, paying attention to the **App-specific notes** at the links:
-
-- [PostgreSQL](#postgresql)
-- [CoMapeo Archive Server](#comapeo-archive-server)
-- [Filebrowser](#filebrowser)
-- [GuardianConnector Explorer](#guardianconnector-explorer)
-- [Redis](#redis)
-- [Windmill](#windmill)
-- [Superset](#superset)
-
-## Post-install app configuration
-
-### PostgreSQL
-
-If you haven't already (i.e. through `gc-stack-deploy`), create the `warehouse` database.
-
 ### CoMapeo Archive Server
 
-No additional steps needed, but you can ensure that **Websocket Support** is enabled.
+No additional steps needed, but you may want to check if the `ALLOWED_PROJECTS` environment variable is set correctly for your community.
 
 ### Filebrowser
 
-Install - for Docker image tag, just use `v2`.
+#### Find and change the admin password
 
-#### After Install
+Find the admin password in the CapRover web portal under **Files** → **Logs**. Example log message:
 
-Carefully follow the post-installation instructions.
+```
+2026-01-22T20:56:44.221575561Z 2026/01/22 20:56:44 Using database: /database/filebrowser.db
+2026-01-22T20:56:44.250493277Z 2026/01/22 20:56:44 Using config file: /config/settings.json
+2026-01-22T20:56:44.263320528Z 2026/01/22 20:56:44 Randomly generated password for user 'admin': A6U9k-spVr9XgiRh
+2026-01-22T20:56:44.357124503Z 2026/01/22 20:56:44 Listening on [::]:80
+```
 
-Find the admin password in the CapRover web portal under Files > Logs. Then change the password inside 
-Filebrowser app. This has to be done immediately after installing the app. If the app restarts,
+Then change the password inside 
+Filebrowser app. **This has to be done immediately after installing the app**. If the app restarts,
 the log message showing the password will not be shown again.
 
-If you are too late in retrieving the password, you can delete the app in the CapRover UI and redeploy it using the one-click app install menu.
+> [!TIP]
+> If you are too late in retrieving the password, you can delete the app in the CapRover UI and redeploy it using the one-click app install menu. If you go this route, make sure you manually map the `/persistent-storage` directory in the app to your volume mount path (usually `/mnt/persistent-storage`).
 
-When logging into Filebrowser app, you may see "This location can't be reached".
-This is because Filebrowser is configured to show files in a folder called "datalake"
-and that folder hasnt been created yet. You may do any of the following:
-- create that folder in Azure Storage Explorer, or
-- upload any file anyway - this will implictly create the necessary folder. Then you can delete it.
+#### Accessing the datalake folder
+
+ When logging into Filebrowser app, you may see "This location can't be reached".
+ This is because Filebrowser is configured to show files in a folder called "datalake"
+ and that folder hasnt been created yet. You may do any of the following:
+ - create that folder in Azure Storage Explorer, or
+ - upload any file anyway - this will implictly create the necessary folder. Then you can delete it.
 
 ### GuardianConnector Explorer
 
 GuardianConnector Explorer installation involves some separate PostgreSQL setup:
-creating a `guardianconnector` database. The `gc-stack-deploy` handles this for you.
+creating a `guardianconnector` database. 
+
+The `gc-stack-deploy` handles this for you, but if you are setting up the app using the one-click app install menu, you will need to create the database manually.
 
 ### GuardianConnector Landing Page
 
-No additional steps needed.
+No additional steps needed, but you may want to check if all of the environmental variables (like `NUXT_COMMUNITY_NAME`, `NUXT_PUBLIC_LOGO_URL`) are set correctly post-installation.
 
 ### Redis
 
-If you plan to install Superset, install the Redis application from the one-click app install menu.
-
-Your redis connection string can then be: `redis://:«password»@srv-captain--redis:6379` (assuming your app is called "redis").
+No additional steps needed.
 
 ### Windmill
 
-We use `one-click-apps/windmill-only.yml` in this repo, instead of the Windmill app from
-the public CapRover one-click-apps repo. This is to share a database with the other apps,
-instead of installing separate database servers for each app in the stack.
+#### For first-time login:
 
-#### Before Install
+Instance Settings Page
 
-Windmill installation involves some separate PostgreSQL setup. The `gc-stack-deploy`
-handles this for you: you will need to set a second PostgreSQL username and password for Windmill,
-in addition to the admin password at the top of `stack.yaml`.
+* **Core** tab > Default timeout = 30 Min
 
-If you want to set up Windmill manually, you must execute the necessary SQL commands directly on your PostgreSQL instance.
-They include creating the Windmill database, roles, and granting privileges. Specific commands can
-be found inside the one-click-app's preamble.
+* **Telemetry** tab > Disable telemetry
 
-#### After Install
+* **Auth/OAuth** tab > If you plan to use SSO, enable auth0 (or your
+  provider of choice) and enter your organization and app client variables.
 
+  Note: after a domain-approved user has registered with SSO, they must be
+  manually added to workspaces by an instance admin.
 
-##### Code assistants
+#### Setting up superadmin users
+
+After you set up your Instance, you can navigate back to the Instance Settings page to the **Users** tab, and add any users you want to have access to Windmill with the superadmin role.
+
+#### Setting up a workspace
+
+1. As a superadmin, access **+ Workspace** in the top left corner and add a new workspace. The convention CMI uses to name workspaces is `gc-<alias>`, where `<alias>` is the alias chosen by the community.
+2. Push the [`gc-scripts-hub`](https://github.com/conservationMetrics/gc-scripts-hub) content to the workspace. See [Guardian Connector Scripts Hub README](https://github.com/ConservationMetrics/gc-scripts-hub/blob/main/README.md#deploying-the-code-to-windmill-workspaces) for more details.
+
+#### Setting up operator users
+
+You may want to set up operator users to execute scripts and monitor their progress. See [Guardian Connector Scripts Hub README](https://github.com/ConservationMetrics/gc-scripts-hub/blob/main/README.md#user-roles) for more details on setting up operator users.
+
+#### Persistent Directories
+
+If you are using the `gc-stack-deploy` tool, this is done automatically. If you are setting up the app using the one-click app install menu, you will need to manually set the persistent directories:
+
+- For the `windmill-worker` and `windmill-worker-native` apps' CapRover "App Configs", change the Persistent Directory for `/persistent-storage` to specific host path, and then the local path of your datalake on the VM.
+
+#### Code assistants (⚠️ Optional)
 
 To enable [code assistants](https://www.windmill.dev/docs/code_editor/assistants),
 you will need to install the Language Server Protocol (LSP):
@@ -218,39 +237,15 @@ you will need to install the Language Server Protocol (LSP):
         }
         ```
 
-##### For first-time login:
-
-Instance Settings Page
-
-* **Core** tab > Default timeout = 30 Min
-
-* **Telemetry** tab > Disable telemetry
-
-* **Auth/OAuth** tab > If you plan to use SSO, enable auth0 (or your
-  provider of choice) and enter your organization and app client variables.
-
-  Note: after a domain-approved user has registered with SSO, they must be
-  manually added to workspaces by an instance admin.
-
-##### Setting up superadmin users
-
-After you set up your Instance, you can navigate back to the Instance Settings page to the **Users** tab, and add any users you want to have access to Windmill with the superadmin role.
-
-##### Setting up operator users
-
-You may want to set up operator users to execute scripts and monitor their progress. See [Guardian Connector Scripts Hub README](https://github.com/ConservationMetrics/gc-scripts-hub/blob/main/README.md#user-roles) for more details on setting up operator users.
-
-##### Persistent Directories
-
-- For the `windmill-worker` and `windmill-worker-native` apps' CapRover "App Configs", change the Persistent Directory for `/persistent-storage` to specific host path, and then the local path of your datalake on the VM.
-
 ### Superset
 
 #### First-time admin login
 
-You can log in with the email and password you set as ADMIN_EMAIL and ADMIN_PASSWORD. If you are using Auth0, you can log in with the email account (either as username/password or as a social login) - the ADMIN_PASSWORD is not used in this case.
+You can log in with the email and password you set as `ADMIN_EMAIL` and `ADMIN_PASSWORD`, which `superset-init-and-beat` service uses to initialize the database with a first admin user. 
 
-#### After Install
+If you are using Auth0, you can log in with the email account (either as username/password or as a social login) - the `ADMIN_PASSWORD` is not used in this case.
+
+#### Disabling the healthcheck for worker and init-and-beat services
 
 Consider following the post-install instructions of adding the following lines
 to the new `-worker` and `-init-and-beat` services.
@@ -272,3 +267,46 @@ But if the latest "Image Name" is something like `img-captain-...` then you may 
 to use one of the other methods. See the app's documentation.
 
 If an app comprises multiple services you will need to Deploy the new image on each one.
+
+## Manually installing apps
+
+> [!NOTE]
+> If you are using the `gc-stack-deploy` tool, you can skip this section.
+> This section provides instructions for manually installing apps using the one-click app install menu.
+
+### PostgreSQL
+
+You have two options for the PostgreSQL database
+
+#### Option 1: Install PostgreSQL via CapRover:
+
+From the CapRover, navigate to **Apps** and "One-Click Apps/Database". Find the **PostgreSQL** one-click app from the available list.
+
+- Version: 17-alpine
+- Set a database username and password
+
+#### Option 2: Use External PostgreSQL
+
+If you already have an external PostgreSQL instance (e.g., cloud-hosted), simply configure the apps in your stack to connect to this external instance by setting the appropriate environment variables when installing.
+
+### Filebrowser
+
+For Docker image tag, just use `v2`.
+
+### Redis
+
+If you plan to install Superset, first install the Redis application from the one-click app install menu.
+
+Your redis connection string can then be: `redis://:«password»@srv-captain--redis:6379` (assuming your app is called "redis").
+
+### Windmill
+
+> [!NOTE]
+> We use `one-click-apps/windmill-only.yml` in this repo, instead of the Windmill app from
+the public CapRover one-click-apps repo. This is to share a database with the other apps,
+instead of installing separate database servers for each app in the stack.
+
+Windmill installation involves some separate PostgreSQL setup. If you want to set up Windmill manually, you must execute the necessary SQL commands directly on your PostgreSQL instance. They include creating the Windmill database, roles, and granting privileges. 
+
+Specific commands can
+be found inside the one-click-app's preamble.
