@@ -11,7 +11,7 @@
     - **Region:** Where will this stack be hosted? e.g. for data about Brazil, choose "`Brazil South`" to adhere to [Brazilian Data Protection Laws](https://www.gov.br/esporte/pt-br/acesso-a-informacao/lgpd). The Instance (VM) "Region" will be same as the Resource group's region.
     - **Create Storage Account / Storage Account Name:** See ["Configuring Azure Files"](#configuring-azure-files-optional) below.
     - **Select SSH Public Key Source:** Select "Generate new key pair" to generate a new SSH key pair, or select "Use existing key pair stored in Azure" (which is what CMI does to avoid having to manage SSH keys in multiple places).
-    - **Backup Vault Name / Backup Vault Resource Group:** (Optional) To enable automated disk backups, provide the name of an existing Recovery Services Vault and its resource group. The vault must be in the same region as the VM. To find existing vaults: Azure Portal > "Recovery Services vaults", then note the vault's Name and Resource Group. Leave blank to skip automatic backup configuration. See also ["Backups"](#backups) below.
+    - **Backup Vault Name / Backup Vault Resource Group:** (Optional) To enable automated disk backups, provide the name of an existing Recovery Services Vault and its resource group. The vault must be in the same region as the VM. To find existing vaults: [Azure Portal > Recovery Services vaults](https://portal.azure.com/#browse/Microsoft.RecoveryServices%2Fvaults), then note the vault's Name and Resource Group. Leave blank to skip automatic backup configuration. See also ["Backups"](#backups) below.
 3. Click "Review + Create". Wait for deployment (about 2 minutes).
 
 ### II. Set up DNS
