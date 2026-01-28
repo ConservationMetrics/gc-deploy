@@ -3,7 +3,7 @@
 This documentation assumes you've set up Azure Backup on a VM (which needs to be have been done manually).
 
 
-![alt text](restore-options.png)
+![Available restore options on Azure](restore-options.png)
 
 Use [Recover VM](#recover-vm) when you need to quickly restore an entire disk or the VM itself.
 
@@ -14,7 +14,14 @@ Use [File Recovery](#file-recovery) for targeted extraction of specific files (r
 
 Use Recover VM when you need to quickly restore an entire disk or the VM itself.
 
-There are [at least](https://learn.microsoft.com/en-us/azure/backup/backup-azure-arm-restore-vms#restore-options) two ways to recover entire hard disk from backup.
+There are [at least](https://learn.microsoft.com/en-us/azure/backup/backup-azure-arm-restore-vms#restore-options) two ways to recover entire hard disk from backup. Both are described in detail below; we recommend "Replace existing disks" as the more common case.
+
+### Prerequisite
+
+Whichever method you choose, the restore operation will require a Staging Storage Account:
+- This storage account must use flat blob storage (a.k.a."hierarchical namespace" disabled, a.k.a. Cannot be "ADLSv2"). Note that our community data warehouse accounts are all ADLSv2 so they cannot be used for this.
+- **It needs to be in the same Azure region and the same Subscription as the VM.**
+    - CMI Staff: If your VM is in East US 2, use storage account `vmrestorestaginguseast2` or `vmrestorestaguseast2` which we leave on-standby for you (they are in different Subscriptions). However to restore VMs in other regions, you need to create a new storage account.
 
 ### Restore target: Replace existing disks
 
@@ -29,15 +36,13 @@ Use when:
 
 #### How to do it
 
-1. You will need a Staging Storage Account:
-    - This storage account must use flat blob storage (a.k.a."hierarchical namespace" disabled, a.k.a. Cannot be "ADLSv2"). Note that our community data warehouse accounts are all ADLSv2 so they cannot be used for this.
-    - **It needs to be in the same Azure region and the same Subscription as the VM.**
-        - CMI Staff: If your VM is in East US 2, use storage account `vmrestorestaginguseast2` or `vmrestorestaguseast2` which we leave on-standby for you (they are in different Subscriptions). However to restore VMs in other regions, you need to create a new storage account.
-1. In Azure Portal, find the VM. Click "Backup".
+1. The VM needs to be in deallocated state for performing replace disks operation. In the Azure Portal, find the VM and click "Stop" and wait for the operation to finish.
+1. In Azure Portal, under the VM, click "Backup".
 1. Click **"Recover VM"**
 1. Select a restore point, then `Restore target: **"Replace Existing"**`
 1. Select the Staging Storage Account from above. It's suggested to uncheck "Skip pre-restore backup" but use your gut.
-1. Click the **Restore** button.
+1. Click the **Restore** button. You will be routed back to the VM overview page while the operation continues in the background.
+1. After a minute or two, you should see a message "Restore triggered successfully. Please monitor progress in backup jobs page" if things went according to plan.
 
 Follow-up:
 - Azure took a pre-replacement snapshot (retained in Backups). If ever you need to undo the restore, maybe you can use this.
