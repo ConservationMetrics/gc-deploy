@@ -12,7 +12,7 @@
     > [<img src="https://aka.ms/deploytoazurebutton"/>](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fconservationmetrics.github.io%2Fgc-deploy%2Fazure%2Fnew-vm.arm.json)
 2. Fill in required parameters:
     - **Subscription:** Select the subscription you want to use.
-    - **Resource Group:** Recommend creating new, so the only thing in the resource group is this Guardian Deployment deployment. See also ["Prerequisites"](#prerequisites) below for discussion about permission requirements. 
+    - **Resource Group:** Recommend creating new, so the only thing in the resource group is this Guardian Deployment deployment. See also ["Prerequisites"](#prerequisites) below for discussion about permission requirements.
       - CMI's convention is to use `guardian-<alias>` for the resource group name, where `<alias>` is the alias chosen by the community.
     - **Region:** Where will this stack be hosted? e.g. for data about Brazil, choose "`Brazil South`" to adhere to [Brazilian Data Protection Laws](https://www.gov.br/esporte/pt-br/acesso-a-informacao/lgpd). The Instance (VM) "Region" will be same as the Resource group's region.
     - **Create Storage Account / Storage Account Name:** See ["Configuring Azure Files"](#configuring-azure-files-optional) below.
@@ -140,7 +140,7 @@ Azure Backup can automatically back up the VM's disks (OS disk and any data disk
 - Azure Files shares (these have their own backup/redundancy options)
 - External database servers
 
-**Setting up backups:**
+#### Setting up backups
 
 It's recommended to use the ARM template to configure backup by providing a Recovery Services Vault during initial VM deployment. A vault must already exist in the same region as the VM.
 
@@ -150,6 +150,10 @@ When expanding to a new region, one-time instructions to create a Recovery Servi
 1. Azure Portal > Create a resource > Recovery Services vault
 2. Choose the same region as your VMs
 3. Recommended to create an Enhanced Policy called with a distinguishable name such as "GuardianConnectorPolicy"
+
+#### Recovery
+
+See our ["Recover from Backup"](backup-recovery.md) documentation to recover from backup.
 
 
 ## 🛠️ Building the Template
