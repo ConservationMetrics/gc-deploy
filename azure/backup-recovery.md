@@ -59,7 +59,7 @@ Use when:
 - You want to restore to a different VNet or resource group (must remain in same region)
 - You are just testing recovery.
 
-As this is not the common case, we will just point you to the official documentation.
+As this is not the common case, we just point you to the official documentation. Please note that only the VM is recovered: you will need to manually re-configure Azure network interface settings such as **firewall rules**.
 
 
 # File Recovery
