@@ -1,7 +1,7 @@
 # TODO: make it easier to populate this file, e.g. not needing to put in auth0 domain multiple times.
 
-caproverUrl: "http[s]://captain.your-captain-root.net"
-caproverPassword: "secret-captain-password"
+caproverUrl: "http[s]://captain.your-captain-root.net"  # Remove the brackets if using SSL, remove `[s]` if using HTTP.
+caproverPassword: "secret-captain-password"  # Set a secure password! 
 
 postgres:
   deploy: true  # Set to false to skip PostgreSQL deployment, then uncomment the next lines.
@@ -10,12 +10,12 @@ postgres:
   # host: "srv-captain--postgres"
   # port: 5432
 
-  # Required in all cases
-  user: "postgres" # Do not change this
-  pass: "your_pg_password" # Set a secure password
+  # REQUIRED in all cases:
+  user: "postgres"  # Do not change this
+  pass: "your_pg_password"  # Set a secure password
 
   # Set only when deploy: true
-  database: postgres
+  database: postgres  # `warehouse` will be created in the stack deploy script
   version: 17
   expose_port: 15432  # the container will map to this port on the host VM
 
@@ -31,49 +31,50 @@ windmill-only:
 redis:
   deploy: true
   app_name: redis  # optional override
-  redis_password: "secretkey"
+  redis_password: "secretkey"  # also optional override since redis is only accessible internally on the VM
 
 superset-only:
   deploy: true
   app_name: superset  # IMPORTANT so that your app doesn't get deployed as "superset-only"
-  ### Required
-  redis_url: "redis[s]://:secretkey@srv-captain--redis:6379"  # for locally hosted redis, omit the second s before :
+  ### REQUIRED: 
+  redis_url: "redis[s]://:secretkey@srv-captain--redis:6379"  # for locally hosted redis, remove `[s]`
   redis_key_prefix: "eg_"
-  ### Optional, but you probably want to override:
-  auth0_domain:
-  auth0_clientid:
-  auth0_client_secret:
-  admin_email: "admin@guardianconnector.net"
-  mapbox_api_key:
-  app_icon:
-  app_title: "Dashboard: Biocultural Monitoring Demo"
+  ### OPTIONAL, but you probably want to override:
+  auth0_domain: 
+  auth0_clientid: 
+  auth0_client_secret: 
+  admin_email: "admin@guardianconnector.net"  # IMPORTANT: this should be changed to the email address of the first admin user who will log in with auth0
+  mapbox_api_key:  # If you want to use Mapbox for maps; can also be set later
+  app_icon:  # If you want to add a logo; can also be set later
+  app_title: "Dashboard: Biocultural Monitoring Demo"  # Change this to an appropriate title for your community.
   ### Optional: one-click app already has sane defaults
   # superset_docker_image:
   # secret_key:
 
 gc-landing-page:
   deploy: true
-  app_name: landing-page # optional override
+  app_name: landing-page  # optional override
   redirect_to_root: true  # make gc-landing-page the landing page when no subdomain specified
-  ### Required
-  community_name: # this is the URL slug of the community, e.g. "springfield" in "springfield.your-captain-root.net". It must not contain any special characters or spaces.
-  auth0_domain:
-  auth0_clientid:
-  auth0_client_secret:
-  ### Optional: should be set according to services available in the community
+  ### REQUIRED: 
+  community_name:  # IMPORTANT: this is the URL slug of the community, e.g. "springfield" in "springfield.your-captain-root.net". It must not contain any special characters or spaces.
+  auth0_domain: 
+  auth0_clientid: 
+  auth0_client_secret: 
+  ### OPTIONAL, but you probably want to override. Should be set according to services available in the community (e.g. if you don't have Superset, set `superset_enabled: false`)
   superset_enabled: 
   filebrowser_enabled: 
   windmill_enabled: 
   explorer_enabled: 
+  logo_url:  # If you want to add a logo; can also be set later
 
 gc-explorer:
   deploy: true
   app_name: explorer  # IMPORTANT so that your app doesn't get deployed as "gcexplorer"
-  ### Required:
+  ### REQUIRED:
   postgres_database: "warehouse"
-  auth0_domain:
-  auth0_clientid:
-  auth0_client_secret:
+  auth0_domain: 
+  auth0_clientid: 
+  auth0_client_secret: 
 
 comapeo-cloud:
   deploy: true

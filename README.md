@@ -11,8 +11,11 @@ A computer server running your applications.
 
 Store, organize, and selectively share all your data:
 
-- **File storage** for media (pictures, maps, videos)
+- **File storage** for media (pictures, maps, videos) and other files.
 - **SQL database** for surveys and other tabular data.
+
+For a deeper explanation of how structured data is stored, organized, and used within the Guardian Connector data warehouse, see [`warehouse/README.md`](warehouse/README.md).
+
 
 ### 🔐 Access Control
 
@@ -38,9 +41,13 @@ High-level steps to spawn a new stack
 
 2. 📂 Create your data warehouse: file storage & a SQL database.
     - The Azure deployment can automatically create an Azure Storage Account and Files share for you, or you can use an existing one. If you are storing files on the VM directly, you can skip Azure Files entirely.
+    - A PostgreSQL database will be created automatically when you install the app stack (see step 4 below).
+
 3. 🔐 If you plan on using auth0, set up an **auth0 tenant** with a user authorization workflow and client applications to help secure access to the apps you will deploy. See [`auth0/README.md`](auth0/README.md)
 
 4. 📦 Install the app stack by following [`caprover/INSTALL_GC_STACK.md`](caprover/INSTALL_GC_STACK.md).
-5. Set up data pipelines & other scripts to run in Windmill.
+
+5. 📊 Set up data pipelines & other scripts to run in Windmill.
     - See [**ConservationMetrics/gc-scripts-hub**](https://github.com/ConservationMetrics/gc-scripts-hub/)
-6. Use the [Post-Deployment Checklist](POST-DEPLOYMENT-CHECKLIST.md) to validate your deployment.
+
+6. 🔍 Use the [Post-Deployment Checklist](POST-DEPLOYMENT-CHECKLIST.md) to validate your deployment.
