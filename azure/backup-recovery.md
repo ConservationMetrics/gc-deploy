@@ -59,7 +59,18 @@ Use when:
 - You want to restore to a different VNet or resource group (must remain in same region)
 - You are just testing recovery.
 
-As this is not the common case, we just point you to the official documentation. Please note that only the VM is recovered: you will need to manually re-configure Azure network interface settings such as **firewall rules**.
+#### How to do it
+
+In Azure Portal, under the VM, click "Backup".
+
+* **Restore Type**: Select "Create new virtual machine".
+* **Virtual machine name**: Give a sensible name.
+* **Resource Group**: Select an existing Resource Group (you cannot create a new one). CMI recommends creating a new one in a different browser window, but you may select old VM's existing Resource Group.
+* **Virtual network**: Select an existing Virtual Network (you cannot create a new one). CMI recommends creating a new one in a different browser window, but you may select old VM's existing Virtual network.
+* **Subnet**: leave as "default"
+* **Staging Location**: select the storage account described above.
+
+Please note that only the VM is recovered. After the backup finishes, you will need to manually re-configure Azure network interface settings such as **firewall rules**.
 
 
 # File Recovery
