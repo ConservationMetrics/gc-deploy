@@ -188,7 +188,10 @@ No additional steps needed.
 
 Instance Settings Page
 
-* **Core** tab > Default timeout = 30 Min
+* **Core** tab
+  
+  * Default timeout = 30 Min
+  * Retention period in secs= 2592000 (30 Days)
 
 * **Telemetry** tab > Disable telemetry
 
