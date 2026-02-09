@@ -261,15 +261,7 @@ See [`./one-click-apps/README.md`](./one-click-apps/README.md) for full example.
 
 ## Upgrade Apps
 
-Most apps allow you to simply update the underlying image from the CapRover webapp
-using [**Method 6: Deploy via ImageName**](https://caprover.com/docs/one-click-apps.html#simple-image-update).  You can confirm this applies to you in CapRover under
-**Deployment > Version History**. If the latest "Image Name" is the official image,
-you can use Method 6 and paste the new official image.
-
-But if the latest "Image Name" is something like `img-captain-...` then you may need
-to use one of the other methods. See the app's documentation.
-
-If an app comprises multiple services you will need to Deploy the new image on each one.
+Please see the [Service Upgrades](SERVICE_UPGRADES.md) guide for instructions on how to upgrade the apps.
 
 ## Manually installing apps
 

@@ -51,3 +51,5 @@ High-level steps to spawn a new stack
     - See [**ConservationMetrics/gc-scripts-hub**](https://github.com/ConservationMetrics/gc-scripts-hub/)
 
 6. 🔍 Use the [Post-Deployment Checklist](POST-DEPLOYMENT-CHECKLIST.md) to validate your deployment.
+
+7. 🔧 Once all is deployed, use the [Service Upgrades](caprover/SERVICE_UPGRADES.md) guide to regularly upgrade the services to the latest versions.
