@@ -142,3 +142,16 @@ via the Superset webapp > Settings > "Database Connections" -- this time with th
 If charts and dashboards rely on an old Database Connection that was encrypted with a different SECRET_KEY,
 you could then modify that old entry in the `dbs` table by overwriting its "password" and "encrypted_extra"
 with the values of the new entry you just created.
+
+## Filebrowser is unable to access all directories in the datalake
+
+It has been observed that Filebrowser sometimes intermittently fails to access 
+all directories / files in the datalake. When this happens, you might see only 
+some of your directories / files in the Filebrowser webapp, and also errors like 
+these in the Filebrowser logs on CapRover:
+
+```
+71.246.220.157 lstat /persistent-storage/datalake/change_detection/my_alerts/9000/2025/02/alertId/images/S1_T0_alertId.jpg: no such file or directory
+```
+
+The solution is to restart the Filebrowser service in CapRover (Save & Restart button).
