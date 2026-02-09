@@ -2,8 +2,12 @@
 
 ## Installation Guides
 
-1. [Install CapRover on New VM](INSTALL_CAPROVER_ON_NEW_VM.md)
-2. [Install Guardian Connector Stack](INSTALL_GC_STACK.md)
+* [Install CapRover on New VM](INSTALL_CAPROVER_ON_NEW_VM.md)
+* [Install Guardian Connector Stack](INSTALL_GC_STACK.md)
+
+## Maintenance and Upgrades
+
+* [Service Upgrades](SERVICE_UPGRADES.md)
 
 ## Developers Reference
 
