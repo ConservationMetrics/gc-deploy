@@ -21,7 +21,7 @@ services:
       APP_NAME: $$cap_app_title
       USER_ROLE: Alpha
       LANGUAGES: "{\"en\": {\"flag\": \"us\", \"name\": \"English\"}, \"pt_BR\": {\"flag\": \"br\", \"name\": \"Português\"}, \"es\": {\"flag\": \"mx\", \"name\": \"Español\"}, \"fr\": {\"flag\": \"fr\", \"name\": \"Français\"}, \"nl\": {\"flag\": \"sr\", \"name\": \"Nederlands\"}}"
-      FRAME_ANCESTORS: "https://*.guardianconnector.net"
+      FRAME_ANCESTORS: $$cap_frame_ancestors
     caproverExtra:
       containerHttpPort: '8088'
 
@@ -93,7 +93,6 @@ caproverOneClickApp:
       validRegex: /:/
       description: user:password, copy the values from /#/apps/details/postgres
 
-    # TODO: run redis on local VM: https://github.com/ConservationMetrics/gc-forge/issues/18
     - id: '$$cap_redis_url'
       label: Redis URL
     - id: '$$cap_redis_key_prefix'
@@ -123,6 +122,12 @@ caproverOneClickApp:
     - id: '$$cap_app_title'
       label: App Title
       description: Shown on the top of the site
+
+    - id: '$$cap_frame_ancestors'
+      label: Frame Ancestors
+      description: optional, to allow embedding in other websites, see https://superset.apache.org/docs/configuration/networking-settings/
+      defaultValue: "https://*.guardianconnector.net"
+      validRegex: /^https:\/\/.*$/
 
   instructions:
     start: |-
