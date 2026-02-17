@@ -16,9 +16,6 @@ services:
       AUTH0_DOMAIN: $$cap_auth0_domain
       AUTH0_CLIENTID: $$cap_auth0_clientid
       AUTH0_CLIENT_SECRET: $$cap_auth0_client_secret
-      # For init only:
-      ADMIN_EMAIL: $$cap_admin_email
-      ADMIN_PASSWORD: $$cap_gen_random_hex(64)
       MAPBOX_API_KEY: $$cap_mapbox_api_key
       APP_ICON: $$cap_app_icon
       APP_NAME: $$cap_app_title
@@ -60,6 +57,9 @@ services:
       REDIS_URL: $$cap_redis_url
       CACHE_KEY_PREFIX: $$cap_redis_key_prefix
       DATABASE_URI: postgresql://$$cap_postgres_userpassword@$$cap_postgres_host:$$cap_postgres_port/superset_metastore
+      # For init only:
+      ADMIN_EMAIL: $$cap_admin_email
+      ADMIN_PASSWORD: $$cap_gen_random_hex(64)
     caproverExtra:
       notExposeAsWebApp: 'true'
       dockerfileLines:
