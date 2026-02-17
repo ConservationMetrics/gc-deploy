@@ -34,6 +34,7 @@ caproverOneClickApp:
       defaultValue: 'communityfirst/guardianconnector-explorer:20260216-603'
       validRegex: /^communityfirst\/guardianconnector-explorer:[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/
       description: Check out the container registry for valid tags
+      
     - id: '$$cap_postgres_host'
       label: Postgres service host name
       defaultValue: 'srv-captain--postgres'
