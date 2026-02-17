@@ -1,6 +1,5 @@
 # Set up CapRover on a DigitalOcean Droplet
 
-
 ## 🚀 Quick Deployment (10 minutes)
 
 ### I. Create a Droplet with the CapRover image
@@ -9,9 +8,15 @@
 2. Pick an appropriate size for your Droplet such as a Shared CPU with 2 vCPUs, 4 GB Memory, and a 35 GB Disk.
 3. For Authentication Method: **SSH Key** for best security.
 
+> [!CAUTION]
+>
+> Currently, this guide does not leverage DigitalOcean's Network File Storage (NFS) Shares for the Guardian Connector data warehouse. This means that all files will need to be stored on the local disk of the Droplet (e.g. a local `/data` directory on the VM). This is not a good practice for production deployments.
+>
+> If we decide to continue supporting DigitalOcean in the future, we should make it a TODO to support NFS Shares for the Guardian Connector data warehouse, akin to how we use Azure Files Shares for the Azure VM deployment.
+
 ### II. Set up DNS
 
-1. Get your VM's IP address from the Azure Portal
+1. Get your VM's IP address from the DigitalOcan Portal
 2. In your domain provider's control panel, add an A record. Assuming you have a domain like `guardianconnector.net`, add a A record to your VM's public IP:
     ```
     TYPE: A record
@@ -33,8 +38,10 @@ CapRover's [Getting Started](https://caprover.com/docs/get-started.html#step-3-c
 
 1. SSH into your new VM:
     ```bash
-    ssh -i ~/.ssh/your-secret-key YOUR_USERNAME@captain.mycommunity.guardianconnector.com
+    ssh -i ~/.ssh/your-secret-key YOUR_USERNAME@captain.<alias>.guardianconnector.net
     ```
+    (or use the IP address if your domain is not yet pointing to the VM)
+
 2. Install PNPM and the CapRover CLI:
     ```bash
     wget -qO- https://get.pnpm.io/install.sh | sh
@@ -44,12 +51,24 @@ CapRover's [Getting Started](https://caprover.com/docs/get-started.html#step-3-c
     ```bash
     caprover serversetup
     ```
-    - For "Root domain": enter your full domain (example: `mycommunity.guardianconnector.net`)
+    - Answer "y" to the question "have you already started CapRover container on your server?"
+    - When asked for "IP address of server": type `127.0.0.1`.
+    - For "Root domain": enter your full domain (`<alias>.guardianconnector.net`)
+    - For "Valid email addresses": enter an admin email address from your organization.
+    - For "Caprover machine name", enter your alias for the VM (`<alias>`)
+
+    Note that it may take the server a few minutes to install CapRover. If, when running this command, you get an error that `caprover: command not found`, wait a few minutes and try again.
 
 4. Close port 3000 in the firewall. Do this in the DigitalOcean web interface under "Networking".
 
+### IV. Set up SSH keys and backups
 
-### IV. Install the Guardian Connector software stack
+Two additional steps you may wish to take to secure your deployment:
+
+1. Add SSH keys to `~/.ssh/authorized_keys` for everyone who needs access to the VM.
+2. Set up automatic backups for the VM.
+
+### V. Install the Guardian Connector software stack
 
 - Install the app stack by following [`../caprover/INSTALL_GC_STACK.md`](../caprover/INSTALL_GC_STACK.md).
 - Set up auth0 by following [`../auth0/README.md`](../auth0/README.md).
@@ -80,4 +99,27 @@ sudo apt-get install linux-virtual
 
 ### Backups
 
-It is possible to set up automated backups of a DigitalOcean Droplet, at a percentage of the total cost of your Droplet. See https://www.digitalocean.com/products/backups for more information.
+It is possible to set up automated backups of a VM hosted on a DigitalOcean Droplet at a percentage of the total cost of your Droplet. This protects against data loss from accidental deletion, corruption, or VM failure. See [DigitalOcean's documentation on backups](https://www.digitalocean.com/products/backups) for more information.
+
+
+**What gets backed up:**
+- The VM's OS disk. It contains the operating system, all Docker volumes, and CapRover configuration.
+- Any attached data disks
+
+**What does NOT get backed up via Droplet Backups:**
+- Network interface settings: Most notably firewall rules
+- Network File Storage 
+- External database servers
+
+#### Setting up backups
+
+In the Droplet control panel, you can set up backups by navigating to the **Backups** tab and enabling backups. At the time of writing, there are two backup plans to choose from:
+
+* weekly backups kept for 4 weeks, at 20% of the total cost of your Droplet.
+* daily backups kept for 7 days, at 30% of the total cost of your Droplet.
+
+You can schedule a 4 hour window during which the backups will be taken.
+
+#### Recovery
+
+See our ["Recover from Backup"](backup-recovery.md) documentation to recover from backup.

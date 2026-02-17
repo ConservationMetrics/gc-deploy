@@ -9,7 +9,7 @@ We highly recommend using one of our quick guides that will handle all this for 
 in Azure or DigitalOcean — in which case **you may skip the rest of the document.**
 
 - To do this in Azure using an ARM template, see [`azure/README.md`](../azure/README.md)
-- To do this with a DigitalOcean Droplet one-click app, see [`digitalocean-vm/README.md`](../digitalocean-vm/README.md)
+- To do this with a DigitalOcean Droplet one-click app, see [`digitalocean/README.md`](../digitalocean/README.md)
 
 ## Do-it-yourself
 
