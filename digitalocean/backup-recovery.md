@@ -2,10 +2,11 @@
 
 This documentation assumes you've set up DigitalOcean Backups on a VM (which needs to be have been done manually).
 
-You can recover from backup by navigating to the **Backups** tab in the Droplet control panel and clicking ***More** next to the backup you want to recover from. There are two options to choose from:
+You can recover from backup by navigating to the **Backups** tab in the Droplet control panel and clicking ***More** next to the backup you want to recover from. There are three options to choose from:
 
 1. Restore Droplet
 2. Create Droplet
+3. Convert to snapshot _(if you want to keep the backup around longer than the retention period)_
 
 ## Restore Droplet
 
