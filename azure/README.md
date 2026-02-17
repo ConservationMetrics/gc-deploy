@@ -122,12 +122,13 @@ Many communities keep their data lake files on Azure Files. This is optional.
      - Storage Account Name: `<alias>`
      - Storage Account Folder: `<alias>-files`
    - **Note:** check the standard quota for the file share, and adjust as needed. (CMI typically sets 1024 GB, or 1 TB)
+   - By default, Azure sets a soft delete retention period of 7 days. If you want to modify this, see [Azure's documentation configuring soft delete](https://learn.microsoft.com/en-us/azure/storage/files/storage-files-prevent-file-share-deletion?tabs=azure-portal#toggle-soft-delete-settings) for more details.
 
 2. **To not use Azure Files:**
    - Delete the entire `write_files:` section from `cloud-config.yml`
    - When deploying, set `createStorageAccount` to `false`
 
-### Backups
+### VM Backups
 
 Azure Backup can automatically back up the VM's disks (OS disk and any data disks) to a Recovery Services Vault. This protects against data loss from accidental deletion, corruption, or VM failure.
 
@@ -155,6 +156,9 @@ When expanding to a new region, one-time instructions to create a Recovery Servi
 
 See our ["Recover from Backup"](backup-recovery.md) documentation to recover from backup.
 
+### File Share Backups
+
+If you have enabled soft delete for the file share, you can recover deleted files within a certain retention period (default is 7 days). See [Restore soft deleted file share](https://learn.microsoft.com/en-us/azure/storage/files/storage-files-prevent-file-share-deletion?tabs=azure-portal#restore-soft-deleted-file-share) from Azure's documentation for more details on how to do it.
 
 ## 🛠️ Building the Template
 
