@@ -125,7 +125,7 @@ caproverOneClickApp:
 
     - id: '$$cap_frame_ancestors'
       label: Frame Ancestors
-      description: optional, to allow embedding in other websites, see https://superset.apache.org/docs/configuration/networking-settings/
+      description: optional, to allow embedding content from other websites on a Superset dashboard, see https://superset.apache.org/docs/configuration/networking-settings/
       defaultValue: "https://*.guardianconnector.net"
       validRegex: /^https:\/\/.*$/
 
