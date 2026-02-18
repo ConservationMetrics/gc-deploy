@@ -14,14 +14,13 @@
         </ul>
     </div>
     <div class="section">
-        <h2>CapRover One-clicks-apps Repository</h2>
+        <h2>CapRover one-click-apps repository</h2>
         <ul class="file-list">
-            <li><a href="one-click-apps/">one-click-apps/</a> - root of one-click repository.
-                <ul>
-                    <li><strong>Note</strong>: this link won't load in your browser, but you can copy and paste this URL to connect as a 3rd party repository in CapRover.</li>
-                    <li>If you want to see the one-click-app definitions, see <a href="https://github.com/ConservationMetrics/gc-deploy/tree/main/caprover/one-click-apps/v4/apps" target="_blank">this directory in the GitHub repository.</a></li>
-                </ul>
+            <li>Copy and paste this URL to set up Guardian Connector as a third party repository in CapRover:<br>
+                <code id="repoUrl">https://conservationmetrics.github.io/gc-deploy/one-click-apps/</code>
+                <button onclick="navigator.clipboard.writeText(document.getElementById('repoUrl').textContent); this.textContent='Copied!'; setTimeout(() => this.textContent='Copy', 1000)">Copy</button>
             </li>
+             <li>If you want to see the one-click-app definitions, see <a href="https://github.com/ConservationMetrics/gc-deploy/tree/main/caprover/one-click-apps/v4/apps" target="_blank">this directory in the GitHub repository</a>.</li>
             <!-- TODO: add a nice HTML page as done in https://github.com/8byr0/caprover-sampleapps-browser or https://github.com/caproverhub/caprover-one-click-apps/blob/master/scripts/build.js -->
         </ul>
     </div>
