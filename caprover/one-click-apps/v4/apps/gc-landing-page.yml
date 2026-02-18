@@ -29,7 +29,7 @@ caproverOneClickApp:
       label: GC Landing Page Docker Image
       defaultValue: "communityfirst/guardianconnector-landing-page:20260216-83"
       validRegex: /^communityfirst\/guardianconnector-landing-page:[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/
-      description: Check out the container registry for valid tags
+      description: Check out the tag version on https://hub.docker.com/r/communityfirst/guardianconnector-landing-page
 
 
     - id: "$$cap_community_name"

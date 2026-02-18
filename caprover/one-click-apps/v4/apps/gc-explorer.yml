@@ -33,7 +33,7 @@ caproverOneClickApp:
       label: GC Explorer Docker Image
       defaultValue: 'communityfirst/guardianconnector-explorer:20260216-603'
       validRegex: /^communityfirst\/guardianconnector-explorer:[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/
-      description: Check out the container registry for valid tags
+      description: Check out the tag version on https://hub.docker.com/r/communityfirst/guardianconnector-explorer
       
     - id: '$$cap_postgres_host'
       label: Postgres service host name

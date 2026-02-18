@@ -31,7 +31,7 @@ caproverOneClickApp:
     label: CoMapeo Archive Server Docker Image
     defaultValue: 'communityfirst/gc-comapeo-cloud:0.3.0'
     validRegex: /^communityfirst\/gc-comapeo-cloud:[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/
-    description: Check out the container registry for valid tags
+    description: Check out the tag version on https://hub.docker.com/r/communityfirst/gc-comapeo-cloud
 
   - id: '$$cap_server_bearer_token'
     label: Token for authenticating API requests.
