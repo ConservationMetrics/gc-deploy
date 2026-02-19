@@ -10,9 +10,7 @@
 
 > [!CAUTION]
 >
-> Currently, this guide does not leverage DigitalOcean's Network File Storage (NFS) Shares for the Guardian Connector data warehouse. This means that all files will need to be stored on the local disk of the Droplet (e.g. a local `/data` directory on the VM). This is not a good practice for production deployments.
->
-> If we decide to continue supporting DigitalOcean in the future, we should make it a TODO to support NFS Shares for the Guardian Connector data warehouse, akin to how we use Azure Files Shares for the Azure VM deployment.
+> Currently, this guide does not leverage DigitalOcean's Network File Storage (NFS) Shares for the Guardian Connector data warehouse. This means that all files will need to be stored on the local disk of the Droplet (e.g. a local `/data` directory on the VM). This is not a good practice for production deployments. Please refer to [DigitalOcean's documentation on NFS Shares](https://docs.digitalocean.com/products/nfs/) for more information on how to set this up. You may also want to refer to [our Azure VM deployment guide](../azure/README.md) for an example of how to set up Azure Files Shares for the Guardian Connector data warehouse.
 
 ### II. Set up DNS
 
