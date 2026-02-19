@@ -36,7 +36,7 @@ High-level steps to spawn a new stack
 
 1. 🖥️ Choose your cloud provider and deploy a VM running CapRover.
     - **[Azure Setup Guide](azure/README.md)**
-    - **[DigitalOcean Setup Guide](digitalocean-vm/README.md)**
+    - **[DigitalOcean Setup Guide](digitalocean/README.md)**
     - or [DIY on-premises or on another hosting provider](caprover/INSTALL_CAPROVER_ON_NEW_VM.md)
 
 2. 📂 Create your data warehouse: file storage & a SQL database.
