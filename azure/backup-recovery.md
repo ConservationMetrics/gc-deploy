@@ -1,4 +1,4 @@
-# Recover VM from Backup
+# Recover from Backup
 
 This documentation assumes you've set up Azure Backup on a VM (which needs to be have been done manually).
 
@@ -69,7 +69,7 @@ In Azure Portal, under the VM, click "Backup".
 
 Please note that only the VM is recovered. After the backup finishes, you will need to manually re-configure Azure network interface settings such as **firewall rules**.
 
-# File Recovery on the VM
+# File Recovery
 
 Use File Recovery for targeted extraction of specific files, such as the PostgreSQL data dir or an environment variable from `config-captain.json`. It's rate-limited to 1GB/hour so not a reasonable solution for full VM recovery.
 
