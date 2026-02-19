@@ -2,13 +2,11 @@
 
 This documentation assumes you've set up Azure Backup on a VM (which needs to be have been done manually).
 
-
 ![Available restore options on Azure](restore-options.png)
 
 Use [Recover VM](#recover-vm) when you need to quickly restore an entire disk or the VM itself.
 
 Use [File Recovery](#file-recovery) for targeted extraction of specific files (rate-limited to 1GB/hour).
-
 
 ## Recover VM
 
@@ -37,17 +35,16 @@ Use when:
 #### How to do it
 
 1. The VM needs to be in deallocated state for performing replace disks operation. In the Azure Portal, find the VM and click "Stop" and wait for the operation to finish.
-1. In Azure Portal, under the VM, click "Backup".
-1. Click **"Recover VM"**
-1. Select a restore point, then `Restore target: **"Replace Existing"**`
-1. Select the Staging Storage Account from above. It's suggested to uncheck "Skip pre-restore backup" but use your gut.
-1. Click the **Restore** button. You will be routed back to the VM overview page while the operation continues in the background.
-1. After a minute or two, you should see a message "Restore triggered successfully. Please monitor progress in backup jobs page" if things went according to plan.
+2. In Azure Portal, under the VM, click "Backup".
+3. Click **"Recover VM"**
+4. Select a restore point, then `Restore target: **"Replace Existing"**`
+5. Select the Staging Storage Account from above. It's suggested to uncheck "Skip pre-restore backup" but use your gut.
+6. Click the **Restore** button. You will be routed back to the VM overview page while the operation continues in the background.
+7. After a minute or two, you should see a message "Restore triggered successfully. Please monitor progress in backup jobs page" if things went according to plan.
 
 Follow-up:
 - Azure took a pre-replacement snapshot (retained in Backups). If ever you need to undo the restore, maybe you can use this.
 - The original hard disk is retained in the resource group. Once recovery was successful, delete this disk manually.
-
 
 ### Restore target: Create new VM
 
@@ -71,7 +68,6 @@ In Azure Portal, under the VM, click "Backup".
 * **Staging Location**: select the storage account described above.
 
 Please note that only the VM is recovered. After the backup finishes, you will need to manually re-configure Azure network interface settings such as **firewall rules**.
-
 
 # File Recovery
 
@@ -109,7 +105,6 @@ If your caprover got corrupted, you could copy `Volume1/captain/data/config-capt
 
 If your PostgreSQL database got corrupted, you could copy `Volume1/var/lib/docker/volumes/captain--postgres-redis-data` onto your primary OS Disk.
 
-
 ## How to do it
 
 1. In Azure Portal, find the VM. Click "Backup".
@@ -126,7 +121,6 @@ If your PostgreSQL database got corrupted, you could copy `Volume1/var/lib/docke
     python3 ./largedisk_0_guardian-XXX.py
 
 1. As shown above, `sudo su -` and `cd` into the backed-up disk volume.
-
 
 ## How to cleanup afterwards
 
