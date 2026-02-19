@@ -2,7 +2,7 @@ captainVersion: 4
 
 services:
   $$cap_appname:
-    image: communityfirst/guardianconnector-explorer:latest
+    image: $$cap_gc_explorer_docker_image
     restart: unless-stopped
     environment:
       HOST: "0.0.0.0"
@@ -29,6 +29,12 @@ services:
 
 caproverOneClickApp:
   variables:
+    - id: '$$cap_gc_explorer_docker_image'
+      label: GC Explorer Docker Image
+      defaultValue: 'communityfirst/guardianconnector-explorer:20260216-603'
+      validRegex: /^communityfirst\/guardianconnector-explorer:[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/
+      description: Check out the tag version on https://hub.docker.com/r/communityfirst/guardianconnector-explorer
+      
     - id: '$$cap_postgres_host'
       label: Postgres service host name
       defaultValue: 'srv-captain--postgres'
