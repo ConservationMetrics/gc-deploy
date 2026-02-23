@@ -44,10 +44,11 @@ You will need a Google Cloud Platform (GCP) OAuth 2.0 Client in order to [avoid 
    - For **GC Landing Page**:
      - **Callback URL**: `https://<domain>.guardianconnector.net/login`
      - **Allowed Web Origins**: `https://<domain>.guardianconnector.net`
-5. In **Actions**, configure a Login Flow Action to handle user approval. (See [ User Approval Flow](#user-approval-flow) below.)
-6. Set up **Role-Based Access Control** for the applications that use it. (See [RBAC Configuration](#rbac-configuration) below.)
-7. **Sign in** to an auth0 application with at least one user, who will serve as the initial admin user and can manage approval and roles for others using GC Landing Page. This user should be given the **Admin** role, and be approved (see [Auth0 approval process](#auth0-approval-process) below.)
-8. (Optional) in **Branding**, a few minor customizations like adding an organization logo and setting the background color to gray #F9F9F9 instead of standard black.
+5. Create a M2M application for metrics with a name like **GC Metrics**, and grant `read:users` and `read:stats` scopes to it.
+6. In **Actions**, configure a Login Flow Action to handle user approval. (See [ User Approval Flow](#user-approval-flow) below.)
+7. Set up **Role-Based Access Control** for the applications that use it. (See [RBAC Configuration](#rbac-configuration) below.)
+8. **Sign in** to an auth0 application with at least one user, who will serve as the initial admin user and can manage approval and roles for others using GC Landing Page. This user should be given the **Admin** role, and be approved (see [Auth0 approval process](#auth0-approval-process) below.)
+9. (Optional) in **Branding**, a few minor customizations like adding an organization logo and setting the background color to gray #F9F9F9 instead of standard black.
 
 ## User approval flow
 

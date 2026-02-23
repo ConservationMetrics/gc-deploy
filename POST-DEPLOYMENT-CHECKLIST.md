@@ -43,6 +43,8 @@ It covers the manual steps that are not already automated through the scripts an
   - [ ] GFW API key
   - [ ] GCP service account
   - [ ] CoMapeo archive server
+  - [ ] Oauth client credentials (for metrics)
+- [ ] Did I schedule the [`guardianconnector_metrics`](https://github.com/ConservationMetrics/gc-scripts-hub/blob/main/f/metrics/guardianconnector/README.md) script to run once a month?
 - [ ] Did I invite other required admin users to the Windmill instance and workspace?
 - [ ] Did I set up operator users with the appropriate permissions (e.g. [disable all settings except Runs and Schedules](https://docs.guardianconnector.net/reference/gc-toolkit/gc-scripts-hub/user-roles#configuring-operator-roles))?
 - [ ] Did I add the group `g/all` to all of the folders containing the workspace scripts, flows, and apps (e.g. `export`, `connectors`, `apps`)?
@@ -65,6 +67,7 @@ _No manual steps required until datasets exist._
 - [ ] Did I assign the Admin role to my logged in user?
 - [ ] Did I invite other required admins to the Auth0 tenant?
 - [ ] Did I create applications for each GC Stack app?
+- [ ] Did I create a M2M application for metrics, and grant `read:users` and `read:stats` scopes to it?
 
 ### Mapbox
 
