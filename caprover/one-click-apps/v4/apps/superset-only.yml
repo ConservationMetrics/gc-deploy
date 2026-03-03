@@ -1,6 +1,5 @@
 captainVersion: 4
 
-
 services:
   $$cap_appname:
     image: $$cap_superset_docker_image
@@ -20,10 +19,10 @@ services:
       APP_ICON: $$cap_app_icon
       APP_NAME: $$cap_app_title
       USER_ROLE: Alpha
-      LANGUAGES: "{\"en\": {\"flag\": \"us\", \"name\": \"English\"}, \"pt_BR\": {\"flag\": \"br\", \"name\": \"Português\"}, \"es\": {\"flag\": \"mx\", \"name\": \"Español\"}, \"fr\": {\"flag\": \"fr\", \"name\": \"Français\"}, \"nl\": {\"flag\": \"sr\", \"name\": \"Nederlands\"}}"
+      LANGUAGES: '{"en": {"flag": "us", "name": "English"}, "pt_BR": {"flag": "br", "name": "Português"}, "es": {"flag": "mx", "name": "Español"}, "fr": {"flag": "fr", "name": "Français"}, "nl": {"flag": "sr", "name": "Nederlands"}}'
       FRAME_ANCESTORS: $$cap_frame_ancestors
     caproverExtra:
-      containerHttpPort: '8088'
+      containerHttpPort: "8088"
 
   $$cap_appname-worker:
     command: ["/app/docker/docker-bootstrap.sh", "worker"]
@@ -36,13 +35,13 @@ services:
       CACHE_KEY_PREFIX: $$cap_redis_key_prefix
       DATABASE_URI: postgresql://$$cap_postgres_userpassword@$$cap_postgres_host:$$cap_postgres_port/superset_metastore
     caproverExtra:
-      notExposeAsWebApp: 'true'
+      notExposeAsWebApp: "true"
       dockerfileLines:
         - FROM $$cap_superset_docker_image
-        - HEALTHCHECK NONE  # otherwise Docker keeps restarting this container when it doesn't respond on port 8088
+        - HEALTHCHECK NONE # otherwise Docker keeps restarting this container when it doesn't respond on port 8088
 
   $$cap_appname-init-and-beat:
-    healthcheck:  # FIXME: This doesn't do anything for caprover, but need to remove the HEALTHCHECK from the Docker image...
+    healthcheck: # FIXME: This doesn't do anything for caprover, but need to remove the HEALTHCHECK from the Docker image...
       disable: true
     # We also run init here because if init was its own service, caprover would continually restart it after it finishes.
     command: >
@@ -61,69 +60,68 @@ services:
       ADMIN_EMAIL: $$cap_admin_email
       ADMIN_PASSWORD: $$cap_gen_random_hex(64)
     caproverExtra:
-      notExposeAsWebApp: 'true'
+      notExposeAsWebApp: "true"
       dockerfileLines:
         - FROM $$cap_superset_docker_image
-        - HEALTHCHECK NONE  # otherwise Docker keeps restarting this container when it doesn't respond on port 8088
-
+        - HEALTHCHECK NONE # otherwise Docker keeps restarting this container when it doesn't respond on port 8088
 
 caproverOneClickApp:
   variables:
-    - id: '$$cap_superset_docker_image'
+    - id: "$$cap_superset_docker_image"
       label: Superset Docker Image
-      defaultValue: 'communityfirst/superset-deployment:4.1.4_20251002-0232'
+      defaultValue: "communityfirst/superset-deployment:6.0.0_20260303-0213"
       description: Check out the tag version on https://hub.docker.com/r/communityfirst/superset-deployment
-    - id: '$$cap_secret_key'
+    - id: "$$cap_secret_key"
       label: Superset Secret Key
-      defaultValue: '$$cap_gen_random_hex(100)'
-      description:  |-
+      defaultValue: "$$cap_gen_random_hex(100)"
+      description: |-
         The secret key is used to encrypt passwords and connections in the database.
         Once generated, this key should not be changed, and it is essential
         to back up the key and keep it secure.
 
-    - id: '$$cap_postgres_host'
+    - id: "$$cap_postgres_host"
       label: Postgres service host name
-      defaultValue: 'srv-captain--postgres'
+      defaultValue: "srv-captain--postgres"
       description: Copy the value from /#/apps/details/postgres
-    - id: '$$cap_postgres_port'
+    - id: "$$cap_postgres_port"
       label: Postgres service port
-      defaultValue: '5432'
-    - id: '$$cap_postgres_userpassword'
+      defaultValue: "5432"
+    - id: "$$cap_postgres_userpassword"
       label: Postgres user:password
       validRegex: /:/
       description: user:password, copy the values from /#/apps/details/postgres
 
-    - id: '$$cap_redis_url'
+    - id: "$$cap_redis_url"
       label: Redis URL
-    - id: '$$cap_redis_key_prefix'
+    - id: "$$cap_redis_key_prefix"
       label: Redis key prefix
-      defaultValue: '$$cap_gen_random_hex(3)_'
+      defaultValue: "$$cap_gen_random_hex(3)_"
       description: optional, used when multiple deployments share the same Redis URL
 
-    - id: '$$cap_auth0_domain'
+    - id: "$$cap_auth0_domain"
       label: Auth0 Domain
       description: optional, to login using Auth0
-    - id: '$$cap_auth0_clientid'
+    - id: "$$cap_auth0_clientid"
       label: Auth0 Client ID
       description: optional, to login using Auth0
-    - id: '$$cap_auth0_client_secret'
+    - id: "$$cap_auth0_client_secret"
       label: Auth0 Client Secret
       description: optional, to login using Auth0
-    - id: '$$cap_admin_email'
+    - id: "$$cap_admin_email"
       label: Admin Email
       description: Email address for the first admin user (can be used with auth0)
 
-    - id: '$$cap_mapbox_api_key'
+    - id: "$$cap_mapbox_api_key"
       label: Mapbox API key
       description: optional, to use mapbox maps, see https://docs.mapbox.com/help/getting-started/access-tokens/
-    - id: '$$cap_app_icon'
+    - id: "$$cap_app_icon"
       label: App Icon
       description: a URL to an image
-    - id: '$$cap_app_title'
+    - id: "$$cap_app_title"
       label: App Title
       description: Shown on the top of the site
 
-    - id: '$$cap_frame_ancestors'
+    - id: "$$cap_frame_ancestors"
       label: Frame Ancestors
       description: optional, to allow embedding content from other websites on a Superset dashboard, see https://superset.apache.org/docs/configuration/networking-settings/
       defaultValue: "https://*.guardianconnector.net"
@@ -131,22 +129,22 @@ caproverOneClickApp:
 
   instructions:
     start: |-
-        Apache Superset is a data exploration and data visualization platform.
+      Apache Superset is a data exploration and data visualization platform.
 
-        This requires you to have the PostgreSQL database already deployed:
-        either externally via a cloud provider, or on this same instance as a One-Click App
+      This requires you to have the PostgreSQL database already deployed:
+      either externally via a cloud provider, or on this same instance as a One-Click App
     end: |-
-        On $$cap_appname-worker and $$cap_appname-init-and-beat, add the following lines to the
-        bottom of "Service Update Override" on the "App Config" page:
-        ```
-        HealthCheck:
-          Test: ["NONE"]
-        ```
+      On $$cap_appname-worker and $$cap_appname-init-and-beat, add the following lines to the
+      bottom of "Service Update Override" on the "App Config" page:
+      ```
+      HealthCheck:
+        Test: ["NONE"]
+      ```
 
-        Next steps:
-        1. Login at http://$$cap_appname.$$cap_root_domain
-        2. Add the data warehouse as a new Data Store
+      Next steps:
+      1. Login at http://$$cap_appname.$$cap_root_domain
+      2. Add the data warehouse as a new Data Store
   displayName: Superset - No Database
-  isOfficial: false  # Only if all images used here are official or from a trusted source.
+  isOfficial: false # Only if all images used here are official or from a trusted source.
   description: Apache Superset is a data exploration and data visualization platform.
   documentation: https://github.com/ConservationMetrics/superset-deployment

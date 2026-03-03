@@ -25,64 +25,64 @@ services:
       NUXT_SESSION_PASSWORD: $$cap_gen_random_hex(50)
 
     caproverExtra:
-      containerHttpPort: '8080'
+      containerHttpPort: "8080"
 
 caproverOneClickApp:
   variables:
-    - id: '$$cap_gc_explorer_docker_image'
+    - id: "$$cap_gc_explorer_docker_image"
       label: GC Explorer Docker Image
-      defaultValue: 'communityfirst/guardianconnector-explorer:20260216-603'
+      defaultValue: "communityfirst/guardianconnector-explorer:20260218-626"
       validRegex: /^communityfirst\/guardianconnector-explorer:[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/
       description: Check out the tag version on https://hub.docker.com/r/communityfirst/guardianconnector-explorer
-      
-    - id: '$$cap_postgres_host'
+
+    - id: "$$cap_postgres_host"
       label: Postgres service host name
-      defaultValue: 'srv-captain--postgres'
+      defaultValue: "srv-captain--postgres"
       description: If self-hosted, copy the value from /#/apps/details/postgres
-    - id: '$$cap_postgres_port'
+    - id: "$$cap_postgres_port"
       label: Postgres service port
-      defaultValue: '5432'
-    - id: '$$cap_postgres_ssl'
+      defaultValue: "5432"
+    - id: "$$cap_postgres_ssl"
       label: Use SSL to connect to postgres?
-      defaultValue: 'false'
+      defaultValue: "false"
       description: Likely to be true if using an external PostgreSQL server, or false if hosting postgres in Caprover.
-    - id: '$$cap_postgres_user'
+    - id: "$$cap_postgres_user"
       label: Postgres user
       description: If self-hosted, copy the value from /#/apps/details/postgres
-    - id: '$$cap_postgres_pass'
+    - id: "$$cap_postgres_pass"
       label: Postgres password
       description: If self-hosted, copy the value from /#/apps/details/postgres
-    - id: '$$cap_postgres_database'
-      label: 'Name of database inside Postgres'
-      defaultValue: 'warehouse'
+    - id: "$$cap_postgres_database"
+      label: "Name of database inside Postgres"
+      defaultValue: "warehouse"
 
-    - id: '$$cap_auth_strategy'
+    - id: "$$cap_auth_strategy"
       label: Auth Strategy
-      defaultValue: 'auth0'
+      defaultValue: "auth0"
       description: \'none\' if you don't want to use authentication, \'auth0\' if you want to use Auth0
-    - id: '$$cap_auth0_domain'
+    - id: "$$cap_auth0_domain"
       label: Auth0 Domain
       description: optional, to login using Auth0
-    - id: '$$cap_auth0_clientid'
+    - id: "$$cap_auth0_clientid"
       label: Auth0 Client ID
       description: optional, to login using Auth0
-    - id: '$$cap_auth0_client_secret'
+    - id: "$$cap_auth0_client_secret"
       label: Auth0 Client Secret
       description: optional, to login using Auth0
 
-    - id: '$$cap_public_app_api_key'
+    - id: "$$cap_public_app_api_key"
       label: An API Key for other apps to access Explorer
       defaultValue: $$cap_gen_random_hex(48)
 
   instructions:
     start: |-
-        An app that reads data from a database and renders it on different views (map, gallery, alerts dashboard)
+      An app that reads data from a database and renders it on different views (map, gallery, alerts dashboard)
 
-        This requires you to have the PostgreSQL database already deployed:
-        either externally via a cloud provider, or on this same instance as a One-Click App
+      This requires you to have the PostgreSQL database already deployed:
+      either externally via a cloud provider, or on this same instance as a One-Click App
     end: |-
-        Explorer is deploying and will be available within a minute.
+      Explorer is deploying and will be available within a minute.
   displayName: Guardian Connector Explorer
-  isOfficial: true   # Only if all images used here are official or from a trusted source.
+  isOfficial: true # Only if all images used here are official or from a trusted source.
   description: Explorer is an app that renders maps, gallery, and alerts dashboard.
   documentation: https://github.com/ConservationMetrics/guardianconnector-explorer

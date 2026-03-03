@@ -27,10 +27,9 @@ caproverOneClickApp:
   variables:
     - id: "$$cap_gc_landing_page_docker_image"
       label: GC Landing Page Docker Image
-      defaultValue: "communityfirst/guardianconnector-landing-page:20260216-83"
+      defaultValue: "communityfirst/guardianconnector-landing-page:20260219-85:q"
       validRegex: /^communityfirst\/guardianconnector-landing-page:[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/
       description: Check out the tag version on https://hub.docker.com/r/communityfirst/guardianconnector-landing-page
-
 
     - id: "$$cap_community_name"
       label: Community Name (alias)
@@ -38,7 +37,7 @@ caproverOneClickApp:
     - id: "$$cap_root_domain"
       label: Root Domain
       description: The root domain of the community (e.g. guardianconnector.net)
-      
+
     - id: "$$cap_auth0_domain"
       label: Auth0 Domain
       description: Auth0 domain for authentication
