@@ -25,54 +25,54 @@ services:
 
 caproverOneClickApp:
   variables:
-    - id: "$$cap_gc_landing_page_docker_image"
-      label: GC Landing Page Docker Image
-      defaultValue: "communityfirst/guardianconnector-landing-page:20260219-85:q"
-      validRegex: /^communityfirst\/guardianconnector-landing-page:[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/
-      description: Check out the tag version on https://hub.docker.com/r/communityfirst/guardianconnector-landing-page
+  - id: "$$cap_gc_landing_page_docker_image"
+    label: GC Landing Page Docker Image
+    defaultValue: "communityfirst/guardianconnector-landing-page:20260304-89"
+    validRegex: /^communityfirst\/guardianconnector-landing-page:[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/
+    description: Check out the tag version on https://hub.docker.com/r/communityfirst/guardianconnector-landing-page
 
-    - id: "$$cap_community_name"
-      label: Community Name (alias)
-      description: The alias of the community used for Guardian Connector (e.g. <community_name>.guardianconnector.net)
-    - id: "$$cap_root_domain"
-      label: Root Domain
-      description: The root domain of the community (e.g. guardianconnector.net)
+  - id: "$$cap_community_name"
+    label: Community Name (alias)
+    description: The alias of the community used for Guardian Connector (e.g. <community_name>.guardianconnector.net)
+  - id: "$$cap_root_domain"
+    label: Root Domain
+    description: The root domain of the community (e.g. guardianconnector.net)
 
-    - id: "$$cap_auth0_domain"
-      label: Auth0 Domain
-      description: Auth0 domain for authentication
-    - id: "$$cap_auth0_client_secret"
-      label: Auth0 Client Secret
-      description: Auth0 client secret for authentication
-    - id: "$$cap_auth0_client_id"
-      label: Auth0 Client ID
-      description: Auth0 client ID for authentication
+  - id: "$$cap_auth0_domain"
+    label: Auth0 Domain
+    description: Auth0 domain for authentication
+  - id: "$$cap_auth0_client_secret"
+    label: Auth0 Client Secret
+    description: Auth0 client secret for authentication
+  - id: "$$cap_auth0_client_id"
+    label: Auth0 Client ID
+    description: Auth0 client ID for authentication
 
-    - id: "$$cap_session_password"
-      label: Session Password
-      defaultValue: "$$cap_gen_random_hex(50)"
-      description: Password used for session encryption. Auto-generated if not provided.
+  - id: "$$cap_session_password"
+    label: Session Password
+    defaultValue: "$$cap_gen_random_hex(50)"
+    description: Password used for session encryption. Auto-generated if not provided.
 
-    - id: "$$cap_logo_url"
-      label: Logo URL
-      description: URL of the community logo to display on the landing page
+  - id: "$$cap_logo_url"
+    label: Logo URL
+    description: URL of the community logo to display on the landing page
 
-    - id: "$$cap_superset_enabled"
-      label: Enable Superset
-      defaultValue: "true"
-      description: Show Superset as an accessible application link on the landing page
-    - id: "$$cap_filebrowser_enabled"
-      label: Enable Filebrowser
-      defaultValue: "true"
-      description: Show Filebrowser as an accessible application link on the landing page
-    - id: "$$cap_windmill_enabled"
-      label: Enable Windmill
-      defaultValue: "true"
-      description: Show Windmill as an accessible application link on the landing page
-    - id: "$$cap_explorer_enabled"
-      label: Enable GC Explorer
-      defaultValue: "true"
-      description: Show GC-Explorer as an accessible application link on the landing page
+  - id: "$$cap_superset_enabled"
+    label: Enable Superset
+    defaultValue: "true"
+    description: Show Superset as an accessible application link on the landing page
+  - id: "$$cap_filebrowser_enabled"
+    label: Enable Filebrowser
+    defaultValue: "true"
+    description: Show Filebrowser as an accessible application link on the landing page
+  - id: "$$cap_windmill_enabled"
+    label: Enable Windmill
+    defaultValue: "true"
+    description: Show Windmill as an accessible application link on the landing page
+  - id: "$$cap_explorer_enabled"
+    label: Enable GC Explorer
+    defaultValue: "true"
+    description: Show GC-Explorer as an accessible application link on the landing page
 
   instructions:
     start: |-
