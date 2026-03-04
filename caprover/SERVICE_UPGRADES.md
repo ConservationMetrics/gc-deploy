@@ -33,7 +33,7 @@ But if the latest "Image Name" is something like `img-captain-...` then you may 
 
 If an app comprises multiple services (for example, Superset and Windmill) you will need to Deploy the new image on each one.
 
-## Using the `caprover-batch-deploy` tool
+## Using the `caprover_batch_deploy` tool
 
 CMI has developed a tool that can batch upgrade Guardian Connector services to multiple CapRover instances via the HTTP API. The script authenticates with CapRover API using passwords read from a KeePass database.
 

@@ -24,6 +24,14 @@ Our CapRover one-click app definitions are built and published automatically via
 
 If you are writing your own one-click-apps, follow these suggestions.
 
+### Use full image name for Docker image variables
+
+When you are defining a Docker image variable in a one-click-app and setting a default value, use the full image name, including the repository and tag.
+
+For example, if the image is `ghcr.io/windmill-labs/windmill:1.648.0`, set that as your `defaultValue` instead of just `1.648.0`.
+
+The reason is that CMI's [`caprover_batch_deploy`](../SERVICE_UPGRADES.md#using-the-caprover_batch_deploy-tool) tool will use the full image name to update the one-click-app definition in the `gc-deploy` repository.
+
 ### Use "Service Update Override" to change how the Docker Image behaves
 
 There are times you need to change some of the configuration inside the upstream Docker image.
