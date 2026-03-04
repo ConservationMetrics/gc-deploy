@@ -53,6 +53,30 @@ If those don’t fix it, you can explore disk usage by folder hierarchy:
     $ ncdu /
 
 
+## VM is slow
+
+If you notice that a VM is “generally slow” (slow SSH login, slow interactive shell, slow response times from applications), start by diagnosing whether it is a host resource issue:
+
+```
+$ uptime
+$ free -h
+$ df -h /
+$ top
+```
+
+- In `uptime`, compare the **load average** to the number of vCPUs. For example, on a 2-vCPU VM, a load of ~2 means the CPU is fully utilized; a load far above that (e.g. ~11) means many processes are waiting for CPU and the VM will feel slow.
+- In `free -h`, check the **available memory** column. If available memory is very low (e.g. < ~200 MiB), the system may be under memory pressure and performance can degrade.
+- If `top` shows load average far above vCPU count (e.g. load ~11 on a 2-vCPU VM), the VM is CPU-saturated and interactive operations will feel slow.
+- Also in `top`, check if any of the processes are pegging CPU. If so, identify the culprit process and fix it. 
+  * For example, if you see `pip`/`celery` pegging CPU, it is likely that Superset is stuck in a restart loop. It has happened at least once that Superset services did not have the right Service Update Override command and it was causing the containers to hang and/or restart repeatedly.
+- If `/` is > ~90% full, treat it as disk pressure (see [**Disk is full**](#disk-is-full)).
+
+If diagnosis is unclear and the VM is wedged, try rebooting (see [**Rebooting the VM**](#rebooting-the-vm)).
+
+> [!NOTE]
+>
+> The VM may be in a far Azure region from your location, in which case small delays can be expected even when CPU is idle.
+
 ## Missing Volume Mount on VM
 
 - Check log files after VM boot, to confirm the mount script is executed as expected:
