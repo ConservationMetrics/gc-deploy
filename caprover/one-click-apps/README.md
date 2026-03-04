@@ -26,7 +26,7 @@ If you are writing your own one-click-apps, follow these suggestions.
 
 ### Use full image name for Docker image variables
 
-When you are defining a Docker image variable in a one-click-app and setting a default value, use the full image name, including the repository and tag.
+When you are defining a Docker image variable in a one-click-app and setting a default value, use the full image name, including the repository and tag e.g.`<HOST>/<NAMESPACE>/<REPOSITORY>:TAG`.
 
 For example, if the image is `ghcr.io/windmill-labs/windmill:1.648.0`, set that as your `defaultValue` instead of just `1.648.0`.
 
