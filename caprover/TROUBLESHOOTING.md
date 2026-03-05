@@ -55,27 +55,59 @@ If those don’t fix it, you can explore disk usage by folder hierarchy:
 
 ## VM is slow
 
-If you notice that a VM is “generally slow” (slow SSH login, slow interactive shell, slow response times from applications), start by diagnosing whether it is a host resource issue:
-
-```
-$ uptime
-$ free -h
-$ df -h /
-$ top
-```
-
-- In `uptime`, compare the **load average** to the number of vCPUs. For example, on a 2-vCPU VM, a load of ~2 means the CPU is fully utilized; a load far above that (e.g. ~11) means many processes are waiting for CPU and the VM will feel slow.
-- In `free -h`, check the **available memory** column. If available memory is very low (e.g. < ~200 MiB), the system may be under memory pressure and performance can degrade.
-- If `top` shows load average far above vCPU count (e.g. load ~11 on a 2-vCPU VM), the VM is CPU-saturated and interactive operations will feel slow.
-- Also in `top`, check if any of the processes are pegging CPU. If so, identify the culprit process and fix it. 
-  * For example, if you see `pip`/`celery` pegging CPU, it is likely that Superset is stuck in a restart loop. It has happened at least once that Superset services did not have the right Service Update Override command and it was causing the containers to hang and/or restart repeatedly.
-- If `/` is > ~90% full, treat it as disk pressure (see [**Disk is full**](#disk-is-full)).
+If you notice that a VM is “generally slow” (slow SSH login, slow interactive shell, slow response times from applications), start by diagnosing whether it is a host resource issue (CPU, memory, disk) using the commands below. 
 
 If diagnosis is unclear and the VM is wedged, try rebooting (see [**Rebooting the VM**](#rebooting-the-vm)).
 
 > [!NOTE]
 >
-> The VM may be in a far Azure region from your location, in which case small delays can be expected even when CPU is idle.
+> _Some_ latency may also be expected if the VM in a far Azure region from your location, like the other side of the world. In that case, small delays are expected even when CPU is idle.
+
+### Commands to help diagnose the issue
+
+```
+$ uptime
+```
+
+`uptime` prints three **load averages** (for the last 1, 5, and 15 minutes). Compare these numbers to the number of vCPUs:
+- On a 2-vCPU VM, a load of ~2 means the CPU is fully utilized; a load far above that (e.g. ~11) means many processes are waiting for CPU and the VM will feel slow.
+- If the load average is well below the vCPU count (for example, `load average: 0.31, 0.18, 0.16` on a 2-vCPU VM), the CPU is mostly idle and the slowness is likely caused by something else (network latency, disk I/O, or application-level issues).
+
+```
+$ free -h
+```
+
+- Check the **available** column. If available memory is very low (e.g. < ~200 MiB), the system may be under memory pressure and performance can degrade.
+- For VMs with swap enabled, check the **Swap** row. If swap is used, it is likely that the system is under memory pressure and performance can degrade.
+
+```
+$sudo dmesg | grep -i oom
+```
+
+For VMs where swap is not enabled (which should be all the ones CMI hosts in Azure), the kernel will OOM-kill processes when available memory's too low. You might check if OOM kills are occurring by running the command above.
+
+```
+$ top
+```
+
+- Sort by memory (Shift+M) to identify the culprit processes. If the use of memory is legitimate (and the amount it's using looks sane) the VM needs more RAM. Otherwise, fix the culprit process (see [What to do](#what-to-do))
+
+
+```
+$ df -h /
+```
+
+Check the **Use%** column. If it is > ~90%, treat it as disk pressure (see [**Disk is full**](#disk-is-full)).
+
+### What to do
+
+If you have identified a process on the VM that is using an unreasonable amount of memory, try restarting it. If it ends up using the same amount of memory after restarting, then it's likely that the process is stuck in a restart loop.
+
+Next, depending on the nature of the memory hog, there are different ways to fix it:
+
+- You can kill the process (`kill -9 <pid>`) to see if that resolves the issue.
+- There might be something wrong with how one of the services is configured in CapRover. 
+  - One example that we've seen: if you see `pip`/`celery` pegging CPU, it is likely that Superset is stuck in a restart loop. It has happened at least once that Superset services did not have the right Service Update Override command and it was causing the containers to hang and/or restart repeatedly.
 
 ## Missing Volume Mount on VM
 
