@@ -53,6 +53,93 @@ If those don’t fix it, you can explore disk usage by folder hierarchy:
     $ ncdu /
 
 
+## VM is slow
+
+If you notice that a VM is “generally slow” (slow SSH login, slow interactive shell, slow response times from applications), start by diagnosing whether it is a host resource issue (CPU, memory, disk) using the commands below. 
+
+If diagnosis is unclear and the VM is wedged, try rebooting (see [**Rebooting the VM**](#rebooting-the-vm)).
+
+> [!NOTE]
+>
+> _Some_ latency may also be expected if the VM in a far Azure region from your location, like the other side of the world. In that case, small delays are expected even when CPU is idle.
+
+### Diagnosis tools
+
+```
+$ top
+```
+
+Sort by memory (Shift+M) to identify any culprit processes. If the use of memory is legitimate (and the amount it's using looks sane) the VM needs more RAM. Otherwise, fix the culprit process (see [What to do](#what-to-do))
+
+```
+$ uptime
+```
+
+`uptime` prints three **load averages** (for the last 1, 5, and 15 minutes). Compare these numbers to the number of vCPUs:
+- On a 2-vCPU VM, a load of ~2 means the CPU is fully utilized; a load far above that (e.g. ~11) means many processes are waiting for CPU and the VM will feel slow.
+- If the load average is well below the vCPU count (for example, `load average: 0.31, 0.18, 0.16` on a 2-vCPU VM), the CPU is mostly idle and the slowness is likely caused by something else (network latency, disk I/O, or application-level issues).
+
+```
+$ free -h
+```
+
+- Check the **available** column. If available memory is very low (e.g. < ~200 MiB), the system may be under memory pressure and performance can degrade.
+- For VMs with swap enabled, check the **Swap** row. If swap is used, it is likely that the system is under memory pressure and performance can degrade.
+
+```
+$ sudo dmesg | grep -i oom
+```
+
+For VMs where swap is not enabled (which should be all the ones CMI hosts in Azure), the kernel will OOM-kill processes when available memory's too low. You might check if OOM kills are occurring by running the command above.
+
+
+```
+$ iostat -xz 1
+```
+
+`iostat` prints disk I/O statistics every second. See [iostat man page](https://linux.die.net/man/1/iostat).
+
+- Let it run for ~10–30 seconds and observe the values.
+- Stop it with Ctrl+C.
+
+Look at the disk device (usually sda):
+
+- If **%util** is consistently high (e.g. approaching ~100%), the disk is saturated and the VM may feel slow.
+- If **%util** is low and **%iowait** in the CPU section is near zero, disk I/O is likely not the bottleneck.
+
+```
+$ df -h /
+```
+
+Check the **Use%** column. If it is > ~90%, treat it as disk pressure (see [**Disk is full**](#disk-is-full)).
+
+### What to do when you've identified a resource bottleneck
+
+If you have identified a process on the VM that is using an unreasonable amount of memory, **try restarting it** (either in CapRover or using `docker restart <container-id>`). If it ends up using the same amount of memory after restarting, then it's likely that the process is stuck in a restart loop.
+
+Next, depending on the nature of the memory hog, there are different ways to fix it:
+
+- **Look at the logs for the process or container.** Often the reason for high CPU or repeated restarts will be visible there.
+
+  - The easiest way to view the logs is to go to the **Logs** tab for a service in the CapRover webapp. But this may not work well for you if the service is continuously restarting. In that case, read on.
+  
+  - For Docker services:
+
+    ```
+    $ sudo docker service logs -f --tail 200 srv-captain--<app-name>
+    ```
+  - For individual containers:
+
+    ```
+    $ sudo docker logs -f <container-id>
+    ```
+
+- **You can kill the process** (`kill -9 <pid>`) to see if that resolves the issue.
+
+- **There might be something wrong with how one of the services is configured in CapRover.**
+
+  - One example that we've seen: if you see `pip`/`celery` pegging CPU, it is likely that Superset is stuck in a restart loop. It has happened at least once that Superset services did not have the right **Service Update Override** command and it was causing the containers to hang and/or restart repeatedly.
+
 ## Missing Volume Mount on VM
 
 - Check log files after VM boot, to confirm the mount script is executed as expected:
