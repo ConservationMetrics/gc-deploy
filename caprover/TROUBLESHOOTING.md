@@ -94,6 +94,24 @@ $ top
 
 
 ```
+$ iostat -xz 1
+```
+
+This prints disk I/O statistics every second. See [iostat man page](https://linux.die.net/man/1/iostat).
+
+- Let it run for ~10–30 seconds and observe the values.
+- Stop it with Ctrl+C.
+
+Look at the disk device (usually sda):
+
+If **%util** is consistently high (e.g. approaching ~100%), the disk is saturated and the VM may feel slow.
+
+If **%util** is low and **%iowait** in the CPU section is near zero, disk I/O is likely not the bottleneck.
+
+You can also run a fixed number of samples:
+
+
+```
 $ df -h /
 ```
 
