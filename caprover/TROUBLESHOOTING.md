@@ -63,7 +63,13 @@ If diagnosis is unclear and the VM is wedged, try rebooting (see [**Rebooting th
 >
 > _Some_ latency may also be expected if the VM in a far Azure region from your location, like the other side of the world. In that case, small delays are expected even when CPU is idle.
 
-### Commands to help diagnose the issue
+### Diagnosis tools
+
+```
+$ top
+```
+
+Sort by memory (Shift+M) to identify any culprit processes. If the use of memory is legitimate (and the amount it's using looks sane) the VM needs more RAM. Otherwise, fix the culprit process (see [What to do](#what-to-do))
 
 ```
 $ uptime
@@ -81,35 +87,25 @@ $ free -h
 - For VMs with swap enabled, check the **Swap** row. If swap is used, it is likely that the system is under memory pressure and performance can degrade.
 
 ```
-$sudo dmesg | grep -i oom
+$ sudo dmesg | grep -i oom
 ```
 
 For VMs where swap is not enabled (which should be all the ones CMI hosts in Azure), the kernel will OOM-kill processes when available memory's too low. You might check if OOM kills are occurring by running the command above.
-
-```
-$ top
-```
-
-- Sort by memory (Shift+M) to identify the culprit processes. If the use of memory is legitimate (and the amount it's using looks sane) the VM needs more RAM. Otherwise, fix the culprit process (see [What to do](#what-to-do))
 
 
 ```
 $ iostat -xz 1
 ```
 
-This prints disk I/O statistics every second. See [iostat man page](https://linux.die.net/man/1/iostat).
+`iostat` prints disk I/O statistics every second. See [iostat man page](https://linux.die.net/man/1/iostat).
 
 - Let it run for ~10–30 seconds and observe the values.
 - Stop it with Ctrl+C.
 
 Look at the disk device (usually sda):
 
-If **%util** is consistently high (e.g. approaching ~100%), the disk is saturated and the VM may feel slow.
-
-If **%util** is low and **%iowait** in the CPU section is near zero, disk I/O is likely not the bottleneck.
-
-You can also run a fixed number of samples:
-
+- If **%util** is consistently high (e.g. approaching ~100%), the disk is saturated and the VM may feel slow.
+- If **%util** is low and **%iowait** in the CPU section is near zero, disk I/O is likely not the bottleneck.
 
 ```
 $ df -h /
