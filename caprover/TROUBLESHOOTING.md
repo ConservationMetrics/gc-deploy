@@ -113,15 +113,32 @@ $ df -h /
 
 Check the **Use%** column. If it is > ~90%, treat it as disk pressure (see [**Disk is full**](#disk-is-full)).
 
-### What to do
+### What to do when you've identified a resource bottleneck
 
-If you have identified a process on the VM that is using an unreasonable amount of memory, try restarting it. If it ends up using the same amount of memory after restarting, then it's likely that the process is stuck in a restart loop.
+If you have identified a process on the VM that is using an unreasonable amount of memory, **try restarting it** (either in CapRover or using `docker restart <container-id>`). If it ends up using the same amount of memory after restarting, then it's likely that the process is stuck in a restart loop.
 
 Next, depending on the nature of the memory hog, there are different ways to fix it:
 
-- You can kill the process (`kill -9 <pid>`) to see if that resolves the issue.
-- There might be something wrong with how one of the services is configured in CapRover. 
-  - One example that we've seen: if you see `pip`/`celery` pegging CPU, it is likely that Superset is stuck in a restart loop. It has happened at least once that Superset services did not have the right Service Update Override command and it was causing the containers to hang and/or restart repeatedly.
+- **Look at the logs for the process or container.** Often the reason for high CPU or repeated restarts will be visible there.
+
+  - The easiest way to view the logs is to go to the **Logs** tab for a service in the CapRover webapp. But this may not work well for you if the service is continuously restarting. In that case, read on.
+  
+  - For Docker services:
+
+    ```
+    $ sudo docker service logs -f --tail 200 srv-captain--<app-name>
+    ```
+  - For individual containers:
+
+    ```
+    $ sudo docker logs -f <container-id>
+    ```
+
+- **You can kill the process** (`kill -9 <pid>`) to see if that resolves the issue.
+
+- **There might be something wrong with how one of the services is configured in CapRover.**
+
+  - One example that we've seen: if you see `pip`/`celery` pegging CPU, it is likely that Superset is stuck in a restart loop. It has happened at least once that Superset services did not have the right **Service Update Override** command and it was causing the containers to hang and/or restart repeatedly.
 
 ## Missing Volume Mount on VM
 
