@@ -57,7 +57,7 @@ write_files:
       username=', parameters('storageAccountName'), '
       password=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2022-09-01').keys[0].value, '
 
-  - path: /etc/systemd/system/mnt-persistent\x2dstorage.mount
+  - path: /etc/systemd/system/mnt-persistent', variables('backslash'), 'x2dstorage.mount
     permissions: "0644"
     content: |
       [Unit]
@@ -78,8 +78,8 @@ write_files:
     permissions: "0644"
     content: |
       [Unit]
-      After=mnt-persistent\x2dstorage.mount
-      Requires=mnt-persistent\x2dstorage.mount
+      After=mnt-persistent', variables('backslash'), 'x2dstorage.mount
+      Requires=mnt-persistent', variables('backslash'), 'x2dstorage.mount
 
   - path: /etc/systemd/journald.conf.d/diskspace.conf
     permissions: "0644"
