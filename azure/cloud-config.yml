@@ -54,8 +54,8 @@ write_files:
   - path: /etc/cifs-credentials/persistent-storage
     permissions: "0600"
     content: |
-      username=example
-      password=redact
+      username=', parameters('storageAccountName'), '
+      password=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2022-09-01').keys[0].value, '
 
   - path: /etc/systemd/system/mnt-persistent\x2dstorage.mount
     permissions: "0644"
@@ -66,7 +66,7 @@ write_files:
       Wants=network-online.target
 
       [Mount]
-      What=//example.file.core.windows.net/folder
+      What=//', parameters('storageAccountName'), '.file.core.windows.net/', parameters('storageAccountFolder'), '
       Where=/mnt/persistent-storage
       Type=cifs
       Options=vers=3.0,credentials=/etc/cifs-credentials/persistent-storage,dir_mode=0777,file_mode=0777,serverino
