@@ -428,6 +428,7 @@
     }
   ],
   "variables": {
+    "backslash": "\\",
     "nicName": "[concat(parameters('vmName'), '-nic') ]",
     "networkSecurityGroupName": "[concat(parameters('vmName'), '-nsg') ]",
     "publicIpName": "[concat(parameters('vmName'), '-ip') ]",
