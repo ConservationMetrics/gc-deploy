@@ -57,15 +57,18 @@ write_files:
       username=', parameters('storageAccountName'), '
       password=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2022-09-01').keys[0].value, '
 
+  # Unit filename must match the mount path, with dashes replaced by escape char and slashes replaced by dashes
   - path: /etc/systemd/system/mnt-persistent', variables('backslash'), 'x2dstorage.mount
     permissions: "0644"
     content: |
       [Unit]
+      # Step 1 of the dependency chain: Before we can mount external storage, the network must be online.
       Description=Azure Files CIFS mount for warehouse persistent storage
       After=network-online.target
       Wants=network-online.target
 
       [Mount]
+      # Step 2 of the dependency chain: Mount external storage.
       What=//', parameters('storageAccountName'), '.file.core.windows.net/', parameters('storageAccountFolder'), '
       Where=/mnt/persistent-storage
       Type=cifs
@@ -78,6 +81,9 @@ write_files:
     permissions: "0644"
     content: |
       [Unit]
+      # Step 3 of the dependency chain: Wait for the CIFS mount in /etc/systemd/system/mnt-*.mount
+      # to be ready before starting Docker.
+      # This prevents containers from starting with an incomplete view of the mounted Azure Files share.
       After=mnt-persistent', variables('backslash'), 'x2dstorage.mount
       Requires=mnt-persistent', variables('backslash'), 'x2dstorage.mount
 
