@@ -26,8 +26,9 @@ packages:
   - smbclient
 
 runcmd:
-  - mkdir -p /var/lib/cloud/scripts/per-boot
-  - mkdir -p /etc/systemd/journald.conf.d/
+  - systemctl daemon-reload
+  - systemctl enable mnt-persistent-storage.mount
+  - systemctl start mnt-persistent-storage.mount
 
   # Install & run caprover core server
   #
@@ -50,16 +51,36 @@ runcmd:
   - . /etc/profile.d/pnpm.sh ; pnpm install -g caprover
 
 write_files:
-  - path: /var/lib/cloud/scripts/per-boot/mount-datalake.sh
-    # Have the datalake network storage mounted locally at each boot.
-    # This `mount-datalake.sh` script is run at each boot (including
-    # the very first one, i.e. after instance creation).
-    permissions: "0755"
+  - path: /etc/cifs-credentials/persistent-storage
+    permissions: "0600"
     content: |
-      #!/bin/bash
-      MOUNT_PATH=/mnt/persistent-storage
-      mkdir -p "$MOUNT_PATH"
-      mount -t cifs //', parameters('storageAccountName'), '.file.core.windows.net/', parameters('storageAccountFolder'), ' "$MOUNT_PATH" -o "vers=3.0,username=', parameters('storageAccountName'), ',password=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2022-09-01').keys[0].value, ',dir_mode=0777,file_mode=0777,serverino" || true
+      username=example
+      password=redact
+
+  - path: /etc/systemd/system/mnt-persistent\x2dstorage.mount
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Azure Files CIFS mount for warehouse persistent storage
+      After=network-online.target
+      Wants=network-online.target
+
+      [Mount]
+      What=//example.file.core.windows.net/folder
+      Where=/mnt/persistent-storage
+      Type=cifs
+      Options=vers=3.0,credentials=/etc/cifs-credentials/persistent-storage,dir_mode=0777,file_mode=0777,serverino
+
+      [Install]
+      WantedBy=multi-user.target
+
+  - path: /etc/systemd/system/docker.service.d/override.conf
+    permissions: "0644"
+    content: |
+      [Unit]
+      After=mnt-persistent\x2dstorage.mount
+      Requires=mnt-persistent\x2dstorage.mount
+
   - path: /etc/systemd/journald.conf.d/diskspace.conf
     permissions: "0644"
     content: |
