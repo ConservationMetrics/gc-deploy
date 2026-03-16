@@ -18,6 +18,7 @@ It covers the manual steps that are not already automated through the scripts an
 - [ ] Did I configure environment variables and settings for each app correctly? (c.f. [caprover/INSTALL_GC_STACK.md#post-install-app-configuration](caprover/INSTALL_GC_STACK.md#post-install-app-configuration))
 - [ ] Did I set the `<alias>.<domain>.net` to point to one of the applications (e.g. Superset or GC Landing Page)?
 - [ ] Did I store the CapRover admin password in Keepass?
+- [ ] Did I enable disk cleanup and set an appropriate cron schedule in the CapRover web UI?
 
 ### Superset
 
