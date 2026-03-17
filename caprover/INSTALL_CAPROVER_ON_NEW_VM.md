@@ -43,3 +43,7 @@ in Azure or DigitalOcean — in which case **you may skip the rest of the docume
 9. Set up CapRover on the VM
 
    - With the right amount of knowledge, you can follow CapRover's own [Getting Started](https://caprover.com/docs/get-started.html#caprover-setup) guide to figure out how to install CapRover when the hosting platform didn't already do it for you.
+
+10. Once CapRover is installed, configure disk cleanup and set an appropriate cron schedule in the CapRover web UI. 
+    - We recommend setting disk cleanup to run daily at 3:00 AM e.g. `0 3 * * *` at the timezone most likely to be used by the VM's users
+    - We recommend keeping the 2 most recent images. (2 images allows you to revert the latest deployment, whereas 1 does not.)
