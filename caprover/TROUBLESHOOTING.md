@@ -40,7 +40,7 @@ The most common culprits are:
 * System logs can accumulate lots of data, check in particular disk usage of files under `/var/log/`.
     - Make sure to configure `SystemMaxUse` in `/etc/systemd/journald.conf.d/diskspace.conf`. [Some of our new VM recipes already do this.](/azure/README.md)
     - Check that all CapRover apps are healthy & stable. If an app is crashing upon startup and in a reboot loop, then CapRover will reconfigure nginx on each crash and each restart, and that operation will push a lot of log lines related to `docker-overlay2` and/or `networkd-dispatcher` and/or Docker network virtual devices "unregistering".
-* One of our Docker services writing lots to one of its Docker volumes. Cleaning up volumes should be done only after **manual investigation**, not as a routine step: do not use `docker system prune --volumes` or bulk-remove "dangling" volumes, because a container that is temporarily down has volumes that appear unused and deleting them would cause data loss. To investigate which volume is using space:
+* One of our Docker services writing lots to one of its Docker volumes. To investigate which volume is using space:
     ```
     $ du --max-depth=1 /var/lib/docker/volumes/
     $ cd «the folder you want to clean up»
