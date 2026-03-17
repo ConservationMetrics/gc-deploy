@@ -6,6 +6,11 @@ This guide walks you through setting up your custom Guardian Connector software 
 
 See [INSTALL_CAPROVER_ON_NEW_VM.md](INSTALL_CAPROVER_ON_NEW_VM.md) if you haven't already configured a new VM running CapRover.
 
+Additionally, if you haven't already, configure disk cleanup and set an appropriate cron schedule in the CapRover web UI. 
+
+- We recommend setting disk cleanup to run daily at 3:00 AM e.g. `0 3 * * *` at the timezone most likely to be used by the VM's users
+- We recommend keeping the 2 most recent images. (2 images allows you to revert the latest deployment, whereas 1 does not.)
+
 ## Add apps to CapRover
 
 **You have two options to install apps:**
