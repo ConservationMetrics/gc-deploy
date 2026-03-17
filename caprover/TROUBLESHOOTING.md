@@ -43,6 +43,7 @@ The most common culprits are:
 * One of our Docker services writing lots to one of its Docker volumes. To investigate which volume is using space:
     ```
     $ du --max-depth=1 /var/lib/docker/volumes/
+    # Find an offending folder and try to clean it up
     $ cd «the folder you want to clean up»
     # Delete all files 2+ weeks old
     $ find . -type f -mtime +14 -delete
