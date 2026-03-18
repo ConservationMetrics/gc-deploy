@@ -32,7 +32,7 @@ Filesystem 	1K-blocks 	  Used Available Use% Mounted
 
 The most common culprits are:
 * Old, unused Docker images and stopped containers.
-    - Quick fix: run `docker system prune` to remove dangling images, stopped containers, and unused networks. Do **not** use the `-a` flag (it would remove all unused images including tagged ones and can break rollbacks) or the `--volumes` flag (volumes may contain user data; if a container is temporarily down, its volumes can appear "unused" and would be deleted, causing data loss when the container comes back).
+    - Quick fix: run `docker system prune` to remove dangling images, stopped containers, and unused networks. Do **not** use the `-a` flag (it would remove all unused images including tagged ones and can break rollbacks) or the `--volumes` flag — we do not use system prune to clean up volumes; see the manual investigation step below instead.
         ```
         $ sudo docker system prune
         ```
@@ -40,7 +40,7 @@ The most common culprits are:
 * System logs can accumulate lots of data, check in particular disk usage of files under `/var/log/`.
     - Make sure to configure `SystemMaxUse` in `/etc/systemd/journald.conf.d/diskspace.conf`. [Some of our new VM recipes already do this.](/azure/README.md)
     - Check that all CapRover apps are healthy & stable. If an app is crashing upon startup and in a reboot loop, then CapRover will reconfigure nginx on each crash and each restart, and that operation will push a lot of log lines related to `docker-overlay2` and/or `networkd-dispatcher` and/or Docker network virtual devices "unregistering".
-* One of our Docker services writing lots to one of its Docker volumes. To investigate which volume is using space:
+* One of our Docker services writing lots to one of its Docker volumes. Volumes may contain user data; if a container is temporarily down, its volumes can appear "unused" and deleting them would cause data loss when the container comes back. Clean up volumes only after **manual investigation**. To investigate which volume is using space:
     ```
     $ du --max-depth=1 /var/lib/docker/volumes/
     # Find an offending folder and try to clean it up
