@@ -57,7 +57,7 @@ If those don’t fix it, you can explore disk usage by folder hierarchy:
 
 ## VM is slow
 
-If you notice that a VM is “generally slow” (slow SSH login, slow interactive shell, slow response times from applications), start by diagnosing whether it is a host resource issue (CPU, memory, disk) using the commands below. 
+If you notice that a VM is “generally slow” (slow SSH login, slow interactive shell, slow response times from applications), start by diagnosing whether it is a host resource issue (CPU, memory, disk) using the commands below.
 
 If diagnosis is unclear and the VM is wedged, try rebooting (see [**Rebooting the VM**](#rebooting-the-vm)).
 
@@ -141,6 +141,32 @@ Next, depending on the nature of the memory hog, there are different ways to fix
 - **There might be something wrong with how one of the services is configured in CapRover.**
 
   - One example that we've seen: if you see `pip`/`celery` pegging CPU, it is likely that Superset is stuck in a restart loop. It has happened at least once that Superset services did not have the right **Service Update Override** command and it was causing the containers to hang and/or restart repeatedly.
+
+### Extreme case: Cannot SSH in
+
+If the VM is so wedged that you cannot even connect via SSH, you probably will end up [force rebooting it](#rebooting-the-vm). That has a downside that you lose the ability to debug while the incident is happening.
+
+Before that, on Azure you can try a couple other things:
+* Whereas SSH relies on the networking layer, `az serial-console -g «resourceGroup» -n «vmName»` gives you a terminal on the box via a physical connection in the data center. It will ask you to login. This is enabled only for users with Azure IAM "Contributor" role on the VM.
+* You can try to run commands without logging in via Azure web portal. Navigate to the VM → Run Command → RunShellScript. Here's a script that will capture useful logs to a file on disk, and that file will stick around after reboot for further analysis:
+
+    ```sh
+    #!/bin/bash
+    OUT=/home/cmiadmin/oom_capture_$(date +%s).txt
+    ps aux --sort=-%mem | head -30 >> $OUT
+    echo "---meminfo---" >> $OUT
+    cat /proc/meminfo >> $OUT
+    echo "---per-process RSS---" >> $OUT
+    cat /proc/*/status 2>/dev/null | grep -E "^(Name|VmRSS)" | paste - - | sort -k4 -rn | head -30 >> $OUT
+    echo "---dmesg oom---" >> $OUT
+    dmesg | grep -E -i "oom|kill|memory" | tail -50 >> $OUT
+    echo "---vmstat---" >> $OUT
+    vmstat 1 5 >> $OUT
+    echo "---docker stats---" >> $OUT
+    docker stats --no-stream --format "table {{.Name}}\t{{.MemUsage}}\t{{.MemPerc}}" >> $OUT
+    ```
+
+Beware that if already you cannot SSH, there remains a moderate chance these won't work either. Or that the shell script will get queued and run _after reboot_, showing statistics of a healthy system.
 
 ## Missing Volume Mount on VM
 
