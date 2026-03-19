@@ -31,6 +31,7 @@ Filesystem 	1K-blocks 	  Used Available Use% Mounted
 ```
 
 The most common culprits are:
+* Accumulated packages no longer needed (usually mostly old Linux kernels, orphaned deps). Run `sudo apt autoremove`, confirm no unexpected packages are listed, then confirm to free the space. When updates are regularly being applied, these unused packages can accumulate at the rate of ~1GB per month.
 * Old, unused Docker images and stopped containers.
     - Quick fix: run `docker system prune` to remove dangling images, stopped containers, and unused networks. Do **not** use the `-a` flag (it would remove all unused images including tagged ones and can break rollbacks) or the `--volumes` flag — we do not use system prune to clean up volumes; see the manual investigation step below instead.
         ```
