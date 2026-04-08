@@ -21,6 +21,7 @@ import threading
 import time
 from contextlib import contextmanager, nullcontext
 from dataclasses import dataclass, replace
+from functools import reduce
 
 import psycopg
 import yaml
@@ -41,6 +42,44 @@ def load_config(file_path):
         print(f"Configuration file {file_path} not found.")
         sys.exit(1)
     return config
+
+
+def set_yaml_value(yaml_str: str, key: str | list[str], value: object) -> str:
+    """
+    Set a value at a (nested) key in a YAML string and return the updated YAML.
+
+    Parameters
+    ----------
+    yaml_str
+        YAML-formatted string.
+    key
+        Dot-delimited string (e.g. "a.b.c") or list of key segments.
+    value
+        Value to set.
+
+    Returns
+    -------
+    Re-serialized YAML string.
+    """
+    data = yaml.safe_load(yaml_str) or {}
+
+    keys = key.split(".") if isinstance(key, str) else key
+
+    # Walk to the parent, creating intermediate dicts as needed
+    parent = reduce(lambda d, k: d.setdefault(k, {}), keys[:-1], data)
+    parent[keys[-1]] = value
+
+    return yaml.dump(data, default_flow_style=False, allow_unicode=True)
+
+
+def set_memory_limit(cap, appname, memory_bytes=1610612736):
+    app = cap.get_app(appname)
+    new_suo = set_yaml_value(
+        app["serviceUpdateOverride"],
+        "TaskTemplate.Resources.Limits.MemoryBytes",
+        memory_bytes,
+    )
+    cap.update_app(appname, serviceUpdateOverride=new_suo)
 
 
 def construct_app_variables(config, service_name, init=None):
@@ -277,6 +316,13 @@ def deploy_stack(config, gc_repository, dry_run):
                 cap.enable_ssl(app_name)
                 cap.update_app(app_name, force_ssl=True)
 
+            for svcname in (
+                app_name,
+                f"{app_name}-worker",
+                f"{app_name}-worker-native",
+            ):
+                set_memory_limit(cap, svcname)
+
     # Deploy Redis if specified in config
     one_click_app_name = "redis"
     if config.get(one_click_app_name, {}).get("deploy", False):
@@ -290,6 +336,7 @@ def deploy_stack(config, gc_repository, dry_run):
                 app_variables=variables,
                 automated=True,
             )
+            set_memory_limit(cap, app_name)
 
     # Deploy Superset if specified in config
     one_click_app_name = "superset-only"
@@ -330,11 +377,18 @@ def deploy_stack(config, gc_repository, dry_run):
             # does this in a custom dockerfileLines, but recommended to ease upgrades.
             for appname in (f"{app_name}-init-and-beat", f"{app_name}-worker"):
                 worker_app = cap.get_app(appname)
-                new_suo = (
-                    worker_app["serviceUpdateOverride"]
-                    + '\n    HealthCheck:\n      Test: ["NONE"]'
+                new_suo = set_yaml_value(
+                    worker_app["serviceUpdateOverride"],
+                    "TaskTemplate.HealthCheck.Test",
+                    ["NONE"],
+                )
+                # Also set memory limit to workers
+                new_suo = set_yaml_value(
+                    new_suo, "TaskTemplate.Resources.Limits.MemoryBytes", 1610612736
                 )
                 cap.update_app(appname, serviceUpdateOverride=new_suo)
+
+            set_memory_limit(cap, app_name)  # The web service (not worker)
 
     # Deploy GC Landing Page if specified in config
     # Note: as GC Landing Page is intended to be the default landing page, we don't need to add a redirect domain, and instead, we set the redirectDomain to the root domain. (e.g. so that the landing page will load when a user accesses "your-captain-root.net")
@@ -355,6 +409,7 @@ def deploy_stack(config, gc_repository, dry_run):
             if webapps_ssl:
                 cap.enable_ssl(app_name)
                 cap.update_app(app_name, force_ssl=True)
+            set_memory_limit(cap, app_name)
 
         if redirect_to_root:
             logger.info(
@@ -402,6 +457,7 @@ def deploy_stack(config, gc_repository, dry_run):
                 force_ssl=webapps_ssl,
                 redirectDomain=f"{app_name}.{cap.root_domain}",
             )
+            set_memory_limit(cap, app_name)
 
     # Deploy CoMapeo Cloud if specified in config
     one_click_app_name = "comapeo-cloud"
@@ -426,6 +482,7 @@ def deploy_stack(config, gc_repository, dry_run):
                 support_websocket=True,
                 redirectDomain=f"{app_name}.{cap.root_domain}",
             )
+            set_memory_limit(cap, app_name)
 
     # Deploy Filebrowser if specified in config
     one_click_app_name = "filebrowser"
@@ -460,6 +517,7 @@ def deploy_stack(config, gc_repository, dry_run):
                 # https://github.com/ConservationMetrics/gc-deploy/pull/12#discussion_r2243697895
                 environment_variables={"FB_ROOT": "/srv/datalake"},
             )
+            set_memory_limit(cap, app_name)
 
 
 def is_local_path(path):
