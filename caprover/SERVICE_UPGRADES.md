@@ -39,6 +39,18 @@ CMI has developed a tool that can batch upgrade Guardian Connector services to m
 
 We keep this tool in a private repository as it is built to work with our own KeePass database and credential storage patterns, but it is available on request. Please reach out to us if you would like to use it.
 
-## Upgrade patterns
+## Upgrade Patterns
 
-For CMI's own deployments, we aim to keep the Guardian Connector stack up to date with the latest versions of the underlying services. We aim to upgrade the stack once a month, on the last Tuesday of the month.
+For CMI-managed deployments, service upgrades follow a structured release and validation workflow to ensure stability across all Guardian Connector instances:
+
+1. **Release preparation**
+   Cut a new release for all services maintained by CMI (such as GC Explorer and GC Landing Page), as well as services for which CMI provides managed wrappers (such as Superset and GC CoMapeo Cloud).
+
+2. **Staging deployment and validation**
+   Deploy the new service versions to a staging environment and monitor them over a period of approximately three weeks to ensure stability and performance.
+
+3. **Program review and sign-off**
+   Notify the Programs team to review the updated services. This includes familiarization with new features, conducting any final quality assurance for CMI-maintained services, and producing or updating documentation as needed. Formal sign-off is required before proceeding.
+
+4. **Production rollout**
+   Once validated and approved, deploy the updated service versions across all production instances using the batch deployment workflow.
