@@ -12,6 +12,7 @@ Guardian Connector stack.  The script is able to inject the same variable value
 import argparse
 import http.server
 import importlib.resources
+import io
 import logging
 import os
 import shutil
@@ -24,8 +25,8 @@ from dataclasses import dataclass, replace
 from functools import reduce
 
 import psycopg
-import yaml
 from caprover_api import caprover_api
+from ruamel.yaml import YAML
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -37,21 +38,22 @@ def load_config(file_path):
     """Load configuration from YAML file."""
     try:
         with open(file_path, "r") as file:
-            config = yaml.safe_load(file)
+            ryaml = YAML()
+            config = ryaml.load(file)
     except FileNotFoundError:
         print(f"Configuration file {file_path} not found.")
         sys.exit(1)
     return config
 
 
-def set_yaml_value(yaml_str: str, key: str | list[str], value: object) -> str:
+def set_yaml_value(yaml_str: str | None, key: str | list[str], value: object) -> str:
     """
     Set a value at a (nested) key in a YAML string and return the updated YAML.
 
     Parameters
     ----------
     yaml_str
-        YAML-formatted string.
+        YAML-formatted string (empty or None treated as empty document).
     key
         Dot-delimited string (e.g. "a.b.c") or list of key segments.
     value
@@ -61,15 +63,20 @@ def set_yaml_value(yaml_str: str, key: str | list[str], value: object) -> str:
     -------
     Re-serialized YAML string.
     """
-    data = yaml.safe_load(yaml_str) or {}
+    raw = yaml_str or ""
+    ryaml = YAML()
+    ryaml.preserve_quotes = True
 
-    keys = key.split(".") if isinstance(key, str) else key
+    data = ryaml.load(raw) or {}
 
+    keys = key.split(".") if isinstance(key, str) else list(key)
     # Walk to the parent, creating intermediate dicts as needed
     parent = reduce(lambda d, k: d.setdefault(k, {}), keys[:-1], data)
     parent[keys[-1]] = value
 
-    return yaml.dump(data, default_flow_style=False, allow_unicode=True)
+    buf = io.StringIO()
+    ryaml.dump(data, buf)
+    return buf.getvalue()
 
 
 def set_memory_limit(cap, appname, memory_bytes=1610612736):
