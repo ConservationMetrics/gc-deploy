@@ -29,50 +29,50 @@ services:
 
 caproverOneClickApp:
   variables:
-    - id: "$$cap_gc_explorer_docker_image"
-      label: GC Explorer Docker Image
-      defaultValue: "communityfirst/guardianconnector-explorer:20260402-741"
-      validRegex: /^communityfirst\/guardianconnector-explorer:[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/
-      description: Check out the tag version on https://hub.docker.com/r/communityfirst/guardianconnector-explorer
+  - id: "$$cap_gc_explorer_docker_image"
+    label: GC Explorer Docker Image
+    defaultValue: "communityfirst/guardianconnector-explorer:20260420-765"
+    validRegex: /^communityfirst\/guardianconnector-explorer:[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/
+    description: Check out the tag version on https://hub.docker.com/r/communityfirst/guardianconnector-explorer
 
-    - id: "$$cap_postgres_host"
-      label: Postgres service host name
-      defaultValue: "srv-captain--postgres"
-      description: If self-hosted, copy the value from /#/apps/details/postgres
-    - id: "$$cap_postgres_port"
-      label: Postgres service port
-      defaultValue: "5432"
-    - id: "$$cap_postgres_ssl"
-      label: Use SSL to connect to postgres?
-      defaultValue: "false"
-      description: Likely to be true if using an external PostgreSQL server, or false if hosting postgres in Caprover.
-    - id: "$$cap_postgres_user"
-      label: Postgres user
-      description: If self-hosted, copy the value from /#/apps/details/postgres
-    - id: "$$cap_postgres_pass"
-      label: Postgres password
-      description: If self-hosted, copy the value from /#/apps/details/postgres
-    - id: "$$cap_postgres_database"
-      label: "Name of database inside Postgres"
-      defaultValue: "warehouse"
+  - id: "$$cap_postgres_host"
+    label: Postgres service host name
+    defaultValue: "srv-captain--postgres"
+    description: If self-hosted, copy the value from /#/apps/details/postgres
+  - id: "$$cap_postgres_port"
+    label: Postgres service port
+    defaultValue: "5432"
+  - id: "$$cap_postgres_ssl"
+    label: Use SSL to connect to postgres?
+    defaultValue: "false"
+    description: Likely to be true if using an external PostgreSQL server, or false if hosting postgres in Caprover.
+  - id: "$$cap_postgres_user"
+    label: Postgres user
+    description: If self-hosted, copy the value from /#/apps/details/postgres
+  - id: "$$cap_postgres_pass"
+    label: Postgres password
+    description: If self-hosted, copy the value from /#/apps/details/postgres
+  - id: "$$cap_postgres_database"
+    label: "Name of database inside Postgres"
+    defaultValue: "warehouse"
 
-    - id: "$$cap_auth_strategy"
-      label: Auth Strategy
-      defaultValue: "auth0"
-      description: \'none\' if you don't want to use authentication, \'auth0\' if you want to use Auth0
-    - id: "$$cap_auth0_domain"
-      label: Auth0 Domain
-      description: optional, to login using Auth0
-    - id: "$$cap_auth0_clientid"
-      label: Auth0 Client ID
-      description: optional, to login using Auth0
-    - id: "$$cap_auth0_client_secret"
-      label: Auth0 Client Secret
-      description: optional, to login using Auth0
+  - id: "$$cap_auth_strategy"
+    label: Auth Strategy
+    defaultValue: "auth0"
+    description: \'none\' if you don't want to use authentication, \'auth0\' if you want to use Auth0
+  - id: "$$cap_auth0_domain"
+    label: Auth0 Domain
+    description: optional, to login using Auth0
+  - id: "$$cap_auth0_clientid"
+    label: Auth0 Client ID
+    description: optional, to login using Auth0
+  - id: "$$cap_auth0_client_secret"
+    label: Auth0 Client Secret
+    description: optional, to login using Auth0
 
-    - id: "$$cap_public_app_api_key"
-      label: An API Key for other apps to access Explorer
-      defaultValue: $$cap_gen_random_hex(48)
+  - id: "$$cap_public_app_api_key"
+    label: An API Key for other apps to access Explorer
+    defaultValue: $$cap_gen_random_hex(48)
 
   instructions:
     start: |-
