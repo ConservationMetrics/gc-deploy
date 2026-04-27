@@ -4,13 +4,13 @@ services:
   $$cap_appname:
     image: $$cap_app_docker_image
     expose:
-      - 8000
+    - 8000
     environment:
       DATABASE_URL: $$cap_database_url
       DATABASE_CONNECTIONS: $$cap_server_database_connections
       MODE: server
     volumes:
-      - $$cap_appname-worker-logs:/tmp/windmill/logs
+    - $$cap_appname-worker-logs:/tmp/windmill/logs
     caproverExtra:
       containerHttpPort: 8000
 
@@ -18,10 +18,10 @@ services:
     image: $$cap_app_docker_image
     volumes:
       # mount the docker socket to allow to run docker containers from within the workers
-      - /var/run/docker.sock:/var/run/docker.sock
-      - $$cap_appname-worker-dependency-cache:/tmp/windmill/cache
-      - $$cap_appname-worker-logs:/tmp/windmill/logs
-      - /mnt/persistent-storage:/persistent-storage
+    - /var/run/docker.sock:/var/run/docker.sock
+    - $$cap_appname-worker-dependency-cache:/tmp/windmill/cache
+    - $$cap_appname-worker-logs:/tmp/windmill/logs
+    - /mnt/persistent-storage:/persistent-storage
     environment:
       DATABASE_URL: $$cap_database_url
       DATABASE_CONNECTIONS: $$cap_worker_database_connections
@@ -33,8 +33,8 @@ services:
   $$cap_appname-worker-native:
     image: $$cap_app_docker_image
     volumes:
-      - $$cap_appname-worker-logs:/tmp/windmill/logs
-      - /mnt/persistent-storage:/persistent-storage
+    - $$cap_appname-worker-logs:/tmp/windmill/logs
+    - /mnt/persistent-storage:/persistent-storage
     environment:
       DATABASE_URL: $$cap_database_url
       DATABASE_CONNECTIONS: $$cap_worker_database_connections
@@ -118,27 +118,27 @@ caproverOneClickApp:
   description: Windmill is developer infrastructure for internal tools. You will need to create and configure the database information manually. Intended for advanced users.
   documentation: https://www.windmill.dev/
   variables:
-    - id: $$cap_app_docker_image
-      label: Windmill Docker Image
-      defaultValue: "ghcr.io/windmill-labs/windmill:1.648.0"
-      description: Checkout their github page for the valid tags https://github.com/windmill-labs/windmill/releases
+  - id: $$cap_app_docker_image
+    label: Windmill Docker Image
+    defaultValue: "ghcr.io/windmill-labs/windmill:1.691.1"
+    description: Checkout their github page for the valid tags https://github.com/windmill-labs/windmill/releases
 
-    - id: $$cap_database_url
-      label: Database URL
-      defaultValue: "postgres://windmill_login:changeme@db:5432/windmill"
-      description: |-
-        You must have a PostgreSQL database already deployed: either externally,
-        or as a One-Click App on this same instance.
+  - id: $$cap_database_url
+    label: Database URL
+    defaultValue: "postgres://windmill_login:changeme@db:5432/windmill"
+    description: |-
+      You must have a PostgreSQL database already deployed: either externally,
+      or as a One-Click App on this same instance.
 
-    - id: $$cap_server_database_connections
-      label: The max number of connections in the server's database connection pool
-      defaultValue: "5"
-      validRegex: /^[1-9][0-9]?$/
+  - id: $$cap_server_database_connections
+    label: The max number of connections in the server's database connection pool
+    defaultValue: "5"
+    validRegex: /^[1-9][0-9]?$/
 
-    - id: $$cap_worker_database_connections
-      label: The max number of connections in a worker's database connection pool.
-      defaultValue: "5"
-      description: |-
-        Note that there are multiple worker processes, each one creating its own pool.
-        This value is per worker.
-      validRegex: /^[1-9]$/
+  - id: $$cap_worker_database_connections
+    label: The max number of connections in a worker's database connection pool.
+    defaultValue: "5"
+    description: |-
+      Note that there are multiple worker processes, each one creating its own pool.
+      This value is per worker.
+    validRegex: /^[1-9]$/
