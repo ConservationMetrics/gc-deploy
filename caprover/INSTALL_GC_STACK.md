@@ -67,6 +67,8 @@ Then open the file (you could use `nano` or `vi`) and fill in the blanks.
 Finally you are ready to use this same configuration file to deploy the apps to CapRover,
 running on the same machine.
 
+If the VM has not been rebooted since Docker (or CapRover) was installed, consider rebooting once (`sudo shutdown -r now`) before the first full deploy; that can reduce odd Docker/CapRover behavior (including nodeId issues) on fresh machines.
+
 ```sh
 # First, dry-run to check for misconfigurations
 gc-stack-deploy --config-file stack.yaml --dry-run
@@ -85,8 +87,9 @@ If the script ran successfully, you can proceed to the [Post-install app configu
 It has been observed that...
 - the script can time out before a Docker image successfully pulls and builds
 - the script fails to enable SSL for a given webapp
+- CapRover or Docker misbehaves until the VM is rebooted once (`sudo shutdown -r now`), including some nodeId-related failures
 
-In both cases, trying to run the script again typically fixes the issue. For the case of the Docker image building, you can actually monitor the build progress in the CapRover web portal under **Apps** → **Deployment**.
+For timeouts and SSL failures, trying to run the script again typically fixes the issue. If Docker or CapRover still looks wrong, reboot the VM and retry. For the case of the Docker image building, you can actually monitor the build progress in the CapRover web portal under **Apps** → **Deployment**.
 
 ### Option 2. Install One-Click Apps through the CapRover UI
 
@@ -112,6 +115,7 @@ Install each of the following apps in turn, paying attention to the **App-specif
 
 > [!TIP]
 > Your PostgreSQL app is internally available as `srv-captain--postgres` (assuming your app is called "postgres") to other apps as the hostname for a database connection.
+> Generate or choose a Postgres password that does **not** contain `#` (hash/pound); some configs treat `#` as starting a comment and the password can be parsed incorrectly.
 
 If you haven't already (i.e. through `gc-stack-deploy`), create the `warehouse` database.
 
