@@ -47,6 +47,12 @@ It covers the manual steps that are not already automated through the scripts an
   - [ ] CoMapeo archive server
   - [ ] Oauth client credentials (for metrics)
 - [ ] Did I schedule the [`guardianconnector_metrics`](https://github.com/ConservationMetrics/gc-scripts-hub/blob/main/f/metrics/guardianconnector/README.md) script to run once a month?
+
+Where values come from (scripts under `f/connectors/…` in `gc-scripts-hub` use these resource types):
+
+- **Twilio / GFW**: If you admin another Guardian Connector Windmill workspace already, use **Resources** there as a reference for field names and allowed shared org credentials—often faster than creating everything from scratch. Twilio flows use a **Twilio message template** resource (not a bare API key).
+- **`oauth_client_credentials`** (metrics): object with `client_id`, `client_secret`, and **`domain`** (Auth0 tenant host, e.g. `your-tenant.us.auth0.com`). Not just two fields—see [Auth0 integration](https://github.com/ConservationMetrics/gc-scripts-hub/blob/main/f/metrics/guardianconnector/README.md#auth0-integration) in the metrics README.
+- **`comapeo_server`**: object with `server_url` and `access_token` (per community deployment). The bearer token matches the CoMapeo archive server app in CapRover (e.g. env `SERVER_BEARER_TOKEN` in the one-click app); it is **not** shared across unrelated instances by default.
 - [ ] Did I invite other required admin users to the Windmill instance and workspace?
 - [ ] Did I set up operator users with the appropriate permissions (e.g. [disable all settings except Runs and Schedules](https://docs.guardianconnector.net/reference/gc-toolkit/gc-scripts-hub/user-roles#configuring-operator-roles))?
 - [ ] Did I add the group `g/all` to all of the folders containing the workspace scripts, flows, and apps (e.g. `export`, `connectors`, `apps`)?
@@ -54,6 +60,7 @@ It covers the manual steps that are not already automated through the scripts an
 ### CoMapeo
 
 - [ ] Did I set an appropriate project limit for the CoMapeo archive server in the `ALLOWED_PROJECTS` environment variable?
+- [ ] For Windmill `comapeo_server` resources, did I copy `server_url` / bearer token from this deployment’s CoMapeo archive server app in CapRover (App Configs / environment, e.g. `SERVER_BEARER_TOKEN`)?
 
 ### GC Explorer
 
