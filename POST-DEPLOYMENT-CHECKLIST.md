@@ -73,7 +73,7 @@ _No manual steps required until datasets exist._
 
 ### Mapbox
 
-CMI's convention is a **new** Mapbox account per community, with **new** access tokens, registered as `guardianconnector+<instance>@conservationmetrics.net`.
+CMI's convention is a **new** Mapbox account per community, with **new** access tokens, registered as `guardianconnector+<instance>@conservationmetrics.com`.
 
 - [ ] Did I create a Mapbox account and set up an API key to use for the domain?
 - [ ] Did I set up any maps required i.e. for the alerts dashboard?
