@@ -4,6 +4,7 @@
 
 * [Install CapRover on New VM](INSTALL_CAPROVER_ON_NEW_VM.md)
 * [Install Guardian Connector Stack](INSTALL_GC_STACK.md)
+* [Set up CapRover locally for development](LOCAL-DEVELOPMENT.md)
 
 ## Maintenance and Upgrades
 
