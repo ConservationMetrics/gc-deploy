@@ -23,7 +23,7 @@ It covers the manual steps that are not already automated through the scripts an
 
 ### Superset
 
-- [ ] Did I set a Mapbox API key and a logo in the environment variables?
+- [ ] Did I set a Mapbox API key and a logo in the environment variables? (See Mapbox section below for CMI's account convention.)
 - [ ] Did I copy down the `SECRET_KEY` from the environment variables and store it in Keepass?
 - [ ] Did I successfully log in as the initial admin account using auth0?
 - [ ] Did I configure a database connection to `warehouse`?
@@ -72,6 +72,8 @@ _No manual steps required until datasets exist._
 - [ ] Did I create a M2M application for metrics, and grant `read:users` and `read:stats` scopes to it?
 
 ### Mapbox
+
+CMI's convention is a **new** Mapbox account per community, with **new** access tokens, registered as `guardianconnector+<instance>@conservationmetrics.net`.
 
 - [ ] Did I create a Mapbox account and set up an API key to use for the domain?
 - [ ] Did I set up any maps required i.e. for the alerts dashboard?

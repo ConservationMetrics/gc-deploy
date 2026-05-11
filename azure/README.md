@@ -85,7 +85,7 @@ Two additional steps you may wish to take to secure your deployment:
 > It is recommended to set up auth0 and Mapbox before you install the app stack, because you will need to input Client IDs, Client Secrets, and Mapbox API Keys in the app stack configuration.
 
 - Set up auth0 by following [`../auth0/README.md`](../auth0/README.md).
-- Set up a Mapbox account to provide the API key for the apps.
+- Set up a Mapbox account to provide the API key for the apps. CMI's convention is a new account per community with new tokens, using `guardianconnector+<instance>@conservationmetrics.net` at signup (see [`../caprover/INSTALL_CAPROVER_ON_NEW_VM.md`](../caprover/INSTALL_CAPROVER_ON_NEW_VM.md)).
 - Install the app stack by following [`../caprover/INSTALL_GC_STACK.md`](../caprover/INSTALL_GC_STACK.md).
 
 ## 📖 More Information

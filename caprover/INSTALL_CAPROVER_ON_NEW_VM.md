@@ -35,6 +35,7 @@ in Azure or DigitalOcean — in which case **you may skip the rest of the docume
 4. Optional: Set up an auth0 tenant, authorization flow (for example, an approval script for the `post-login` Trigger), and auth0 client applications for the apps that will be using auth0.
 
 5. Optional: Set up a Mapbox account to provide the API key for the apps.
+   - CMI's convention is a **new** Mapbox account per community, with **new** access tokens for that deployment. Sign up using `guardianconnector+<instance>@conservationmetrics.net` (plus-alias on the shared inbox so mail still routes to the team).
 
 6. Optional: Set up a Volume Mount (such as Azure Files Share)
 
