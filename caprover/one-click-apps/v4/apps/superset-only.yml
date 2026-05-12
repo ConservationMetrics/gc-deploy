@@ -13,7 +13,7 @@ services:
       CACHE_KEY_PREFIX: $$cap_redis_key_prefix
       DATABASE_URI: postgresql://$$cap_postgres_userpassword@$$cap_postgres_host:$$cap_postgres_port/superset_metastore
       AUTH0_DOMAIN: $$cap_auth0_domain
-      AUTH0_CLIENTID: $$cap_auth0_clientid
+      AUTH0_CLIENTID: $$cap_auth0_client_id
       AUTH0_CLIENT_SECRET: $$cap_auth0_client_secret
       MAPBOX_API_KEY: $$cap_mapbox_api_key
       APP_ICON: $$cap_app_icon
@@ -101,7 +101,7 @@ caproverOneClickApp:
     - id: "$$cap_auth0_domain"
       label: Auth0 Domain
       description: optional, to login using Auth0
-    - id: "$$cap_auth0_clientid"
+    - id: "$$cap_auth0_client_id"
       label: Auth0 Client ID
       description: optional, to login using Auth0
     - id: "$$cap_auth0_client_secret"

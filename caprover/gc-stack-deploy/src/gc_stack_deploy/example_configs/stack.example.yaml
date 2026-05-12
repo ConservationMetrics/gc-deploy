@@ -41,7 +41,7 @@ superset-only:
   redis_key_prefix: "eg_"
   ### OPTIONAL, but you probably want to override:
   auth0_domain: 
-  auth0_clientid: 
+  auth0_client_id: 
   auth0_client_secret: 
   admin_email: "admin@guardianconnector.net"  # IMPORTANT: this should be changed to the email address of the first admin user who will log in with auth0
   mapbox_api_key:  # If you want to use Mapbox for maps; can also be set later
@@ -58,7 +58,7 @@ gc-landing-page:
   ### REQUIRED: 
   community_name:  # IMPORTANT: this is the URL slug of the community, e.g. "springfield" in "springfield.your-captain-root.net". It must not contain any special characters or spaces.
   auth0_domain: 
-  auth0_clientid: 
+  auth0_client_id: 
   auth0_client_secret: 
   ### OPTIONAL, but you probably want to override. Should be set according to services available in the community (e.g. if you don't have Superset, set `superset_enabled: false`)
   superset_enabled: 
@@ -73,7 +73,7 @@ gc-explorer:
   ### REQUIRED:
   postgres_database: "warehouse"
   auth0_domain: 
-  auth0_clientid: 
+  auth0_client_id: 
   auth0_client_secret: 
 
 comapeo-cloud:
