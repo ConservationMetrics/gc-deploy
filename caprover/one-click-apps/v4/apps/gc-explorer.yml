@@ -17,7 +17,7 @@ services:
 
       NUXT_PUBLIC_AUTH_STRATEGY: $$cap_auth_strategy
       NUXT_OAUTH_AUTH0_DOMAIN: $$cap_auth0_domain
-      NUXT_OAUTH_AUTH0_CLIENT_ID: $$cap_auth0_clientid
+      NUXT_OAUTH_AUTH0_CLIENT_ID: $$cap_auth0_client_id
       NUXT_OAUTH_AUTH0_CLIENT_SECRET: $$cap_auth0_client_secret
 
       NUXT_PUBLIC_APP_API_KEY: $$cap_public_app_api_key
@@ -63,7 +63,7 @@ caproverOneClickApp:
     - id: "$$cap_auth0_domain"
       label: Auth0 Domain
       description: optional, to login using Auth0
-    - id: "$$cap_auth0_clientid"
+    - id: "$$cap_auth0_client_id"
       label: Auth0 Client ID
       description: optional, to login using Auth0
     - id: "$$cap_auth0_client_secret"
