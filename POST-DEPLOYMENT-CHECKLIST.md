@@ -23,7 +23,7 @@ It covers the manual steps that are not already automated through the scripts an
 
 ### Superset
 
-- [ ] Did I set a Mapbox API key and a logo in the environment variables? (See Mapbox section below for CMI's account convention.)
+- [ ] Did I set a Mapbox API key and a logo in the environment variables?
 - [ ] Did I copy down the `SECRET_KEY` from the environment variables and store it in Keepass?
 - [ ] Did I successfully log in as the initial admin account using auth0?
 - [ ] Did I configure a database connection to `warehouse`?
@@ -45,7 +45,7 @@ It covers the manual steps that are not already automated through the scripts an
   - [ ] GFW API key
   - [ ] GCP service account
   - [ ] CoMapeo archive server
-  - [ ] Oauth client credentials for metrics (**GC Metrics** M2M app in Auth0—see note below; not the Windmill login application)
+  - [ ] Oauth client credentials for metrics (**GC Metrics** M2M app in Auth0)
 - [ ] Did I schedule the [`guardianconnector_metrics`](https://github.com/ConservationMetrics/gc-scripts-hub/blob/main/f/metrics/guardianconnector/README.md) script to run once a month?
 - [ ] Did I invite other required admin users to the Windmill instance and workspace?
 - [ ] Did I set up operator users with the appropriate permissions (e.g. [disable all settings except Runs and Schedules](https://docs.guardianconnector.net/reference/gc-toolkit/gc-scripts-hub/user-roles#configuring-operator-roles))?
@@ -60,7 +60,7 @@ Where values come from (scripts under `f/connectors/…` in `gc-scripts-hub` use
 ### CoMapeo
 
 - [ ] Did I set an appropriate project limit for the CoMapeo archive server in the `ALLOWED_PROJECTS` environment variable?
-- [ ] For Windmill `comapeo_server` resources, did I copy `server_url` / bearer token from this deployment’s CoMapeo archive server app in CapRover (App Configs / environment, e.g. `SERVER_BEARER_TOKEN`)?
+- [ ] For Windmill `comapeo_server` resources, did I copy `server_url` / bearer token from this deployment’s CoMapeo archive server app in CapRover (`SERVER_BEARER_TOKEN` in App Configs / environment)?
 
 ### GC Explorer
 
@@ -77,7 +77,6 @@ _No manual steps required until datasets exist._
 - [ ] Did I invite other required admins to the Auth0 tenant?
 - [ ] Did I create applications for each GC Stack app?
 - [ ] Did I create a M2M application for metrics (e.g. **GC Metrics**), and grant `read:users` and `read:stats` scopes to it?
-- [ ] In Windmill, does the metrics `oauth_client_credentials` resource use that **M2M** app’s credentials (not any interactive / Windmill SSO application)?
 
 ### Mapbox
 
@@ -93,4 +92,4 @@ CMI's convention is a **new** Mapbox account per community, with **new** access 
 
 ## Handoff
 
-- [ ] Did I manually verify each deployed app (e.g. Superset, Windmill, Filebrowser, landing page, Explorer, CoMapeo flows you care about) loads and critical paths work, before handing off to the programmatic lead?
+- [ ] Did I manually verify each deployed app (e.g. Superset, Windmill, Filebrowser, Landing Page, Explorer, CoMapeo) loads, critical paths work, and configuration and assets have been set up properly, before handing off to the programmatic lead?

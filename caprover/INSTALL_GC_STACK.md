@@ -115,7 +115,7 @@ Install each of the following apps in turn, paying attention to the **App-specif
 
 > [!TIP]
 > Your PostgreSQL app is internally available as `srv-captain--postgres` (assuming your app is called "postgres") to other apps as the hostname for a database connection.
-> Generate or choose a Postgres password that does **not** contain `#` (hash/pound); some configs treat `#` as starting a comment and the password can be parsed incorrectly.
+> It is recommended to generate or choose a Postgres password that does **not** contain any special characters (like `$` or `#`), as these might require URL encoding or escaping, and cause difficulties when setting up database connections for downstream clients.
 
 If you haven't already (i.e. through `gc-stack-deploy`), create the `warehouse` database.
 
