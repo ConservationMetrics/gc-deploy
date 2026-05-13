@@ -79,6 +79,42 @@ def set_yaml_value(yaml_str: str | None, key: str | list[str], value: object) ->
     return buf.getvalue()
 
 
+def _verify_existing_postgres_app(
+    cap, pg_app_name, postgres_from_container, postgres_from_vm
+):
+    """
+    If the pg_app_name app exists in CapRover, sanity-check that its configuration
+    (host and port) match what was parsed from YAML `from_container`/`from_vm`
+
+    Warn on mismatch. We don't fail (but maybe we should).
+    """
+    app = cap.get_app(pg_app_name)
+    if not app:
+        # No `postgres` app in CapRover — assume external Postgres.
+        return
+
+    if postgres_from_container.host != "srv-captain--postgres":
+        logger.warn(
+            f"===== A `{pg_app_name}` app exists in CapRover, but from_container.host is "
+            f"{postgres_from_container.host!r} (expected 'srv-captain--postgres'). "
+            f"Downstream apps may fail to connect. ====="
+        )
+
+    mappings = app.get("ports") or []
+    host_ports = [
+        int(m["hostPort"])
+        for m in mappings
+        if int(m.get("containerPort", 0)) == postgres_from_container.port
+    ]
+    if host_ports and postgres_from_vm.port not in host_ports:
+        logger.warn(
+            f"===== Deployed `postgres` app maps host port(s) {host_ports} -> "
+            f"{postgres_from_container.port}, but from_vm.port="
+            f"{postgres_from_vm.port} in YAML. The script's bare-metal "
+            f"connection will likely fail. Update from_vm.port to match. ====="
+        )
+
+
 def set_memory_limit(cap, appname, memory_bytes=1610612736):
     app = cap.get_app(appname)
     new_suo = set_yaml_value(
@@ -199,9 +235,9 @@ def deploy_stack(config, gc_repository, dry_run):
         ssl=vm_ssl,
     )
 
+    pg_app_name = config["postgres"].get("app_name", "postgres")
     if config["postgres"].get("deploy", False):
         # Deploy internal PostgreSQL instance on CapRover
-        app_name = "postgres"
         postgres_variables = {
             "$$cap_pg_user": config["postgres"]["user"],
             "$$cap_pg_pass": config["postgres"]["pass"],
@@ -217,13 +253,17 @@ def deploy_stack(config, gc_repository, dry_run):
             )
             # from_vm.port sets the host-side port mapping
             cap.update_app(
-                app_name,
+                pg_app_name,
                 port_mapping=[
                     f"{postgres_from_vm.port}:{postgres_from_container.port}"
                 ],
             )
     else:
         logger.info("Using already-deployed or external PostgreSQL configuration.")
+        if not dry_run:
+            _verify_existing_postgres_app(
+                cap, pg_app_name, postgres_from_container, postgres_from_vm
+            )
 
     if not dry_run:
         with (
