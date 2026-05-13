@@ -16,21 +16,27 @@ It covers the manual steps that are not already automated through the scripts an
 - [ ] Did I set up the Guardian Connector 3rd party repository?
 - [ ] Did I deploy all required apps?
 - [ ] Did I configure environment variables and settings for each app correctly? (c.f. [caprover/INSTALL_GC_STACK.md#post-install-app-configuration](caprover/INSTALL_GC_STACK.md#post-install-app-configuration))
-- [ ] Did I set the `<alias>.<domain>.net` to point to one of the applications (e.g. Superset or GC Landing Page)?
-- [ ] Did I store the CapRover admin password in Keepass?
+- [ ] Did I store the CapRover admin password in KeePass?
 - [ ] Did I enable disk cleanup and set an appropriate cron schedule in the CapRover web UI?
+- [ ] (CMI only) Did I add the Caprover root subdomain to the `.env` file for our CapRover batch deploy script?
+
+### Landing Page
+
+- [ ] If someone else will be the main Guardian Connector admin, did I have them sign in, approve their account, and upgrade their role to Admin?
+- [ ] Did I set a custom background image and logo? (optional)
 
 ### Superset
 
 - [ ] Did I set a Mapbox API key and a logo in the environment variables?
-- [ ] Did I copy down the `SECRET_KEY` from the environment variables and store it in Keepass?
+- [ ] Did I copy down the `SECRET_KEY` from the environment variables and store it in KeePass?
 - [ ] Did I successfully log in as the initial admin account using auth0?
+- [ ] If someone else will be the main Guardian Connector admin, did I have them sign in and upgrade their role to Admin? (Yes, this is distinct from the Landing Page / auth0 RBAC step above)
 - [ ] Did I configure a database connection to `warehouse`?
 
 ### Filebrowser
 
 - [ ] Did I get the Filebrowser admin password from the logs in CapRover, and change it?
-- [ ] Did I store the updated admin credentials in Keepass?
+- [ ] Did I store the updated admin credentials in KeePass?
 
 ### Windmill
 
@@ -74,7 +80,7 @@ _No manual steps required until datasets exist._
 
 - [ ] Did I create a Mapbox account and set up an API key to use for the domain?
 - [ ] Did I set up any maps required i.e. for the alerts dashboard?
-- [ ] Did I store the credentials for Mapbox in Keepass?
+- [ ] Did I store the credentials for Mapbox in KeePass?
 
 ### Uptime Robot
 
