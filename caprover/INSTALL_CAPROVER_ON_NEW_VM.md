@@ -25,7 +25,7 @@ in Azure or DigitalOcean — in which case **you may skip the rest of the docume
 2. Docker Installed: Ensure that Docker is already installed with a version of **25.x or higher**.
    - This is often already done for you: You can check Docker’s version by running `docker --version`
    - For Docker installation instructions, [refer to the official Docker documentation.](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
-   - Optional: After Docker is installed, reboot once (`sudo shutdown -r now`). On fresh VMs this sometimes avoids flaky Docker behavior; teams have also seen fewer CapRover oddities (including nodeId issues) after a reboot before installing CapRover.
+   - Optional: After Docker is installed, reboot once (`sudo shutdown -r now`). On fresh VMs this sometimes avoids flaky Docker behavior; teams have also seen fewer CapRover oddities (including **NodeID is not assigned**) after a reboot before installing CapRover.
 
 3. Domain Name: Ensure you have a domain name and subdomain ready (e.g., `mycommunity.guardianconnector.net`), which CapRover will use.
    - In your DNS provider, open DNS for the **root** domain you own (search or browse for that root in the registrar/DNS portal—for example `guardianconnector.net`—then edit **records**). Add **new** A records for **this** deployment’s hostname pointing to **this** new VM’s public IP. If the same root already has A records for other hosts (e.g. staging), leave those alone unless you intend to repoint traffic;

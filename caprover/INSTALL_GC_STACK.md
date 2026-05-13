@@ -67,7 +67,7 @@ Then open the file (you could use `nano` or `vi`) and fill in the blanks.
 Finally you are ready to use this same configuration file to deploy the apps to CapRover,
 running on the same machine.
 
-If the VM has not been rebooted since Docker (or CapRover) was installed, consider rebooting once (`sudo shutdown -r now`) before the first full deploy; that can reduce odd Docker/CapRover behavior (including nodeId issues) on fresh machines.
+If the VM has not been rebooted since Docker (or CapRover) was installed, consider rebooting once (`sudo shutdown -r now`) before the first full deploy; that can reduce flaky Docker/CapRover behavior on fresh machines (including **NodeID is not assigned**).
 
 ```sh
 # First, dry-run to check for misconfigurations
@@ -89,7 +89,7 @@ It has been observed that...
 - the script fails to enable SSL for a given webapp
 - CapRover or Docker misbehaves until the VM is rebooted once (`sudo shutdown -r now`), including some nodeId-related failures
 
-For timeouts and SSL failures, trying to run the script again typically fixes the issue. If Docker or CapRover still looks wrong, reboot the VM and retry. For the case of the Docker image building, you can actually monitor the build progress in the CapRover web portal under **Apps** → **Deployment**.
+For timeouts, SSL failures, or persistent **NodeID is not assigned** (and similar) errors, try running the script again; if it still fails, reboot the VM (`sudo shutdown -r now`) and retry. For Docker image builds that seem stuck, monitor progress in the CapRover web portal under **Apps** → **Deployment**.
 
 ### Option 2. Install One-Click Apps through the CapRover UI
 
