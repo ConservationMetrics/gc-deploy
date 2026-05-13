@@ -14,6 +14,11 @@ Service upgrades can be performed in two alternative ways, depending on scale an
 
 Use the sections below to jump directly to the relevant procedure.
 
+> [!NOTE]
+> An additional component to upgrade are the Windmill scripts, flows and apps from [`gc-scripts-hub`](https://github.com/ConservationMetrics/gc-scripts-hub) that are synchronized to a Windmill workspace on Guardian Connector. See that repo's README, and in particular the [deployment section](https://github.com/ConservationMetrics/gc-scripts-hub#deploying-the-code-to-windmill-workspaces) for more information on how to do that, including by means of a shell script to batch push changes to a number of workspaces at once.
+>
+> For this code that is synced to Windmill, we recommend deviating from the Upgrade Patterns below, and instead push content as it is merged to `main` in the `gc-scripts-hub` repo.
+
 ## Upgrading CapRover
 
 The CapRover UI indicates when there is a new version of CapRover available. You will see a "🎁 🎁 Update Available 🎁 🎁!" message at the top of the dashboard. Clicking on it will take to you to a `/maintenance` page, where you can click on the "Install Update" button to install the latest update.
