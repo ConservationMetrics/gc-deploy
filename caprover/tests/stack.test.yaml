@@ -9,7 +9,12 @@ postgres:
   pass: "test_pg_password"
   database: postgres
   version: 16
-  expose_port: 15432  # the container will map to this port on the host VM
+  from_vm:
+    host: 127.0.0.1
+    port: 15432   # the container will map to this port on the host VM
+  from_container:
+    host: srv-captain--postgres
+    port: 5432
 
 redis:
   deploy: true

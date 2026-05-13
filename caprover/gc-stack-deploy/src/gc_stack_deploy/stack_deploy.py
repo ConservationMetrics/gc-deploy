@@ -167,7 +167,34 @@ def deploy_stack(config, gc_repository, dry_run):
     )
     webapps_ssl = config.get("webappsUseSsl", True)
 
-    # Deploy PostgreSQL if specified in config
+    # Resolve the two Postgres connection configs.
+    if config["postgres"].get("deploy", False):
+        # We control the deploy: the one-click Postgres has no SSL configured,
+        # so any `ssl` field in YAML is ignored to avoid foot-guns.
+        container_ssl = vm_ssl = False
+    else:
+        container_ssl = bool(config["postgres"]["from_container"]["ssl"])
+        vm_ssl = bool(config["postgres"]["from_vm"]["ssl"])
+
+    # this is the connection to be used by inter-container networking:
+    # i.e. how other CapRover apps reach Postgres. Used in connection strings.
+    postgres_from_container = PostgresConnectionConfig(
+        host=config["postgres"]["from_container"]["host"],
+        port=int(config["postgres"]["from_container"]["port"]),
+        user=config["postgres"]["user"],
+        password=config["postgres"]["pass"],
+        ssl=container_ssl,
+    )
+    # this is the connection to be used from this script (which runs on the host).
+    # Used for one-time setup of databases, users, etc.
+    postgres_from_vm = PostgresConnectionConfig(
+        host=config["postgres"]["from_vm"]["host"],
+        port=int(config["postgres"]["from_vm"]["port"]),
+        user=config["postgres"]["user"],
+        password=config["postgres"]["pass"],
+        ssl=vm_ssl,
+    )
+
     if config["postgres"].get("deploy", False):
         # Deploy internal PostgreSQL instance on CapRover
         app_name = "postgres"
@@ -184,44 +211,15 @@ def deploy_stack(config, gc_repository, dry_run):
                 app_variables=postgres_variables,
                 automated=True,
             )
-
-        # this is the connection to be used by inter-container networking
-        postgres_from_container = PostgresConnectionConfig(
-            "srv-captain--postgres",
-            config["postgres"]["user"],
-            config["postgres"]["pass"],
-            ssl=False,
-        )
-        # this is the connection to be used from this script (which runs on the host)
-        postgres_from_vm = None
-
-        # For Docker deployments, expose the postgres server at this custom port on the VM
-        postgres_vm_port = int(config["postgres"]["expose_port"])
-        if not dry_run:
+            # from_vm.port sets the host-side port mapping
             cap.update_app(
                 app_name,
-                port_mapping=[f"{postgres_vm_port}:{postgres_from_container.port}"],
+                port_mapping=[
+                    f"{postgres_from_vm.port}:{postgres_from_container.port}"
+                ],
             )
-
-        # this is the connection to be used from this script (which runs on the host)
-        postgres_from_vm = PostgresConnectionConfig(
-            "127.0.0.1",
-            config["postgres"]["user"],
-            config["postgres"]["pass"],
-            ssl=False,
-            port=postgres_vm_port,
-        )
-
     else:
-        # Using an external PostgreSQL instance
-        logger.info("Using external PostgreSQL configuration.")
-        postgres_from_container = postgres_from_vm = PostgresConnectionConfig(
-            config["postgres"]["host"],
-            config["postgres"]["user"],
-            config["postgres"]["pass"],
-            ssl=True,
-            port=config["postgres"]["port"],
-        )
+        logger.info("Using already-deployed or external PostgreSQL configuration.")
 
     if not dry_run:
         with (

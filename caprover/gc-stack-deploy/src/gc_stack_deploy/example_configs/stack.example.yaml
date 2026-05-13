@@ -1,23 +1,32 @@
 # TODO: make it easier to populate this file, e.g. not needing to put in auth0 domain multiple times.
 
 caproverUrl: "http[s]://captain.your-captain-root.net"  # Remove the brackets if using SSL, remove `[s]` if using HTTP.
-caproverPassword: "secret-captain-password"  # Set a secure password! 
+caproverPassword: "secret-captain-password"  # Set a secure password!
 
 postgres:
-  deploy: true  # Set to false to skip PostgreSQL deployment, then uncomment the next lines.
-
-  # Set only when deploy: false
-  # host: "srv-captain--postgres"
-  # port: 5432
+  deploy: true  # Set to false to skip PostgreSQL deployment (including on a resume run).
 
   # REQUIRED in all cases:
   user: "postgres"  # Do not change this
   pass: "your_pg_password"  # Set a secure password
-
-  # Set only when deploy: true
   database: postgres  # `warehouse` will be created in the stack deploy script
   version: 17
-  expose_port: 15432  # the container will map to this port on the host VM
+
+  # How this script (running on the VM) reaches Postgres.
+  # For CapRover-internal Postgres:
+  #   host is 127.0.0.1
+  #   When `deploy: false`, leave it exactly the same as it was on the first run.
+  # For external Postgres, this will be the same as `from_container` below.
+  from_vm:
+    host: 127.0.0.1
+    port: 15432   # when deploy:true, the container will map to this port on the host VM
+
+  # How other CapRover apps reach Postgres (injected as env vars).
+  # For Postgres hosted on CapRover, this is the service name on the Docker network.
+  # For external Postgres, point this at the external host/port.
+  from_container:
+    host: srv-captain--postgres
+    port: 5432
 
 windmill-only:
   deploy: true
