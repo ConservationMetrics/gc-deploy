@@ -8,7 +8,7 @@ It covers the manual steps that are not already automated through the scripts an
 - [ ] Did I set the A records in my DNS provider? (And can confirm it resolves to the VM's IP?)
 - [ ] Did I add SSH keys to `~/.ssh/authorized_keys` for everyone who needs access to the VM?
 - [ ] Did I enable auto-backups for the VM and/or the data warehouse?
-  - Azure: in the portal open **Backup + disaster recovery** → **Backup** and configure backup for this VM (and any other backup policy you use for the warehouse).
+  - Azure: Can I confirm the VM shows an active backup policy (for example under **Backup + disaster recovery** → **Backup** for this VM)? How to configure backups is documented in [`azure/README.md`](azure/README.md#vm-backups); Azure Files shares are separate—see [`#file-share-backups`](azure/README.md#file-share-backups) if you use them.
 
 ## CapRover and services
 
@@ -50,12 +50,7 @@ It covers the manual steps that are not already automated through the scripts an
 - [ ] Did I invite other required admin users to the Windmill instance and workspace?
 - [ ] Did I set up operator users with the appropriate permissions (e.g. [disable all settings except Runs and Schedules](https://docs.guardianconnector.net/reference/gc-toolkit/gc-scripts-hub/user-roles#configuring-operator-roles))?
 - [ ] Did I add the group `g/all` to all of the folders containing the workspace scripts, flows, and apps (e.g. `export`, `connectors`, `apps`)?
-
-Where values come from (scripts under `f/connectors/…` in `gc-scripts-hub` use these resource types):
-
-- **Twilio / GFW**: If you admin another Guardian Connector Windmill workspace already, use **Resources** there as a reference for field names and allowed shared org credentials—often faster than creating everything from scratch. Twilio flows use a **Twilio message template** resource (not a bare API key).
-- **`oauth_client_credentials`** (metrics): use the **GC Metrics** (or similarly named) **machine-to-machine** application’s Client ID and Client Secret from Auth0, plus **`domain`**. Do **not** use the regular application used for Windmill SSO login—those credentials hit `…/oauth/token` with `403` / `access_denied` because they are not authorized for the Auth0 Management API until you add the right client grants (which the M2M app is meant for). Shape: `client_id`, `client_secret`, `domain` (tenant host). See [Auth0 integration](https://github.com/ConservationMetrics/gc-scripts-hub/blob/main/f/metrics/guardianconnector/README.md#auth0-integration) and [`auth0/README.md`](../auth0/README.md) step 5 (GC Metrics M2M).
-- **`comapeo_server`**: object with `server_url` and `access_token` (per community deployment). The bearer token matches the CoMapeo archive server app in CapRover (e.g. env `SERVER_BEARER_TOKEN` in the one-click app); it is **not** shared across unrelated instances by default.
+- [ ] For Windmill connector and metrics resources, did I follow [**Setting up resources**](caprover/INSTALL_GC_STACK.md#setting-up-resources) in the stack install guide?
 
 ### CoMapeo
 
