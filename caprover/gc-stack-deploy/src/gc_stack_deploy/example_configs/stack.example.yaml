@@ -8,7 +8,7 @@ postgres:
 
   # REQUIRED in all cases:
   user: "postgres"  # Do not change this
-  pass: "your_pg_password"  # Set a secure password
+  pass: "your_pg_password"  # Set a new password, avoid special chars that apps may misparse in connection strings
   database: postgres  # `warehouse` will be created in the stack deploy script
   version: 17
 
