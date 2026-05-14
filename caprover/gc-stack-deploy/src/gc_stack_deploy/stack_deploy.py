@@ -152,7 +152,11 @@ class PostgresConnectionConfig:
     port: int = 5432
 
     def connstr(self, dbname=None):
-        s = f"host={self.host} port={self.port} user={self.user} password={self.password}"
+        sslmode = "require" if self.ssl else "disable"
+        s = (
+            f"host={self.host} port={self.port} user={self.user} "
+            f"password={self.password} sslmode={sslmode}"
+        )
         if dbname:
             s += f" dbname={dbname}"
         return s

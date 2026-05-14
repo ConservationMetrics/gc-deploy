@@ -20,6 +20,7 @@ postgres:
   from_vm:
     host: 127.0.0.1
     port: 15432   # when deploy:true, the container will map to this port on the host VM
+    ssl: false    # ignored when deploy:true (forced false). Set true for external Postgres requiring SSL.
 
   # How other CapRover apps reach Postgres (injected as env vars).
   # For Postgres hosted on CapRover, this is the service name on the Docker network.
@@ -27,6 +28,7 @@ postgres:
   from_container:
     host: srv-captain--postgres
     port: 5432
+    ssl: false    # ignored when deploy:true (forced false). Set true for external Postgres requiring SSL.
 
 windmill-only:
   deploy: true

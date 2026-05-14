@@ -12,9 +12,11 @@ postgres:
   from_vm:
     host: 127.0.0.1
     port: 15432   # the container will map to this port on the host VM
+    ssl: false
   from_container:
     host: srv-captain--postgres
     port: 5432
+    ssl: false
 
 redis:
   deploy: true
