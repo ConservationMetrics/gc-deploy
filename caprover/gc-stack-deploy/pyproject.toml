@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Deploy Guardian Connector stack of apps to the (locally running) Caprover instance."
 requires-python = ">=3.9"
 dependencies = [
+    "bcrypt",
     "ruamel.yaml",
     "psycopg[binary]",
     "Caprover-API @ git+https://github.com/IamJeffG/Caprover-API.git@all-patches-2025-nov",

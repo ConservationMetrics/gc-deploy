@@ -15,6 +15,7 @@ import importlib.resources
 import io
 import logging
 import os
+import secrets
 import shutil
 import socketserver
 import sys
@@ -24,6 +25,7 @@ from contextlib import contextmanager, nullcontext
 from dataclasses import dataclass, replace
 from functools import reduce
 
+import bcrypt
 import psycopg
 from caprover_api import caprover_api
 from ruamel.yaml import YAML
@@ -498,6 +500,23 @@ def deploy_stack(config, gc_repository, dry_run):
         variables = {}
         variables = construct_app_variables(config, one_click_app_name, variables)
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
+
+        admin_password = config["filebrowser"].get("admin_password")
+        generated = admin_password is None
+        if generated:
+            admin_password = secrets.token_urlsafe(16)
+        hashed_password = bcrypt.hashpw(
+            admin_password.encode("utf-8"), bcrypt.gensalt()
+        ).decode("utf-8")
+
+        if generated:
+            print("\n" + "=" * 50)
+            print(f"FILEBROWSER ADMIN PASSWORD: {admin_password}")
+            print("Save this now -- it will not be shown again.")
+            print("=" * 50 + "\n")
+        else:
+            logger.info("Filebrowser admin password set from config (username: admin)")
+
         if not dry_run:
             cap.deploy_one_click_app(
                 one_click_app_name,
@@ -522,9 +541,16 @@ def deploy_stack(config, gc_repository, dry_run):
                 ],
                 # NOTE: You will get warning pages in the filebrowser app before the `datalake` subdir is created in storage:
                 # https://github.com/ConservationMetrics/gc-deploy/pull/12#discussion_r2243697895
-                environment_variables={"FB_ROOT": "/srv/datalake"},
+                environment_variables={
+                    "FB_ROOT": "/srv/datalake",
+                    "FB_PASSWORD": hashed_password,
+                },
             )
             set_memory_limit(cap, app_name)
+            logger.info("Waiting for Filebrowser to initialize its database...")
+            time.sleep(20)  # TODO: confirm has started. Now we're just guessing.
+            # CaproverAPI doesn't support deletion of an env var, so we just set it to empty
+            cap.update_app(app_name, environment_variables={"FB_PASSWORD": ""})
 
 
 def is_local_path(path):
