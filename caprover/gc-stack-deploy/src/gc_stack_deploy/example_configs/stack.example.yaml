@@ -1,23 +1,24 @@
 # TODO: make it easier to populate this file, e.g. not needing to put in auth0 domain multiple times.
 
 caproverUrl: "http[s]://captain.your-captain-root.net"  # Remove the brackets if using SSL, remove `[s]` if using HTTP.
-caproverPassword: "secret-captain-password"  # Set a secure password! 
+caproverPassword: "secret-captain-password"  # Set a secure password!
 
 postgres:
-  deploy: true  # Set to false to skip PostgreSQL deployment, then uncomment the next lines.
-
-  # Set only when deploy: false
-  # host: "srv-captain--postgres"
-  # port: 5432
+  deploy: true  # Set to false to skip PostgreSQL deployment (including on a resume run).
 
   # REQUIRED in all cases:
   user: "postgres"  # Do not change this
-  pass: "your_pg_password"  # Set a secure password
-
-  # Set only when deploy: true
+  pass: "your_pg_password"  # Set a new password, avoid special chars that apps may misparse in connection strings
   database: postgres  # `warehouse` will be created in the stack deploy script
   version: 17
-  expose_port: 15432  # the container will map to this port on the host VM
+  from_vm:
+    host: 127.0.0.1
+    port: 15432   # when deploy:true, the container will map to this port on the host VM
+    ssl: false    # ignored when deploy:true (forced false). Set true for external Postgres requiring SSL.
+  from_container:
+    host: srv-captain--postgres
+    port: 5432
+    ssl: false    # ignored when deploy:true (forced false). Set true for external Postgres requiring SSL.
 
 windmill-only:
   deploy: true
