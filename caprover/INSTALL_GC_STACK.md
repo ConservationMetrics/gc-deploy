@@ -181,7 +181,9 @@ The `gc-stack-deploy` handles this for you, but if you are setting up the app us
 
 ### GuardianConnector Landing Page
 
-No additional steps needed, but you may want to check if all of the environmental variables (like `NUXT_COMMUNITY_NAME`, `NUXT_PUBLIC_LOGO_URL`) are set correctly post-installation.
+`NUXT_PUBLIC_DOMAIN` should be the domain suffix that follows the community alias (for example, `guardianconnector.net`).
+
+You may also want to check if all of the other environmental variables (like `NUXT_COMMUNITY_NAME`, `NUXT_PUBLIC_LOGO_URL`) are set correctly post-installation. 
 
 ### Redis
 

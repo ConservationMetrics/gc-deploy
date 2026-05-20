@@ -49,6 +49,7 @@ It covers the manual steps that are not already automated through the scripts an
   - [ ] Twilio message template
   - [ ] GFW API key
   - [ ] GCP service account
+  - [ ] [Local Contexts](https://localcontextshub.org)
   - [ ] CoMapeo archive server
   - [ ] Oauth client credentials (for metrics)
 - [ ] Did I schedule the [`guardianconnector_metrics`](https://github.com/ConservationMetrics/gc-scripts-hub/blob/main/f/metrics/guardianconnector/README.md) script to run once a month?
