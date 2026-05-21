@@ -18,6 +18,7 @@ import os
 import secrets
 import shutil
 import socketserver
+import subprocess
 import sys
 import threading
 import time
@@ -200,6 +201,17 @@ class PostgresConnectionConfig:
         return s
 
 
+def _pre_pull_windmill_image(variables: dict) -> None:
+    # The Windmill image is large enough to cause CapRover's deploy call to time out
+    # before Docker finishes pulling it. Pre-pulling here ensures it is cached.
+    # Keep WINDMILL_DEFAULT_IMAGE in sync with windmill-only.yml $$cap_app_docker_image defaultValue.
+    WINDMILL_DEFAULT_IMAGE = "ghcr.io/windmill-labs/windmill:1.704.1"
+    image = variables.get("$$cap_app_docker_image", WINDMILL_DEFAULT_IMAGE)
+    logger.info(f"Pre-pulling Windmill image {image!r} to avoid CapRover timeout ...")
+    subprocess.run(["docker", "pull", image], check=True)
+    logger.info("Windmill image pre-pull complete.")
+
+
 def deploy_stack(config, gc_repository, dry_run):
     """Deploy application stack based on the configuration file."""
 
@@ -302,6 +314,9 @@ def deploy_stack(config, gc_repository, dry_run):
         variables = construct_app_variables(config, one_click_app_name, variables)
 
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
+
+        # Hacky workaround: pre-pull large Windmill image to avoid CapRover timeout
+        _pre_pull_windmill_image(variables)
 
         if not dry_run:
             # As superadmin, create a windmill database

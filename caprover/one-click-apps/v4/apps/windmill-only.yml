@@ -120,7 +120,7 @@ caproverOneClickApp:
   variables:
     - id: $$cap_app_docker_image
       label: Windmill Docker Image
-      defaultValue: "ghcr.io/windmill-labs/windmill:1.691.1"
+      defaultValue: "ghcr.io/windmill-labs/windmill:1.704.1"  # when you bump this, also bump it in stack_deploy.py
       description: Checkout their github page for the valid tags https://github.com/windmill-labs/windmill/releases
 
     - id: $$cap_database_url
