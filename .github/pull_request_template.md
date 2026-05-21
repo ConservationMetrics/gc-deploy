@@ -11,6 +11,9 @@ Please read our [Contributor License Agreement and other Contributing Guidelines
 ## What I changed and why
 
 
+## How I convinced myself this is right
+
+
 ## What I'm not doing here
 
 
