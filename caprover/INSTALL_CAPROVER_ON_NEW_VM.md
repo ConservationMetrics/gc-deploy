@@ -42,8 +42,7 @@ in Azure or DigitalOcean — in which case **you may skip the rest of the docume
 7. Optional: Schedule automatic updates of packages and OS
 
 8. Optional: Add SSH keys to `~/.ssh/authorized_keys` for everyone who needs access to the VM.
-   - If another VM already has the right keys, on that host you can run `cat ~/.ssh/authorized_keys`, copy the lines you need, then on the new VM append them (e.g. `echo 'ssh-ed25519 AAAA… comment' >> ~/.ssh/authorized_keys`, one line per key). Verify with `tail -20 ~/.ssh/authorized_keys`.
-
+   
 9. Set up CapRover on the VM
    - With the right amount of knowledge, you can follow CapRover's own [Getting Started](https://caprover.com/docs/get-started.html#caprover-setup) guide to figure out how to install CapRover when the hosting platform didn't already do it for you.
 
