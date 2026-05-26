@@ -221,10 +221,10 @@ After you set up your Instance, you can navigate back to the Instance Settings p
 
 #### Setting up resources
 
-Scripts under `f/connectors/…` in [`gc-scripts-hub`](https://github.com/ConservationMetrics/gc-scripts-hub) expect Windmill **Resources** of specific types. If you already admin another Guardian Connector workspace, its **Resources** list is a useful reference for field names and for org-wide credentials you are allowed to reuse.
+Scripts under `f/connectors/…` in [`gc-scripts-hub`](https://github.com/ConservationMetrics/gc-scripts-hub) expect Windmill **Resources** of specific types.
 
 - **Twilio / GFW**: Twilio flows use a **Twilio message template** resource (not a bare API key). GFW uses a GFW API key resource; see [`f/connectors/globalforestwatch/README.md`](https://github.com/ConservationMetrics/gc-scripts-hub/blob/main/f/connectors/globalforestwatch/README.md) for obtaining a key.
-- **`oauth_client_credentials`** (for `guardianconnector_metrics`): object with `client_id`, `client_secret`, and **`domain`** (Auth0 tenant host, e.g. `your-tenant.us.auth0.com`). Use the **GC Metrics** machine-to-machine application from Auth0 ([`auth0/README.md`](../auth0/README.md) step 5)—**not** the Auth0 application used for Windmill SSO. The wrong client yields `403` on `…/oauth/token` and Management API / client-grant errors. More context: [Auth0 integration](https://github.com/ConservationMetrics/gc-scripts-hub/blob/main/f/metrics/guardianconnector/README.md#auth0-integration) in the metrics README.
+- **`oauth_client_credentials`** (for `guardianconnector_metrics`): object with `client_id`, `client_secret`, and **`domain`** (Auth0 tenant host, e.g. `your-tenant.us.auth0.com`). Use the **GC Metrics** machine-to-machine application from Auth0 ([`auth0/README.md`](../auth0/README.md))—**not** the Auth0 application used for Windmill SSO. The wrong client yields `403` on `…/oauth/token` and Management API / client-grant errors. More context: [Auth0 integration](https://github.com/ConservationMetrics/gc-scripts-hub/blob/main/f/metrics/guardianconnector/README.md#auth0-integration) in the metrics README.
 - **`comapeo_server`**: `server_url` and `access_token` (per deployment). The token matches this stack’s CoMapeo archive server in CapRover (e.g. `SERVER_BEARER_TOKEN` in app environment); it is not shared across unrelated instances by default.
 
 #### Setting up operator users

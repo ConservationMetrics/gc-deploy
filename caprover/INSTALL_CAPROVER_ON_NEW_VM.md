@@ -28,9 +28,9 @@ in Azure or DigitalOcean — in which case **you may skip the rest of the docume
    - Optional: After Docker is installed, reboot once (`sudo shutdown -r now`). On fresh VMs this sometimes avoids flaky Docker behavior; teams have also seen fewer CapRover oddities (including **NodeID is not assigned**) after a reboot before installing CapRover.
 
 3. Domain Name: Ensure you have a domain name and subdomain ready (e.g., `mycommunity.guardianconnector.net`), which CapRover will use.
-   - In your DNS provider, open DNS for the **root** domain you own (search or browse for that root in the registrar/DNS portal—for example `guardianconnector.net`—then edit **records**). Add **new** A records for **this** deployment’s hostname pointing to **this** new VM’s public IP. If the same root already has A records for other hosts (e.g. staging), leave those alone unless you intend to repoint traffic;
-   - Set the A-Name record for your subdomain (e.g., `mycommunity.guardianconnector.net` and `*.mycommunity.guardianconnector.net`) to the VM's IP.
+   - Add 2 new A-Name records for your subdomain to the VM's IP: `mycommunity.guardianconnector.net` and `*.mycommunity.guardianconnector.net`.
    - Apps will be accessible via sub-subdomains (e.g., `superset.mycommunity.guardianconnector.net`).
+   - If the DNS settings already contains other A-Name records for other hosts (e.g. staging), leave those alone unless you intend to repoint traffic.
 
 4. Optional: Set up an auth0 tenant, authorization flow (for example, an approval script for the `post-login` Trigger), and auth0 client applications for the apps that will be using auth0.
 
