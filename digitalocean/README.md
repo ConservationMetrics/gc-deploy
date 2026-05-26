@@ -70,7 +70,7 @@ Two additional steps you may wish to take to secure your deployment:
 
 - Install the app stack by following [`../caprover/INSTALL_GC_STACK.md`](../caprover/INSTALL_GC_STACK.md).
 - Set up auth0 by following [`../auth0/README.md`](../auth0/README.md).
-- Set up a Mapbox account to provide the API key for the apps. CMI's convention is a new account per community with new tokens, using `guardianconnector+<instance>@conservationmetrics.com` at signup (see [`../caprover/INSTALL_CAPROVER_ON_NEW_VM.md`](../caprover/INSTALL_CAPROVER_ON_NEW_VM.md)).
+- Set up a Mapbox account to provide the API key for the apps.
 
 ## 👩‍💻 Maintenance
 

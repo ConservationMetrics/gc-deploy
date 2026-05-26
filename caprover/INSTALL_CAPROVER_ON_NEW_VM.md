@@ -41,9 +41,10 @@ in Azure or DigitalOcean — in which case **you may skip the rest of the docume
 
 7. Optional: Schedule automatic updates of packages and OS
 
-8. Optional: Add SSH keys to `~/.ssh/authorized_keys` for everyone who needs access to the VM.   
+8. Optional: Add SSH keys to `~/.ssh/authorized_keys` for everyone who needs access to the VM.  
 
 9. Set up CapRover on the VM
+
    - With the right amount of knowledge, you can follow CapRover's own [Getting Started](https://caprover.com/docs/get-started.html#caprover-setup) guide to figure out how to install CapRover when the hosting platform didn't already do it for you.
 
 10. Once CapRover is installed, configure disk cleanup and set an appropriate cron schedule in the CapRover web UI.
