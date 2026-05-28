@@ -8,6 +8,7 @@ It covers the manual steps that are not already automated through the scripts an
 - [ ] Did I set the A records in my DNS provider? (And can confirm it resolves to the VM's IP?)
 - [ ] Did I add SSH keys to `~/.ssh/authorized_keys` for everyone who needs access to the VM?
 - [ ] Did I enable auto-backups for the VM and/or the data warehouse?
+  - Azure: Can I confirm the VM shows an active backup policy (for example under **Backup + disaster recovery** → **Backup** for this VM)? How to configure backups is documented in [`azure/README.md`](azure/README.md#vm-backups); Azure Files shares are separate—see [`#file-share-backups`](azure/README.md#file-share-backups) if you use them.
 
 ## CapRover and services
 
@@ -51,15 +52,17 @@ It covers the manual steps that are not already automated through the scripts an
   - [ ] GCP service account
   - [ ] [Local Contexts](https://localcontextshub.org)
   - [ ] CoMapeo archive server
-  - [ ] Oauth client credentials (for metrics)
+  - [ ] Oauth client credentials for metrics (**GC Metrics** M2M app in Auth0)
 - [ ] Did I schedule the [`guardianconnector_metrics`](https://github.com/ConservationMetrics/gc-scripts-hub/blob/main/f/metrics/guardianconnector/README.md) script to run once a month?
 - [ ] Did I invite other required admin users to the Windmill instance and workspace?
 - [ ] Did I set up operator users with the appropriate permissions (e.g. [disable all settings except Runs and Schedules](https://docs.guardianconnector.net/reference/gc-toolkit/gc-scripts-hub/user-roles#configuring-operator-roles))?
 - [ ] Did I add the group `g/all` to all of the folders containing the workspace scripts, flows, and apps (e.g. `export`, `connectors`, `apps`)?
+- [ ] For Windmill connector and metrics resources, did I follow [**Setting up resources**](caprover/INSTALL_GC_STACK.md#setting-up-resources) in the stack install guide?
 
 ### CoMapeo
 
 - [ ] Did I set an appropriate project limit for the CoMapeo archive server in the `ALLOWED_PROJECTS` environment variable?
+- [ ] For Windmill `comapeo_server` resources, did I copy `server_url` / bearer token from this deployment’s CoMapeo archive server app in CapRover (`SERVER_BEARER_TOKEN` in App Configs / environment)?
 
 ### GC Explorer
 
@@ -75,7 +78,7 @@ _No manual steps required until datasets exist._
 - [ ] Did I assign the Admin role to my logged in user?
 - [ ] Did I invite other required admins to the Auth0 tenant?
 - [ ] Did I create applications for each GC Stack app?
-- [ ] Did I create a M2M application for metrics, and grant `read:users` and `read:stats` scopes to it?
+- [ ] Did I create a M2M application for metrics (e.g. **GC Metrics**), and grant `read:users` and `read:stats` scopes to it?
 
 ### Mapbox
 
@@ -86,3 +89,7 @@ _No manual steps required until datasets exist._
 ### Uptime Robot
 
 - [ ] Did I add monitors for each service URL?
+
+## Handoff
+
+- [ ] Did I manually verify each deployed app (e.g. Superset, Windmill, Filebrowser, Landing Page, Explorer, CoMapeo) loads, critical paths work, and configuration and assets have been set up properly, before handing off to the programmatic lead?

@@ -85,6 +85,7 @@ If the script ran successfully, you can proceed to the [Post-install app configu
 It has been observed that...
 - the script can time out before a Docker image successfully pulls and builds
 - the script fails to enable SSL for a given webapp
+- CapRover or Docker misbehaves until the VM is rebooted once (`sudo shutdown -r now`), including some nodeId-related failures
 
 In both cases, trying to run the script again typically fixes the issue. For the case of the Docker image building, you can actually monitor the build progress in the CapRover web portal under **Apps** → **Deployment**.
 
@@ -112,6 +113,7 @@ Install each of the following apps in turn, paying attention to the **App-specif
 
 > [!TIP]
 > Your PostgreSQL app is internally available as `srv-captain--postgres` (assuming your app is called "postgres") to other apps as the hostname for a database connection.
+> It is recommended to generate or choose a Postgres password that does **not** contain any special characters (like `$` or `#`), as these might require URL encoding or escaping, and cause difficulties when setting up database connections for downstream clients.
 
 If you haven't already (i.e. through `gc-stack-deploy`), create the `warehouse` database.
 
@@ -216,6 +218,14 @@ After you set up your Instance, you can navigate back to the Instance Settings p
 
 1. As a superadmin, access **+ Workspace** in the top left corner and add a new workspace. The convention CMI uses to name workspaces is `gc-<alias>`, where `<alias>` is the alias chosen by the community.
 2. Push the [`gc-scripts-hub`](https://github.com/conservationMetrics/gc-scripts-hub) content to the workspace. See [Guardian Connector Scripts Hub README](https://github.com/ConservationMetrics/gc-scripts-hub/blob/main/README.md#deploying-the-code-to-windmill-workspaces) for more details.
+
+#### Setting up resources
+
+Scripts under `f/connectors/…` in [`gc-scripts-hub`](https://github.com/ConservationMetrics/gc-scripts-hub) expect Windmill **Resources** of specific types.
+
+- **Twilio / GFW**: Twilio flows use a **Twilio message template** resource (not a bare API key). GFW uses a GFW API key resource; see [`f/connectors/globalforestwatch/README.md`](https://github.com/ConservationMetrics/gc-scripts-hub/blob/main/f/connectors/globalforestwatch/README.md) for obtaining a key.
+- **`oauth_client_credentials`** (for `guardianconnector_metrics`): object with `client_id`, `client_secret`, and **`domain`** (Auth0 tenant host, e.g. `your-tenant.us.auth0.com`). Use the **GC Metrics** machine-to-machine application from Auth0 ([`auth0/README.md`](../auth0/README.md))—**not** the Auth0 application used for Windmill SSO. The wrong client yields `403` on `…/oauth/token` and Management API / client-grant errors. More context: [Auth0 integration](https://github.com/ConservationMetrics/gc-scripts-hub/blob/main/f/metrics/guardianconnector/README.md#auth0-integration) in the metrics README.
+- **`comapeo_server`**: `server_url` and `access_token` (per deployment). The token matches this stack’s CoMapeo archive server in CapRover (e.g. `SERVER_BEARER_TOKEN` in app environment); it is not shared across unrelated instances by default.
 
 #### Setting up operator users
 
