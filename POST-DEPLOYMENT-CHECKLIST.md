@@ -8,7 +8,7 @@ It covers the manual steps that are not already automated through the scripts an
 - [ ] Did I set the A records in my DNS provider? (And can confirm it resolves to the VM's IP?)
 - [ ] Did I add SSH keys to `~/.ssh/authorized_keys` for everyone who needs access to the VM?
 - [ ] Did I enable auto-backups for the VM and/or the data warehouse?
-  - Azure: Can I confirm the VM shows an active backup policy (for example under **Backup + disaster recovery** → **Backup** for this VM)? How to configure backups is documented in [`azure/README.md`](azure/README.md#vm-backups); Azure Files shares are separate—see [`#file-share-backups`](azure/README.md#file-share-backups) if you use them.
+- [ ] Azure: Can I confirm the VM shows an active backup policy (for example under **Backup + disaster recovery** → **Backup** for this VM)? How to configure backups is documented in [`azure/README.md`](azure/README.md#vm-backups); Azure Files shares are separate—see [`#file-share-backups`](azure/README.md#file-share-backups) if you use them.
 
 ## CapRover and services
 
