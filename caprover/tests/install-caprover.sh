@@ -17,8 +17,19 @@ echo "127.0.0.1 captain.test-gc-deploy.localhost" | sudo tee -a /etc/hosts
 echo "127.0.0.1 test-gc-deploy.localhost" | sudo tee -a /etc/hosts
 
 echo "🚀 Installing CapRover server..."
-sudo mkdir -p /captain/data
-echo  "{\"skipVerifyingDomains\":\"true\"}" | sudo tee /captain/data/config-override.json > /dev/null
+sudo mkdir -p /captain
+
+if [ -n "${BACKUP_TAR:-}" ]; then
+    # Restore mode: place the backup tar before starting the container.
+    # config-override.json (skipVerifyingDomains) is baked into the tar.
+    echo "  Restoring from backup: $BACKUP_TAR"
+    sudo cp "$BACKUP_TAR" /captain/backup.tar
+else
+    # Fresh install: write config-override so the local .localhost domain works.
+    sudo mkdir -p /captain/data
+    echo  "{\"skipVerifyingDomains\":\"true\"}" | sudo tee /captain/data/config-override.json > /dev/null
+fi
+
 docker run -d \
   --name captain-captain \
   -e ACCEPTED_TERMS=true -e MAIN_NODE_IP_ADDRESS=127.0.0.1 \
@@ -27,12 +38,15 @@ docker run -d \
   -v /captain:/captain \
   caprover/caprover
 
+
 echo "⏳ Waiting for CapRover to be ready..."
-sleep 20
+sleep 30
+wait_between=5
+max_attempts=20
 ready=0
-for i in {1..10}; do
+for i in $(seq 1 "$max_attempts"); do
   # Don't try to view logs until the service exists.
-  if docker service ls --format '{{.Name}}' | grep -q "^captain-captain$"; then
+  if docker service ls --format '{{.Name}}' 2>/dev/null | grep -q "^captain-captain$"; then
     # Check logs for initialization confirmation.
     if docker service logs captain-captain 2>&1 | grep -q "Captain is initialized"; then
       echo "CapRover is ready!"
@@ -40,8 +54,8 @@ for i in {1..10}; do
       break
     fi
   fi
-  echo "Waiting... ($i/10)"
-  sleep 5
+  echo "Waiting... ($i/$max_attempts)"
+  sleep "$wait_between"
 done
 
 if [ "$ready" -ne 1 ]; then
@@ -50,25 +64,30 @@ if [ "$ready" -ne 1 ]; then
 fi
 sleep 10  # Wait a bit more for the API to be fully available
 
-echo "⚙️ Setting up CapRover..."
-# Do not use `caprover serversetup` as it will try to require SSL on your local domain:
-# https://caprover.com/docs/run-locally.html#setup
-COOKIESTXT=$(mktemp)
-TOKEN=$(curl -s 'http://captain.test-gc-deploy.localhost:3000/api/v2/login' \
-  -X POST \
-  -H 'Content-Type: application/json' \
-  -H 'x-namespace: captain' \
-  -c "$COOKIESTXT" \
-  --data '{"password":"captain42","otpToken":""}' | jq -r '.data.token')
+if [ -z "${BACKUP_TAR:-}" ]; then
+    echo "⚙️ Setting up CapRover..."
+    # Do not use `caprover serversetup` as it will try to require SSL on your local domain:
+    # https://caprover.com/docs/run-locally.html#setup
+    COOKIESTXT=$(mktemp)
+    TOKEN=$(curl -s 'http://captain.test-gc-deploy.localhost:3000/api/v2/login' \
+      -X POST \
+      -H 'Content-Type: application/json' \
+      -H 'x-namespace: captain' \
+      -c "$COOKIESTXT" \
+      --data '{"password":"captain42","otpToken":""}' | jq -r '.data.token')
 
-curl -s 'http://captain.test-gc-deploy.localhost:3000/api/v2/user/system/changerootdomain' \
-  -X POST \
-  -H 'Content-Type: application/json' \
-  -H "x-captain-auth: $TOKEN" \
-  -H 'x-namespace: captain' \
-  -b "$COOKIESTXT" \
-  --data '{"rootDomain":"test-gc-deploy.localhost","force":false}'
+    curl -s 'http://captain.test-gc-deploy.localhost:3000/api/v2/user/system/changerootdomain' \
+      -X POST \
+      -H 'Content-Type: application/json' \
+      -H "x-captain-auth: $TOKEN" \
+      -H 'x-namespace: captain' \
+      -b "$COOKIESTXT" \
+      --data '{"rootDomain":"test-gc-deploy.localhost","force":false}'
 
-rm "$COOKIESTXT" || true
-
-echo "✅ CapRover setup complete."
+    rm "$COOKIESTXT" || true
+    echo "✅ CapRover setup complete."
+else
+    echo "✅ CapRover restore complete."
+    echo "   Dashboard: http://captain.test-gc-deploy.localhost:3000"
+    echo "   (Password was printed by gen-backup above)"
+fi

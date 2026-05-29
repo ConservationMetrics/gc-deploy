@@ -1,0 +1,15 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "gen-backup"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["bcrypt"]
+
+[project.scripts]
+gen-backup = "gen_backup.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/gen_backup"]
