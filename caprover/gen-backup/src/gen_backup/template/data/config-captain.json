@@ -1,0 +1,1024 @@
+{
+	"namespace": "captain",
+	"goAccessInfo": {
+		"isEnabled": false,
+		"data": {
+			"rotationFrequencyCron": "0 0 1 * *",
+			"logRetentionDays": 180
+		}
+	},
+	"pro": {
+		"installationId": "d521e4ee-6db1-4577-9428-2be374902423"
+	},
+	"featureFlags": {
+		"isProEnabled": true
+	},
+	"customDomain": "cmistaging.guardianconnector.net",
+	"emailAddress": "guardian@example.net",
+	"hasRootSsl": true,
+	"forceRootSsl": true,
+	"hashedPassword": "$2b$.PLACE/HOLDER",
+	"appDefinitions": {
+		"postgres": {
+			"hasPersistentData": true,
+			"projectId": "",
+			"description": "",
+			"instanceCount": 1,
+			"captainDefinitionRelativeFilePath": "./captain-definition",
+			"networks": [
+				"captain-overlay-network"
+			],
+			"envVars": [
+				{
+					"key": "POSTGRES_USER",
+					"value": "postgres"
+				},
+				{
+					"key": "POSTGRES_PASSWORD",
+					"value": "original-pg-pass"
+				},
+				{
+					"key": "POSTGRES_DB",
+					"value": "postgres"
+				},
+				{
+					"key": "POSTGRES_INITDB_ARGS",
+					"value": ""
+				}
+			],
+			"volumes": [
+				{
+					"containerPath": "/var/lib/postgresql/data",
+					"volumeName": "postgres-data"
+				}
+			],
+			"ports": [
+				{
+					"hostPort": 5432,
+					"containerPort": 5432
+				}
+			],
+			"tags": [
+				{
+					"tagName": "postgres"
+				}
+			],
+			"versions": [
+				{
+					"version": 0,
+					"timeStamp": "2026-05-07T14:28:51.866Z",
+					"deployedImageName": "caprover/caprover-placeholder-app:latest",
+					"gitHash": ""
+				},
+				{
+					"version": 1,
+					"timeStamp": "2026-05-07T14:28:54.999Z",
+					"deployedImageName": "postgres:17",
+					"gitHash": ""
+				}
+			],
+			"deployedVersion": 1,
+			"notExposeAsWebApp": true,
+			"customDomain": [],
+			"hasDefaultSubDomainSsl": true,
+			"redirectDomain": "",
+			"forceSsl": true,
+			"websocketSupport": false,
+			"containerHttpPort": 80,
+			"nodeId": "genbackuptemplatenodeid",
+			"preDeployFunction": "",
+			"serviceUpdateOverride": "",
+			"appDeployTokenConfig": {
+				"enabled": false
+			}
+		},
+		"windmill": {
+			"hasPersistentData": true,
+			"projectId": "",
+			"description": "",
+			"instanceCount": 1,
+			"captainDefinitionRelativeFilePath": "./captain-definition",
+			"networks": [
+				"captain-overlay-network"
+			],
+			"envVars": [
+				{
+					"key": "DATABASE_URL",
+					"value": "postgres://postgres:original-pg-pass@srv-captain--postgres:5432/windmill"
+				},
+				{
+					"key": "DATABASE_CONNECTIONS",
+					"value": "5"
+				},
+				{
+					"key": "MODE",
+					"value": "server"
+				}
+			],
+			"volumes": [
+				{
+					"containerPath": "/tmp/windmill/logs",
+					"volumeName": "windmill-worker-logs"
+				}
+			],
+			"ports": [],
+			"tags": [
+				{
+					"tagName": "windmill"
+				}
+			],
+			"versions": [
+				{
+					"version": 0,
+					"timeStamp": "2026-05-07T14:29:15.721Z",
+					"deployedImageName": "caprover/caprover-placeholder-app:latest",
+					"gitHash": ""
+				},
+				{
+					"version": 1,
+					"timeStamp": "2026-05-07T14:29:18.891Z",
+					"deployedImageName": "ghcr.io/windmill-labs/windmill:1.648.0",
+					"gitHash": ""
+				},
+				{
+					"version": 2,
+					"timeStamp": "2026-05-12T01:02:21.278Z",
+					"deployedImageName": "ghcr.io/windmill-labs/windmill:1.691.1",
+					"gitHash": ""
+				}
+			],
+			"deployedVersion": 2,
+			"notExposeAsWebApp": false,
+			"customDomain": [],
+			"hasDefaultSubDomainSsl": true,
+			"redirectDomain": "",
+			"forceSsl": true,
+			"websocketSupport": true,
+			"containerHttpPort": 8000,
+			"nodeId": "genbackuptemplatenodeid",
+			"preDeployFunction": "",
+			"serviceUpdateOverride": "TaskTemplate:\n  Resources:\n    Limits:\n      MemoryBytes: 1610612736",
+			"appDeployTokenConfig": {
+				"enabled": false
+			}
+		},
+		"windmill-worker": {
+			"hasPersistentData": true,
+			"projectId": "",
+			"description": "",
+			"instanceCount": 1,
+			"captainDefinitionRelativeFilePath": "./captain-definition",
+			"networks": [
+				"captain-overlay-network"
+			],
+			"envVars": [
+				{
+					"key": "DATABASE_URL",
+					"value": "postgres://postgres:original-pg-pass@srv-captain--postgres:5432/windmill"
+				},
+				{
+					"key": "DATABASE_CONNECTIONS",
+					"value": "5"
+				},
+				{
+					"key": "MODE",
+					"value": "worker"
+				},
+				{
+					"key": "WORKER_GROUP",
+					"value": "default"
+				}
+			],
+			"volumes": [
+				{
+					"containerPath": "/var/run/docker.sock",
+					"hostPath": "/var/run/docker.sock"
+				},
+				{
+					"containerPath": "/tmp/windmill/cache",
+					"volumeName": "windmill-worker-dependency-cache"
+				},
+				{
+					"containerPath": "/tmp/windmill/logs",
+					"volumeName": "windmill-worker-logs"
+				},
+				{
+					"containerPath": "/persistent-storage",
+					"hostPath": "/mnt/persistent-storage"
+				}
+			],
+			"ports": [],
+			"tags": [
+				{
+					"tagName": "windmill"
+				}
+			],
+			"versions": [
+				{
+					"version": 0,
+					"timeStamp": "2026-05-07T14:29:24.210Z",
+					"deployedImageName": "caprover/caprover-placeholder-app:latest",
+					"gitHash": ""
+				},
+				{
+					"version": 1,
+					"timeStamp": "2026-05-07T14:29:27.376Z",
+					"deployedImageName": "ghcr.io/windmill-labs/windmill:1.648.0",
+					"gitHash": ""
+				},
+				{
+					"version": 2,
+					"timeStamp": "2026-05-12T01:03:48.847Z",
+					"deployedImageName": "ghcr.io/windmill-labs/windmill:1.691.1",
+					"gitHash": ""
+				}
+			],
+			"deployedVersion": 2,
+			"notExposeAsWebApp": true,
+			"customDomain": [],
+			"hasDefaultSubDomainSsl": false,
+			"redirectDomain": "",
+			"forceSsl": false,
+			"websocketSupport": false,
+			"containerHttpPort": 80,
+			"nodeId": "genbackuptemplatenodeid",
+			"preDeployFunction": "",
+			"serviceUpdateOverride": "TaskTemplate:\n  Resources:\n    Limits:\n      MemoryBytes: 1610612736",
+			"appDeployTokenConfig": {
+				"enabled": false
+			}
+		},
+		"windmill-worker-native": {
+			"hasPersistentData": true,
+			"projectId": "",
+			"description": "",
+			"instanceCount": 1,
+			"captainDefinitionRelativeFilePath": "./captain-definition",
+			"networks": [
+				"captain-overlay-network"
+			],
+			"envVars": [
+				{
+					"key": "DATABASE_URL",
+					"value": "postgres://postgres:original-pg-pass@srv-captain--postgres:5432/windmill"
+				},
+				{
+					"key": "DATABASE_CONNECTIONS",
+					"value": "5"
+				},
+				{
+					"key": "MODE",
+					"value": "worker"
+				},
+				{
+					"key": "WORKER_GROUP",
+					"value": "native"
+				},
+				{
+					"key": "SLEEP_QUEUE",
+					"value": "200"
+				}
+			],
+			"volumes": [
+				{
+					"containerPath": "/tmp/windmill/logs",
+					"volumeName": "windmill-worker-logs"
+				},
+				{
+					"containerPath": "/persistent-storage",
+					"hostPath": "/mnt/persistent-storage"
+				}
+			],
+			"ports": [],
+			"tags": [
+				{
+					"tagName": "windmill"
+				}
+			],
+			"versions": [
+				{
+					"version": 0,
+					"timeStamp": "2026-05-07T14:29:33.329Z",
+					"deployedImageName": "caprover/caprover-placeholder-app:latest",
+					"gitHash": ""
+				},
+				{
+					"version": 1,
+					"timeStamp": "2026-05-07T14:29:36.880Z",
+					"deployedImageName": "ghcr.io/windmill-labs/windmill:1.648.0",
+					"gitHash": ""
+				},
+				{
+					"version": 2,
+					"timeStamp": "2026-05-12T01:03:55.840Z",
+					"deployedImageName": "ghcr.io/windmill-labs/windmill:1.691.1",
+					"gitHash": ""
+				}
+			],
+			"deployedVersion": 2,
+			"notExposeAsWebApp": true,
+			"customDomain": [],
+			"hasDefaultSubDomainSsl": false,
+			"redirectDomain": "",
+			"forceSsl": false,
+			"websocketSupport": false,
+			"containerHttpPort": 80,
+			"nodeId": "genbackuptemplatenodeid",
+			"preDeployFunction": "",
+			"serviceUpdateOverride": "TaskTemplate:\n  Resources:\n    Limits:\n      MemoryBytes: 1610612736",
+			"appDeployTokenConfig": {
+				"enabled": false
+			}
+		},
+		"redis": {
+			"hasPersistentData": true,
+			"projectId": "",
+			"description": "",
+			"instanceCount": 1,
+			"captainDefinitionRelativeFilePath": "./captain-definition",
+			"networks": [
+				"captain-overlay-network"
+			],
+			"envVars": [
+				{
+					"key": "REDIS_PASSWORD",
+					"value": "secretkey"
+				}
+			],
+			"volumes": [
+				{
+					"containerPath": "/data",
+					"volumeName": "redis-redis-data"
+				}
+			],
+			"ports": [],
+			"tags": [
+				{
+					"tagName": "redis"
+				}
+			],
+			"versions": [
+				{
+					"version": 0,
+					"timeStamp": "2026-05-07T14:29:58.886Z",
+					"deployedImageName": "caprover/caprover-placeholder-app:latest",
+					"gitHash": ""
+				},
+				{
+					"version": 1,
+					"timeStamp": "2026-05-07T14:30:03.226Z",
+					"deployedImageName": "redis:7.2.4",
+					"gitHash": ""
+				}
+			],
+			"deployedVersion": 1,
+			"notExposeAsWebApp": true,
+			"customDomain": [],
+			"hasDefaultSubDomainSsl": false,
+			"redirectDomain": "",
+			"forceSsl": false,
+			"websocketSupport": false,
+			"containerHttpPort": 80,
+			"nodeId": "genbackuptemplatenodeid",
+			"preDeployFunction": "",
+			"serviceUpdateOverride": "\"TaskTemplate\":\n  \"ContainerSpec\":\n    \"Command\":\n    - |-\n      sh\n    - |-\n      -c\n    - |-\n      redis-server --requirepass $REDIS_PASSWORD\n  Resources:\n    Limits:\n      MemoryBytes: 1610612736",
+			"appDeployTokenConfig": {
+				"enabled": false
+			}
+		},
+		"superset-init-and-beat": {
+			"hasPersistentData": false,
+			"projectId": "",
+			"description": "",
+			"instanceCount": 1,
+			"captainDefinitionRelativeFilePath": "./captain-definition",
+			"networks": [
+				"captain-overlay-network"
+			],
+			"envVars": [
+				{
+					"key": "SECRET_KEY",
+					"value": "sprsetsecret"
+				},
+				{
+					"key": "REDIS_URL",
+					"value": "redis://:secretkey@srv-captain--redis:6379"
+				},
+				{
+					"key": "CACHE_KEY_PREFIX",
+					"value": "eg_"
+				},
+				{
+					"key": "DATABASE_URI",
+					"value": "postgresql://postgres:original-pg-pass@srv-captain--postgres:5432/superset_metastore"
+				},
+				{
+					"key": "ADMIN_EMAIL",
+					"value": "guardian@example.net"
+				},
+				{
+					"key": "ADMIN_PASSWORD",
+					"value": "65889068be00743621b1bb603364dce4"
+				}
+			],
+			"volumes": [],
+			"ports": [],
+			"tags": [
+				{
+					"tagName": "superset"
+				}
+			],
+			"versions": [
+				{
+					"version": 0,
+					"timeStamp": "2026-05-07T14:30:09.973Z",
+					"deployedImageName": "caprover/caprover-placeholder-app:latest",
+					"gitHash": ""
+				},
+				{
+					"version": 1,
+					"timeStamp": "2026-05-07T14:30:13.458Z",
+					"deployedImageName": "communityfirst/superset-deployment:6.0.0_20260303-0213",
+					"gitHash": ""
+				}
+			],
+			"deployedVersion": 1,
+			"notExposeAsWebApp": true,
+			"customDomain": [],
+			"hasDefaultSubDomainSsl": false,
+			"redirectDomain": "",
+			"forceSsl": false,
+			"websocketSupport": false,
+			"containerHttpPort": 80,
+			"preDeployFunction": "",
+			"serviceUpdateOverride": "\"TaskTemplate\":\n  \"ContainerSpec\":\n    \"Command\":\n    - |-\n      sh\n    - |-\n      -c\n    - |2-\n\n        /app/docker/docker-init.sh ;\n        superset db upgrade ;\n        /app/docker/docker-bootstrap.sh beat\n  HealthCheck:\n    Test:\n    - NONE\n  Resources:\n    Limits:\n      MemoryBytes: 1610612736",
+			"appDeployTokenConfig": {
+				"enabled": false
+			}
+		},
+		"superset": {
+			"hasPersistentData": false,
+			"projectId": "",
+			"description": "",
+			"instanceCount": 1,
+			"captainDefinitionRelativeFilePath": "./captain-definition",
+			"networks": [
+				"captain-overlay-network"
+			],
+			"envVars": [
+				{
+					"key": "SECRET_KEY",
+					"value": "sprsetsecret"
+				},
+				{
+					"key": "REDIS_URL",
+					"value": "redis://:secretkey@srv-captain--redis:6379"
+				},
+				{
+					"key": "CACHE_KEY_PREFIX",
+					"value": "eg_"
+				},
+				{
+					"key": "DATABASE_URI",
+					"value": "postgresql://postgres:original-pg-pass@srv-captain--postgres:5432/superset_metastore"
+				},
+				{
+					"key": "AUTH0_DOMAIN",
+					"value": "example.auth0.example.com"
+				},
+				{
+					"key": "AUTH0_CLIENTID",
+					"value": "auth0-client-C"
+				},
+				{
+					"key": "AUTH0_CLIENT_SECRET",
+					"value": "f328f33440aca7b8f7b833f651b3094b"
+				},
+				{
+					"key": "MAPBOX_API_KEY",
+					"value": "pk.Q"
+				},
+				{
+					"key": "APP_ICON",
+					"value": "https://conservationmetrics.com/wp-content/uploads/2025/01/conservation_metrics_350px-01.png"
+				},
+				{
+					"key": "APP_NAME",
+					"value": "Dashboard: CMI Staging Demo"
+				},
+				{
+					"key": "USER_ROLE",
+					"value": "Alpha"
+				},
+				{
+					"key": "LANGUAGES",
+					"value": "{\"en\": {\"flag\": \"us\", \"name\": \"English\"}, \"pt_BR\": {\"flag\": \"br\", \"name\": \"Português\"}, \"es\": {\"flag\": \"mx\", \"name\": \"Español\"}, \"fr\": {\"flag\": \"fr\", \"name\": \"Français\"}, \"nl\": {\"flag\": \"sr\", \"name\": \"Nederlands\"}}"
+				},
+				{
+					"key": "FRAME_ANCESTORS",
+					"value": "https://*.guardianconnector.net"
+				}
+			],
+			"volumes": [],
+			"ports": [],
+			"tags": [
+				{
+					"tagName": "superset"
+				}
+			],
+			"versions": [
+				{
+					"version": 0,
+					"timeStamp": "2026-05-07T14:30:17.588Z",
+					"deployedImageName": "caprover/caprover-placeholder-app:latest",
+					"gitHash": ""
+				},
+				{
+					"version": 1,
+					"timeStamp": "2026-05-07T14:30:21.018Z",
+					"deployedImageName": "communityfirst/superset-deployment:6.0.0_20260303-0213",
+					"gitHash": ""
+				}
+			],
+			"deployedVersion": 1,
+			"notExposeAsWebApp": false,
+			"customDomain": [],
+			"hasDefaultSubDomainSsl": true,
+			"redirectDomain": "superset.cmistaging.guardianconnector.net",
+			"forceSsl": true,
+			"websocketSupport": false,
+			"containerHttpPort": 8088,
+			"preDeployFunction": "",
+			"serviceUpdateOverride": "\"TaskTemplate\":\n  \"ContainerSpec\":\n    \"Command\":\n    - |-\n      /app/docker/docker-bootstrap.sh\n    - |-\n      app-gunicorn\n  Resources:\n    Limits:\n      MemoryBytes: 1610612736",
+			"appDeployTokenConfig": {
+				"enabled": false
+			}
+		},
+		"superset-worker": {
+			"hasPersistentData": false,
+			"projectId": "",
+			"description": "",
+			"instanceCount": 1,
+			"captainDefinitionRelativeFilePath": "./captain-definition",
+			"networks": [
+				"captain-overlay-network"
+			],
+			"envVars": [
+				{
+					"key": "SECRET_KEY",
+					"value": "sprsetsecret"
+				},
+				{
+					"key": "REDIS_URL",
+					"value": "redis://:secretkey@srv-captain--redis:6379"
+				},
+				{
+					"key": "CACHE_KEY_PREFIX",
+					"value": "eg_"
+				},
+				{
+					"key": "DATABASE_URI",
+					"value": "postgresql://postgres:original-pg-pass@srv-captain--postgres:5432/superset_metastore"
+				}
+			],
+			"volumes": [],
+			"ports": [],
+			"tags": [
+				{
+					"tagName": "superset"
+				}
+			],
+			"versions": [
+				{
+					"version": 0,
+					"timeStamp": "2026-05-07T14:30:27.689Z",
+					"deployedImageName": "caprover/caprover-placeholder-app:latest",
+					"gitHash": ""
+				},
+				{
+					"version": 1,
+					"timeStamp": "2026-05-07T14:30:31.163Z",
+					"deployedImageName": "img-captain-superset-worker:1",
+					"gitHash": ""
+				}
+			],
+			"deployedVersion": 1,
+			"notExposeAsWebApp": true,
+			"customDomain": [],
+			"hasDefaultSubDomainSsl": false,
+			"redirectDomain": "",
+			"forceSsl": false,
+			"websocketSupport": false,
+			"containerHttpPort": 80,
+			"preDeployFunction": "",
+			"serviceUpdateOverride": "\"TaskTemplate\":\n  \"ContainerSpec\":\n    \"Command\":\n    - |-\n      /app/docker/docker-bootstrap.sh\n    - |-\n      worker\n  HealthCheck:\n    Test:\n    - NONE\n  Resources:\n    Limits:\n      MemoryBytes: 1610612736",
+			"appDeployTokenConfig": {
+				"enabled": false
+			}
+		},
+		"gc-landing-page": {
+			"hasPersistentData": false,
+			"projectId": "",
+			"description": "",
+			"instanceCount": 1,
+			"captainDefinitionRelativeFilePath": "./captain-definition",
+			"networks": [
+				"captain-overlay-network"
+			],
+			"envVars": [
+				{
+					"key": "HOST",
+					"value": "0.0.0.0"
+				},
+				{
+					"key": "NODE_ENV",
+					"value": "production"
+				},
+				{
+					"key": "NUXT_OAUTH_AUTH0_DOMAIN",
+					"value": "cmi-staging.us.auth0.com"
+				},
+				{
+					"key": "NUXT_OAUTH_AUTH0_CLIENT_SECRET",
+					"value": "7fd93fda0166517b6996ed301cfefb8a"
+				},
+				{
+					"key": "NUXT_OAUTH_AUTH0_CLIENT_ID",
+					"value": "auth0-landing-id"
+				},
+				{
+					"key": "NUXT_PUBLIC_COMMUNITY_NAME",
+					"value": "cmistaging"
+				},
+				{
+					"key": "NUXT_PUBLIC_SUPERSET_ENABLED",
+					"value": "True"
+				},
+				{
+					"key": "NUXT_PUBLIC_FILEBROWSER_ENABLED",
+					"value": "True"
+				},
+				{
+					"key": "NUXT_PUBLIC_WINDMILL_ENABLED",
+					"value": "True"
+				},
+				{
+					"key": "NUXT_PUBLIC_EXPLORER_ENABLED",
+					"value": "True"
+				},
+				{
+					"key": "NUXT_PUBLIC_BASE_URL",
+					"value": "https://cmistaging.guardianconnector.net"
+				},
+				{
+					"key": "NUXT_PUBLIC_LOGO_URL",
+					"value": "https://conservationmetrics.com/wp-content/uploads/2025/01/conservation_metrics_350px-01.png"
+				},
+				{
+					"key": "NUXT_SESSION_PASSWORD",
+					"value": "d4fe5c502d4ced261cfbbb43e126d250"
+				}
+			],
+			"volumes": [],
+			"ports": [],
+			"tags": [
+				{
+					"tagName": "gc-landing-page"
+				}
+			],
+			"versions": [
+				{
+					"version": 0,
+					"timeStamp": "2026-05-07T14:30:50.504Z",
+					"deployedImageName": "caprover/caprover-placeholder-app:latest",
+					"gitHash": ""
+				},
+				{
+					"version": 1,
+					"timeStamp": "2026-05-07T14:30:54.525Z",
+					"deployedImageName": "communityfirst/guardianconnector-landing-page:20260407-116",
+					"gitHash": ""
+				},
+				{
+					"version": 2,
+					"timeStamp": "2026-05-11T23:50:14.246Z",
+					"deployedImageName": "communityfirst/guardianconnector-landing-page:20260511-123",
+					"gitHash": ""
+				},
+				{
+					"version": 3,
+					"timeStamp": "2026-05-12T17:18:24.390Z"
+				},
+				{
+					"version": 4,
+					"timeStamp": "2026-05-12T17:18:40.783Z",
+					"deployedImageName": "communityfirst/guardianconnector-landing-page:20260512-127",
+					"gitHash": ""
+				},
+				{
+					"version": 5,
+					"timeStamp": "2026-05-12T21:08:25.485Z",
+					"deployedImageName": "communityfirst/guardianconnector-landing-page:20260512-129",
+					"gitHash": ""
+				},
+				{
+					"version": 6,
+					"timeStamp": "2026-05-13T00:19:26.248Z",
+					"deployedImageName": "communityfirst/guardianconnector-landing-page:20260513-130",
+					"gitHash": ""
+				}
+			],
+			"deployedVersion": 6,
+			"notExposeAsWebApp": false,
+			"customDomain": [
+				{
+					"publicDomain": "cmistaging.guardianconnector.net",
+					"hasSsl": true
+				}
+			],
+			"hasDefaultSubDomainSsl": true,
+			"redirectDomain": "cmistaging.guardianconnector.net",
+			"forceSsl": true,
+			"websocketSupport": false,
+			"containerHttpPort": 8080,
+			"preDeployFunction": "",
+			"serviceUpdateOverride": "TaskTemplate:\n  Resources:\n    Limits:\n      MemoryBytes: 1610612736",
+			"appDeployTokenConfig": {
+				"enabled": false
+			}
+		},
+		"explorer": {
+			"hasPersistentData": false,
+			"projectId": "",
+			"description": "",
+			"instanceCount": 1,
+			"captainDefinitionRelativeFilePath": "./captain-definition",
+			"networks": [
+				"captain-overlay-network"
+			],
+			"envVars": [
+				{
+					"key": "HOST",
+					"value": "0.0.0.0"
+				},
+				{
+					"key": "NODE_ENV",
+					"value": "production"
+				},
+				{
+					"key": "NUXT_DB_HOST",
+					"value": "srv-captain--postgres"
+				},
+				{
+					"key": "NUXT_DB_PORT",
+					"value": "5432"
+				},
+				{
+					"key": "NUXT_DB_USER",
+					"value": "postgres"
+				},
+				{
+					"key": "NUXT_DB_PASSWORD",
+					"value": "original-pg-pass"
+				},
+				{
+					"key": "NUXT_DB_SSL",
+					"value": "False"
+				},
+				{
+					"key": "NUXT_DATABASE",
+					"value": "warehouse"
+				},
+				{
+					"key": "NUXT_PUBLIC_AUTH_STRATEGY",
+					"value": "auth0"
+				},
+				{
+					"key": "NUXT_OAUTH_AUTH0_DOMAIN",
+					"value": "cmi-staging.us.auth0.com"
+				},
+				{
+					"key": "NUXT_OAUTH_AUTH0_CLIENT_ID",
+					"value": "au-explor-id"
+				},
+				{
+					"key": "NUXT_OAUTH_AUTH0_CLIENT_SECRET",
+					"value": "04e536044e40596761fa1c4176314d60"
+				},
+				{
+					"key": "NUXT_PUBLIC_APP_API_KEY",
+					"value": "4022f97bb1204bc26ef56221ff15a5b8"
+				},
+				{
+					"key": "NUXT_PUBLIC_BASE_URL",
+					"value": "https://explorer.cmistaging.guardianconnector.net"
+				},
+				{
+					"key": "NUXT_SESSION_PASSWORD",
+					"value": "441df3b161e26a7c7df8f6598098dfad"
+				}
+			],
+			"volumes": [],
+			"ports": [],
+			"tags": [
+				{
+					"tagName": "explorer"
+				}
+			],
+			"versions": [
+				{
+					"version": 0,
+					"timeStamp": "2026-05-07T14:31:26.623Z",
+					"deployedImageName": "caprover/caprover-placeholder-app:latest",
+					"gitHash": ""
+				},
+				{
+					"version": 1,
+					"timeStamp": "2026-05-07T14:31:30.495Z",
+					"deployedImageName": "communityfirst/guardianconnector-explorer:20260402-741",
+					"gitHash": ""
+				},
+				{
+					"version": 2,
+					"timeStamp": "2026-05-12T00:41:45.544Z",
+					"deployedImageName": "communityfirst/guardianconnector-explorer:20260511-784",
+					"gitHash": ""
+				},
+				{
+					"version": 3,
+					"timeStamp": "2026-05-12T21:18:27.415Z",
+					"deployedImageName": "communityfirst/guardianconnector-explorer:20260512-790",
+					"gitHash": ""
+				},
+				{
+					"version": 4,
+					"timeStamp": "2026-05-13T00:15:01.902Z"
+				},
+				{
+					"version": 5,
+					"timeStamp": "2026-05-13T00:29:10.878Z",
+					"deployedImageName": "communityfirst/guardianconnector-explorer:20260513-791",
+					"gitHash": ""
+				}
+			],
+			"deployedVersion": 5,
+			"notExposeAsWebApp": false,
+			"customDomain": [],
+			"hasDefaultSubDomainSsl": true,
+			"redirectDomain": "explorer.cmistaging.guardianconnector.net",
+			"forceSsl": true,
+			"websocketSupport": false,
+			"containerHttpPort": 8080,
+			"preDeployFunction": "",
+			"serviceUpdateOverride": "TaskTemplate:\n  Resources:\n    Limits:\n      MemoryBytes: 1610612736",
+			"appDeployTokenConfig": {
+				"enabled": false
+			}
+		},
+		"comapeo": {
+			"hasPersistentData": true,
+			"projectId": "",
+			"description": "",
+			"instanceCount": 1,
+			"captainDefinitionRelativeFilePath": "./captain-definition",
+			"networks": [
+				"captain-overlay-network"
+			],
+			"envVars": [
+				{
+					"key": "SERVER_BEARER_TOKEN",
+					"value": "d9608bb1b525e0cea04ed4da77fea633"
+				},
+				{
+					"key": "SERVER_NAME",
+					"value": "CoMapeo Archive Server"
+				},
+				{
+					"key": "ALLOWED_PROJECTS",
+					"value": "10"
+				},
+				{
+					"key": "STORAGE_DIR",
+					"value": "/data"
+				}
+			],
+			"volumes": [
+				{
+					"containerPath": "/data",
+					"volumeName": "comapeo-data"
+				}
+			],
+			"ports": [],
+			"tags": [
+				{
+					"tagName": "comapeo"
+				}
+			],
+			"versions": [
+				{
+					"version": 0,
+					"timeStamp": "2026-05-07T14:31:45.049Z",
+					"deployedImageName": "caprover/caprover-placeholder-app:latest",
+					"gitHash": ""
+				},
+				{
+					"version": 1,
+					"timeStamp": "2026-05-07T14:31:48.431Z",
+					"deployedImageName": "communityfirst/gc-comapeo-cloud:0.3.0",
+					"gitHash": ""
+				}
+			],
+			"deployedVersion": 1,
+			"notExposeAsWebApp": false,
+			"customDomain": [],
+			"hasDefaultSubDomainSsl": true,
+			"redirectDomain": "comapeo.cmistaging.guardianconnector.net",
+			"forceSsl": true,
+			"websocketSupport": true,
+			"containerHttpPort": 8080,
+			"nodeId": "genbackuptemplatenodeid",
+			"preDeployFunction": "",
+			"serviceUpdateOverride": "TaskTemplate:\n  Resources:\n    Limits:\n      MemoryBytes: 1610612736",
+			"appDeployTokenConfig": {
+				"enabled": false
+			}
+		},
+		"files": {
+			"hasPersistentData": true,
+			"projectId": "",
+			"description": "",
+			"instanceCount": 1,
+			"captainDefinitionRelativeFilePath": "./captain-definition",
+			"networks": [
+				"captain-overlay-network"
+			],
+			"envVars": [
+				{
+					"key": "PUID",
+					"value": "0"
+				},
+				{
+					"key": "PGID",
+					"value": "0"
+				},
+				{
+					"key": "FB_ROOT",
+					"value": "/srv/datalake"
+				}
+			],
+			"volumes": [
+				{
+					"containerPath": "/database",
+					"volumeName": "files-database"
+				},
+				{
+					"containerPath": "/config",
+					"volumeName": "files-config"
+				},
+				{
+					"containerPath": "/srv",
+					"hostPath": "/mnt/persistent-storage"
+				}
+			],
+			"ports": [],
+			"tags": [
+				{
+					"tagName": "files"
+				}
+			],
+			"versions": [
+				{
+					"version": 0,
+					"timeStamp": "2026-05-07T14:32:19.821Z",
+					"deployedImageName": "caprover/caprover-placeholder-app:latest",
+					"gitHash": ""
+				},
+				{
+					"version": 1,
+					"timeStamp": "2026-05-07T14:32:23.160Z",
+					"deployedImageName": "filebrowser/filebrowser:v2.36.1-s6",
+					"gitHash": ""
+				}
+			],
+			"deployedVersion": 1,
+			"notExposeAsWebApp": false,
+			"customDomain": [],
+			"hasDefaultSubDomainSsl": true,
+			"redirectDomain": "files.cmistaging.guardianconnector.net",
+			"forceSsl": true,
+			"websocketSupport": false,
+			"containerHttpPort": 80,
+			"nodeId": "genbackuptemplatenodeid",
+			"preDeployFunction": "",
+			"serviceUpdateOverride": "TaskTemplate:\n  Resources:\n    Limits:\n      MemoryBytes: 1610612736",
+			"appDeployTokenConfig": {
+				"enabled": false
+			}
+		}
+	},
+	"automatedCleanup": {
+		"mostRecentLimit": 2,
+		"cronSchedule": "0 3 * * *",
+		"timezone": "UTC"
+	}
+}

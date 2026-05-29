@@ -12,12 +12,10 @@ TOOL_DIR := $(REPO_ROOT)/caprover/gc-stack-deploy
 VENV_DIR := $(REPO_ROOT)/caprover/tests/.venv
 VENV_READY_FILE := $(VENV_DIR)/bin/gc-stack-deploy
 
-INSTALL_FROM_BACKUP_DIR := $(REPO_ROOT)/install-caprover-from-backup
-GEN_BACKUP_DIR := $(INSTALL_FROM_BACKUP_DIR)/gen-backup
+GEN_BACKUP_DIR := $(REPO_ROOT)/caprover/gen-backup
 GEN_BACKUP_VENV_DIR := $(GEN_BACKUP_DIR)/.venv
 GEN_BACKUP_VENV_READY := $(GEN_BACKUP_VENV_DIR)/bin/gen-backup
-TEMPLATE_TAR := $(INSTALL_FROM_BACKUP_DIR)/caprover-backup-2026_05_28-14_53_23-1779980003546-ip-127_0_0_1.tar
-GENERATED_TAR := $(INSTALL_FROM_BACKUP_DIR)/tmp2/really-new-backup.tar
+GENERATED_TAR := $(REPO_ROOT)/build/gen-backup/generated-backup.tar
 
 .PHONY: all quick-test-e2e test-e2e install-caprover uninstall-caprover build-one-click-apps-repo deploy-stack clean setup-venv \
         setup-gen-backup-venv generate-backup install-caprover-from-backup test-restore smoke-test
@@ -71,6 +69,7 @@ deploy-stack: setup-venv
 clean:
 	@echo "🗑️ Cleaning build artifacts..."
 	@rm -rf $(REPO_ROOT)/build/one-click-apps
+	@rm -rf $(dir $(GENERATED_TAR))
 	@rm -rf $(VENV_DIR)
 
 #
@@ -89,9 +88,8 @@ $(GEN_BACKUP_VENV_READY): $(GEN_BACKUP_DIR)/pyproject.toml
 # Generate a new backup tar from the reference template.
 generate-backup: setup-gen-backup-venv
 	@echo "# Generating backup tar..."
-	@mkdir -p "$(INSTALL_FROM_BACKUP_DIR)/tmp2"
+	@mkdir -p "$(dir $(GENERATED_TAR))"
 	@"$(GEN_BACKUP_VENV_DIR)/bin/gen-backup" \
-		--template "$(TEMPLATE_TAR)" \
 		--config gen-backup-test.yaml \
 		--out "$(GENERATED_TAR)"
 

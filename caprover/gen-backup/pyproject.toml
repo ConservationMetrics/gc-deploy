@@ -17,6 +17,11 @@ dev = ["pytest"]
 [tool.hatch.build.targets.wheel]
 packages = ["src/gen_backup"]
 
+[tool.hatch.build.targets.wheel.force-include]
+# Ship the reference backup tempalte (unpacked directory) as package data so
+# the CLI works after a bare `pip install`, with no git checkout on disk.
+"src/gen_backup/template" = "gen_backup/template"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 filterwarnings = ["ignore::DeprecationWarning"]

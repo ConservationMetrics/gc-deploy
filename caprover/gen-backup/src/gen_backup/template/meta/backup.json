@@ -1,0 +1,1 @@
+{"salt":"00000000-00000000-4000-0000-000000000000","nodes":[{"nodeId":"genbackuptemplatenodeid","type":"manager","isLeader":true,"hostname":"gen-backup","architecture":"x86_64","operatingSystem":"linux","nanoCpu":2000000000,"memoryBytes":4048834560,"dockerEngineVersion":"29.6.1","ip":"127.0.0.1","state":"ready","status":"active"}]}

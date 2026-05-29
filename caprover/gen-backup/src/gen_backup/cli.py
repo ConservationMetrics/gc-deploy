@@ -12,6 +12,7 @@ import shutil
 import tarfile
 import tempfile
 import uuid
+from importlib import resources
 from pathlib import Path
 from typing import Any
 
@@ -19,6 +20,16 @@ import bcrypt
 import yaml
 
 OLD_ROOT = "cmistaging.guardianconnector.net"
+
+
+def bundled_template() -> Path:
+    """Path to the reference backup shipped inside this package.
+
+    Resolves whether gen-backup was pip-installed or run from a source checkout,
+    so callers don't need the repo on disk.
+    """
+    return Path(resources.files("gen_backup") / "template")
+
 
 # Maps YAML config section names → app names in the template backup
 # fmt:off
@@ -97,16 +108,15 @@ def load_config(path: Path) -> dict[str, Any]:
     return cfg
 
 
-def generate(template_tar: Path, cfg: dict, out_tar: Path) -> str:
+def generate(template_dir: Path, cfg: dict, out_tar: Path) -> str:
     """Build the new backup tar and return the plaintext CapRover password."""
     root_domain: str = cfg["rootDomain"]
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp = Path(tmpdir)
 
-        # 1. Extract template
-        with tarfile.open(template_tar) as t:
-            t.extractall(tmp)
+        # 1. Copy template tree
+        shutil.copytree(template_dir, tmp, dirs_exist_ok=True)
 
         data_dir = tmp / "data"
         meta_dir = tmp / "meta"
@@ -320,15 +330,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Generate a CapRover restore tar from a template backup."
     )
-    parser.add_argument("--template", required=True, help="Source backup tar")
     parser.add_argument("--config", required=True, help="YAML config file")
     parser.add_argument("--out", required=True, help="Output tar path")
     args = parser.parse_args()
 
+    template_dir = bundled_template()
     cfg = load_config(Path(args.config))
-    print("Generating backup tar...")
+    print(f"Generating backup tar from {template_dir}...")
     password = generate(
-        template_tar=Path(args.template),
+        template_dir,
         cfg=cfg,
         out_tar=Path(args.out),
     )

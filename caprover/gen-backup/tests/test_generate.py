@@ -159,16 +159,12 @@ class TestSecrets:
         _, cfg = _run(template_tar, tmp_path)
         assert _env(cfg, "postgres", "POSTGRES_PASSWORD") != "original-pg-pass"
 
-    def test_nocodb_jwt_rotated(self, template_tar, tmp_path):
-        _, cfg = _run(template_tar, tmp_path)
-        assert _env(cfg, "nocodb", "NC_AUTH_JWT_SECRET") != "original-jwt"
-
     def test_pg_password_consistent_across_apps(self, template_tar, tmp_path):
         """postgres, nocodb, and explorer must all use the same new pg password."""
         _, cfg = _run(template_tar, tmp_path)
         pg_pass = _env(cfg, "postgres", "POSTGRES_PASSWORD")
-        nc_db = json.loads(_env(cfg, "nocodb", "NC_DB_JSON"))
-        assert nc_db["connection"]["password"] == pg_pass
+        windmill_db = _env(cfg, "windmill", "DATABASE_URL")
+        assert pg_pass in windmill_db
         assert _env(cfg, "explorer", "NUXT_DB_PASSWORD") == pg_pass
 
     def test_salt_rotated(self, template_tar, tmp_path):
@@ -207,7 +203,7 @@ class TestUserSuppliedValues:
         assert _env(cfg, "superset", "AUTH0_CLIENT_SECRET") == "secret-abc"
 
     def test_empty_config_value_not_written(self, template_tar, tmp_path):
-        """A blank auth0_domain in config must not overwrite the template value."""
+        """A blank value in config must not overwrite the template value."""
         _, cfg = _run(
             template_tar,
             tmp_path,
@@ -215,16 +211,17 @@ class TestUserSuppliedValues:
                 "superset-only": {"auth0_domain": ""},
             },
         )
-        # Template had "" already; either way it should stay ""
-        assert _env(cfg, "superset", "AUTH0_DOMAIN") == ""
+        # Template had "example.auth0.example.com" already; it should stay ""
+        assert _env(cfg, "superset", "AUTH0_DOMAIN") == "example.auth0.example.com"
 
     def test_email_address_override(self, template_tar, tmp_path):
         _, cfg = _run(template_tar, tmp_path, emailAddress="admin@new.example.com")
         assert cfg["emailAddress"] == "admin@new.example.com"
 
     def test_email_address_unchanged_when_absent(self, template_tar, tmp_path):
+        """FIXME: should email be required? especially since we don't enable SSL?"""
         _, cfg = _run(template_tar, tmp_path)
-        assert cfg["emailAddress"] == "original@example.com"
+        assert cfg["emailAddress"] == "guardian@example.net"
 
     def test_feature_flag_false(self, template_tar, tmp_path):
         _, cfg = _run(
@@ -238,9 +235,11 @@ class TestUserSuppliedValues:
 
     def test_feature_flag_not_written_when_absent(self, template_tar, tmp_path):
         """If the flag isn't in the config, the template's existing value is kept."""
-        _, cfg = _run(template_tar, tmp_path)
+        _, cfg = _run(
+            template_tar, tmp_path, **{"gc-landing-page": {"NOT_A_REAL_NAME": 1}}
+        )
         # Template didn't include NUXT_PUBLIC_SUPERSET_ENABLED, so it shouldn't appear
-        val = _env(cfg, "gc-landing-page", "NUXT_PUBLIC_SUPERSET_ENABLED")
+        val = _env(cfg, "gc-landing-page", "NOT_A_REAL_NAME")
         assert val is None
 
 

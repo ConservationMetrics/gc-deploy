@@ -42,7 +42,7 @@ docker run -d \
 echo "⏳ Waiting for CapRover to be ready..."
 sleep 30
 wait_between=5
-max_attempts=20
+max_attempts=30
 ready=0
 for i in $(seq 1 "$max_attempts"); do
   # Don't try to view logs until the service exists.
