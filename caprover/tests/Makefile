@@ -12,11 +12,12 @@ TOOL_DIR := $(REPO_ROOT)/caprover/gc-stack-deploy
 VENV_DIR := $(REPO_ROOT)/caprover/tests/.venv
 VENV_READY_FILE := $(VENV_DIR)/bin/gc-stack-deploy
 
-GEN_BACKUP_DIR := $(REPO_ROOT)/install-caprover-from-backup
+INSTALL_FROM_BACKUP_DIR := $(REPO_ROOT)/install-caprover-from-backup
+GEN_BACKUP_DIR := $(INSTALL_FROM_BACKUP_DIR)/gen-backup
 GEN_BACKUP_VENV_DIR := $(GEN_BACKUP_DIR)/.venv
 GEN_BACKUP_VENV_READY := $(GEN_BACKUP_VENV_DIR)/bin/gen-backup
-TEMPLATE_TAR := $(GEN_BACKUP_DIR)/caprover-backup-2026_05_28-14_53_23-1779980003546-ip-127_0_0_1.tar
-GENERATED_TAR := $(GEN_BACKUP_DIR)/tmp2/really-new-backup.tar
+TEMPLATE_TAR := $(INSTALL_FROM_BACKUP_DIR)/caprover-backup-2026_05_28-14_53_23-1779980003546-ip-127_0_0_1.tar
+GENERATED_TAR := $(INSTALL_FROM_BACKUP_DIR)/tmp2/really-new-backup.tar
 
 .PHONY: all quick-test-e2e test-e2e install-caprover uninstall-caprover build-one-click-apps-repo deploy-stack clean setup-venv \
         setup-gen-backup-venv generate-backup install-caprover-from-backup test-restore smoke-test
@@ -88,16 +89,21 @@ $(GEN_BACKUP_VENV_READY): $(GEN_BACKUP_DIR)/pyproject.toml
 # Generate a new backup tar from the reference template.
 generate-backup: setup-gen-backup-venv
 	@echo "# Generating backup tar..."
-	@mkdir -p "$(GEN_BACKUP_DIR)/tmp2"
+	@mkdir -p "$(INSTALL_FROM_BACKUP_DIR)/tmp2"
 	@"$(GEN_BACKUP_VENV_DIR)/bin/gen-backup" \
 		--template "$(TEMPLATE_TAR)" \
-		--root-domain test-gc-deploy.localhost \
+		--config gen-backup-test.yaml \
 		--out "$(GENERATED_TAR)"
 
 # Install CapRover from the generated backup (runs after generate-backup).
 install-caprover-from-backup: generate-backup
 	@echo "# Installing CapRover from backup..."
 	@BACKUP_TAR="$(GENERATED_TAR)" ./install-caprover.sh
+
+# Run gen-backup unit tests (no CapRover required).
+test-gen-backup: setup-gen-backup-venv
+	@"$(GEN_BACKUP_VENV_DIR)/bin/pip" install -e "$(GEN_BACKUP_DIR)[dev]" -q
+	@cd "$(GEN_BACKUP_DIR)" && "$(GEN_BACKUP_VENV_DIR)/bin/pytest" -v
 
 # Full restore smoke-test: tear down, generate, restore, verify.
 test-restore: uninstall-caprover install-caprover-from-backup smoke-test

@@ -6,10 +6,17 @@ build-backend = "hatchling.build"
 name = "gen-backup"
 version = "0.1.0"
 requires-python = ">=3.11"
-dependencies = ["bcrypt"]
+dependencies = ["bcrypt", "pyyaml"]
 
 [project.scripts]
 gen-backup = "gen_backup.cli:main"
 
+[project.optional-dependencies]
+dev = ["pytest"]
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/gen_backup"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
