@@ -18,9 +18,11 @@ import os
 import secrets
 import shutil
 import socketserver
+import subprocess
 import sys
 import threading
 import time
+import urllib.request
 from contextlib import contextmanager, nullcontext
 from dataclasses import dataclass, replace
 from functools import reduce
@@ -200,6 +202,35 @@ class PostgresConnectionConfig:
         return s
 
 
+def _windmill_default_docker_image(gc_repository: str) -> str:
+    """Fetch the default Windmill docker image tag from the one-click app definition."""
+    # Mimic download one-click-app from remote repository from CaproverAPI's _download_one_click_app_defn
+    url = gc_repository + "windmill-only"
+    with urllib.request.urlopen(url) as resp:
+        raw = resp.read().decode()
+    doc = YAML().load(raw)
+    # Mimic CaproverAPI's _resolve_app_variables to find variable defaults
+    for var in doc.get("caproverOneClickApp", {}).get("variables", []):
+        if var.get("id") == "$$cap_app_docker_image":
+            default = var.get("defaultValue")
+            if default is not None:
+                return str(default)
+    raise ValueError(
+        "$$cap_app_docker_image defaultValue not found in windmill-only one-click app"
+    )
+
+
+def _pre_pull_windmill_image(variables: dict, gc_repository: str) -> None:
+    # The Windmill image is large enough to cause CapRover's deploy call to time out
+    # before Docker finishes pulling it. Pre-pulling here ensures it is cached.
+    image = variables.get("$$cap_app_docker_image") or _windmill_default_docker_image(
+        gc_repository
+    )
+    logger.info(f"Pre-pulling Windmill image {image!r} to avoid CapRover timeout ...")
+    subprocess.run(["docker", "pull", image], check=True)
+    logger.info("Windmill image pre-pull complete.")
+
+
 def deploy_stack(config, gc_repository, dry_run):
     """Deploy application stack based on the configuration file."""
 
@@ -302,6 +333,9 @@ def deploy_stack(config, gc_repository, dry_run):
         variables = construct_app_variables(config, one_click_app_name, variables)
 
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
+
+        # Hacky workaround: pre-pull large Windmill image to avoid CapRover timeout
+        _pre_pull_windmill_image(variables, gc_repository)
 
         if not dry_run:
             # As superadmin, create a windmill database
