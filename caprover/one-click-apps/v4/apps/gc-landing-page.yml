@@ -7,18 +7,22 @@ services:
     environment:
       HOST: "0.0.0.0"
       NODE_ENV: "production"
+      NUXT_SESSION_PASSWORD: $$cap_session_password
+
       NUXT_OAUTH_AUTH0_DOMAIN: $$cap_auth0_domain
       NUXT_OAUTH_AUTH0_CLIENT_SECRET: $$cap_auth0_client_secret
       NUXT_OAUTH_AUTH0_CLIENT_ID: $$cap_auth0_client_id
+
+      NUXT_PUBLIC_BASE_URL: https://$$cap_root_domain
+      NUXT_PUBLIC_DOMAIN: $$cap_root_domain
+
       NUXT_PUBLIC_COMMUNITY_NAME: $$cap_community_name
       NUXT_PUBLIC_SUPERSET_ENABLED: $$cap_superset_enabled
       NUXT_PUBLIC_FILEBROWSER_ENABLED: $$cap_filebrowser_enabled
       NUXT_PUBLIC_WINDMILL_ENABLED: $$cap_windmill_enabled
       NUXT_PUBLIC_EXPLORER_ENABLED: $$cap_explorer_enabled
-      NUXT_PUBLIC_BASE_URL: https://$$cap_root_domain
-      NUXT_PUBLIC_DOMAIN: ""
+      
       NUXT_PUBLIC_LOGO_URL: $$cap_logo_url
-      NUXT_SESSION_PASSWORD: $$cap_session_password
 
     caproverExtra:
       containerHttpPort: "8080"
@@ -31,12 +35,10 @@ caproverOneClickApp:
       validRegex: /^communityfirst\/guardianconnector-landing-page:[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/
       description: Check out the tag version on https://hub.docker.com/r/communityfirst/guardianconnector-landing-page
 
-    - id: "$$cap_community_name"
-      label: Community Name (alias)
-      description: The alias of the community used for Guardian Connector (e.g. <community_name>.guardianconnector.net)
-    - id: "$$cap_root_domain"
-      label: Root Domain
-      description: The root domain of the community (e.g. guardianconnector.net)
+    - id: "$$cap_session_password"
+      label: Session Password
+      defaultValue: "$$cap_gen_random_hex(50)"
+      description: Password used for session encryption. Auto-generated if not provided.
 
     - id: "$$cap_auth0_domain"
       label: Auth0 Domain
@@ -48,15 +50,13 @@ caproverOneClickApp:
       label: Auth0 Client ID
       description: Auth0 client ID for authentication
 
-    - id: "$$cap_session_password"
-      label: Session Password
-      defaultValue: "$$cap_gen_random_hex(50)"
-      description: Password used for session encryption. Auto-generated if not provided.
-
-    - id: "$$cap_logo_url"
-      label: Logo URL
-      description: URL of the community logo to display on the landing page
-
+    - id: "$$cap_root_domain"
+      label: Root Domain
+      description: The root domain of the community (e.g. guardianconnector.net)
+    - id: "$$cap_community_name"
+      label: Community Name (alias)
+      description: The alias of the community used for Guardian Connector (e.g. <community_name>.guardianconnector.net)
+ 
     - id: "$$cap_superset_enabled"
       label: Enable Superset
       defaultValue: "true"
@@ -73,6 +73,10 @@ caproverOneClickApp:
       label: Enable GC Explorer
       defaultValue: "true"
       description: Show GC-Explorer as an accessible application link on the landing page
+
+    - id: "$$cap_logo_url"
+      label: Logo URL
+      description: URL of the community logo to display on the landing page
 
   instructions:
     start: |-

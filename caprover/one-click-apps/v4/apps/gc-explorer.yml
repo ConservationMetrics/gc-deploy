@@ -7,6 +7,7 @@ services:
     environment:
       HOST: "0.0.0.0"
       NODE_ENV: "production"
+      NUXT_SESSION_PASSWORD: $$cap_gen_random_hex(50)
 
       NUXT_DB_HOST: $$cap_postgres_host
       NUXT_DB_PORT: $$cap_postgres_port
@@ -20,9 +21,9 @@ services:
       NUXT_OAUTH_AUTH0_CLIENT_ID: $$cap_auth0_client_id
       NUXT_OAUTH_AUTH0_CLIENT_SECRET: $$cap_auth0_client_secret
 
-      NUXT_PUBLIC_APP_API_KEY: $$cap_public_app_api_key
       NUXT_PUBLIC_BASE_URL: https://$$cap_appname.$$cap_root_domain
-      NUXT_SESSION_PASSWORD: $$cap_gen_random_hex(50)
+
+      NUXT_PUBLIC_COMMUNITY_NAME: $$cap_community_name
 
     caproverExtra:
       containerHttpPort: "8080"
@@ -70,9 +71,9 @@ caproverOneClickApp:
       label: Auth0 Client Secret
       description: optional, to login using Auth0
 
-    - id: "$$cap_public_app_api_key"
-      label: An API Key for other apps to access Explorer
-      defaultValue: $$cap_gen_random_hex(48)
+    - id: "$$cap_community_name"
+      label: Community Name (alias)
+      description: The alias of the community used for Guardian Connector (e.g. <community_name>.guardianconnector.net)
 
   instructions:
     start: |-

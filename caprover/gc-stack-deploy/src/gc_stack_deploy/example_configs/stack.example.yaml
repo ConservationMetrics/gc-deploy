@@ -1,28 +1,28 @@
 # TODO: make it easier to populate this file, e.g. not needing to put in auth0 domain multiple times.
 
-caproverUrl: "http[s]://captain.your-captain-root.net"  # Remove the brackets if using SSL, remove `[s]` if using HTTP.
-caproverPassword: "secret-captain-password"  # Set a secure password!
+caproverUrl: "http[s]://captain.your-captain-root.net" # Remove the brackets if using SSL, remove `[s]` if using HTTP.
+caproverPassword: "secret-captain-password" # Set a secure password!
 
 postgres:
-  deploy: true  # Set to false to skip PostgreSQL deployment (including on a resume run).
+  deploy: true # Set to false to skip PostgreSQL deployment (including on a resume run).
 
   # REQUIRED in all cases:
-  user: "postgres"  # Do not change this
-  pass: "your_pg_password"  # Set a new password, avoid special chars that apps may misparse in connection strings
-  database: postgres  # `warehouse` will be created in the stack deploy script
+  user: "postgres" # Do not change this
+  pass: "your_pg_password" # Set a new password, avoid special chars that apps may misparse in connection strings
+  database: postgres # `warehouse` will be created in the stack deploy script
   version: 17
   from_vm:
     host: 127.0.0.1
-    port: 15432   # when deploy:true, the container will map to this port on the host VM
-    ssl: false    # ignored when deploy:true (forced false). Set true for external Postgres requiring SSL.
+    port: 15432 # when deploy:true, the container will map to this port on the host VM
+    ssl: false # ignored when deploy:true (forced false). Set true for external Postgres requiring SSL.
   from_container:
     host: srv-captain--postgres
     port: 5432
-    ssl: false    # ignored when deploy:true (forced false). Set true for external Postgres requiring SSL.
+    ssl: false # ignored when deploy:true (forced false). Set true for external Postgres requiring SSL.
 
 windmill-only:
   deploy: true
-  app_name: windmill  # IMPORTANT so that your app doesn't get deployed as "windmill-only"
+  app_name: windmill # IMPORTANT so that your app doesn't get deployed as "windmill-only"
   # app_version: 1.518.2  # Optional: one-click app already has a sane default
 
   # Set azure_db_user and azure_db_pass if using Azure Flexible DB for Postgresql. Otherwise leave blank.
@@ -31,57 +31,59 @@ windmill-only:
 
 redis:
   deploy: true
-  app_name: redis  # optional override
-  redis_password: "secretkey"  # also optional override since redis is only accessible internally on the VM
+  app_name: redis # optional override
+  redis_password: "secretkey" # also optional override since redis is only accessible internally on the VM
 
 superset-only:
   deploy: true
-  app_name: superset  # IMPORTANT so that your app doesn't get deployed as "superset-only"
-  ### REQUIRED: 
-  redis_url: "redis[s]://:secretkey@srv-captain--redis:6379"  # for locally hosted redis, remove `[s]`
+  app_name: superset # IMPORTANT so that your app doesn't get deployed as "superset-only"
+  ### REQUIRED:
+  redis_url: "redis[s]://:secretkey@srv-captain--redis:6379" # for locally hosted redis, remove `[s]`
   redis_key_prefix: "eg_"
   ### OPTIONAL, but you probably want to override:
-  auth0_domain: 
-  auth0_client_id: 
-  auth0_client_secret: 
-  admin_email: "admin@guardianconnector.net"  # IMPORTANT: this should be changed to the email address of the first admin user who will log in with auth0
-  mapbox_api_key:  # If you want to use Mapbox for maps; can also be set later.
-  app_icon:  # If you want to add a logo; can also be set later
-  app_title: "Dashboard: Biocultural Monitoring Demo"  # Change this to an appropriate title for your community.
+  auth0_domain:
+  auth0_client_id:
+  auth0_client_secret:
+  admin_email: "admin@guardianconnector.net" # IMPORTANT: this should be changed to the email address of the first admin user who will log in with auth0
+  mapbox_api_key: # If you want to use Mapbox for maps; can also be set later.
+  app_icon: # If you want to add a logo; can also be set later
+  app_title: "Dashboard: Biocultural Monitoring Demo" # Change this to an appropriate title for your community.
   ### Optional: one-click app already has sane defaults
   # superset_docker_image:
   # secret_key:
 
 gc-landing-page:
   deploy: true
-  app_name: landing-page  # optional override
-  redirect_to_root: true  # make gc-landing-page the landing page when no subdomain specified
-  ### REQUIRED: 
-  community_name:  # IMPORTANT: this is the URL slug of the community, e.g. "springfield" in "springfield.your-captain-root.net". It must not contain any special characters or spaces.
-  auth0_domain: 
-  auth0_client_id: 
-  auth0_client_secret: 
+  app_name: landing-page # optional override
+  redirect_to_root: true # make gc-landing-page the landing page when no subdomain specified
+  ### REQUIRED:
+  community_name: # this is the URL slug of the community, e.g. "springfield" in "springfield.your-captain-root.net". It must not contain any special characters or spaces.
+  root_domain: # this is the root domain of the community, e.g. "your-captain-root.net".
+  auth0_domain:
+  auth0_client_id:
+  auth0_client_secret:
   ### OPTIONAL, but you probably want to override. Should be set according to services available in the community (e.g. if you don't have Superset, set `superset_enabled: false`)
-  superset_enabled: 
-  filebrowser_enabled: 
-  windmill_enabled: 
-  explorer_enabled: 
-  logo_url:  # If you want to add a logo; can also be set later
+  superset_enabled:
+  filebrowser_enabled:
+  windmill_enabled:
+  explorer_enabled:
+  logo_url: # If you want to add a logo; can also be set later
 
 gc-explorer:
   deploy: true
-  app_name: explorer  # IMPORTANT so that your app doesn't get deployed as "gcexplorer"
+  app_name: explorer # IMPORTANT so that your app doesn't get deployed as "gcexplorer"
   ### REQUIRED:
   postgres_database: "warehouse"
-  auth0_domain: 
-  auth0_client_id: 
-  auth0_client_secret: 
+  auth0_domain:
+  auth0_client_id:
+  auth0_client_secret:
+  community_name: # this is the URL slug of the community, e.g. "springfield" in "springfield.your-captain-root.net". It must not contain any special characters or spaces.
 
 comapeo-cloud:
   deploy: true
-  app_name: comapeo  # IMPORTANT so that your app doesn't get deployed as "comapeo-cloud"
+  app_name: comapeo # IMPORTANT so that your app doesn't get deployed as "comapeo-cloud"
 
 filebrowser:
   deploy: true
-  app_name: files  # IMPORTANT so that your app doesn't get deployed as "filebrowser"
-  admin_password: "changeme"  # optional
+  app_name: files # IMPORTANT so that your app doesn't get deployed as "filebrowser"
+  admin_password: "changeme" # optional
