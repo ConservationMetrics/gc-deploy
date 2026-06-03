@@ -19,29 +19,29 @@ services:
 caproverOneClickApp:
   instructions:
     start: |-
-        A self-hosted archive server for CoMapeo.
+      A self-hosted archive server for CoMapeo.
     end: |-
-        CoMapeo Archive Server is deploying and will be available within a minute.
+      CoMapeo Archive Server is deploying and will be available within a minute.
   displayName: CoMapeo Archive Server
   isOfficial: true   # Only if all images used here are official or from a trusted source.
   description: A self-hosted archive server for CoMapeo.
   documentation: https://github.com/conservationmetrics/gc-comapeo-cloud
   variables:
-  - id: '$$cap_comapeocloud_docker_image'
-    label: CoMapeo Archive Server Docker Image
-    defaultValue: 'communityfirst/gc-comapeo-cloud:0.3.0'
-    validRegex: /^communityfirst\/gc-comapeo-cloud:[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/
-    description: Check out the tag version on https://hub.docker.com/r/communityfirst/gc-comapeo-cloud
+    - id: '$$cap_comapeocloud_docker_image'
+      label: CoMapeo Archive Server Docker Image
+      defaultValue: 'communityfirst/gc-comapeo-cloud:0.4.0'
+      validRegex: /^communityfirst\/gc-comapeo-cloud:[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/
+      description: Check out the tag version on https://hub.docker.com/r/communityfirst/gc-comapeo-cloud
 
-  - id: '$$cap_server_bearer_token'
-    label: Token for authenticating API requests.
-    description: Should be large random string
-    defaultValue: '$$cap_gen_random_hex(100)'
+    - id: '$$cap_server_bearer_token'
+      label: Token for authenticating API requests.
+      description: Should be large random string
+      defaultValue: '$$cap_gen_random_hex(100)'
 
-  - id: '$$cap_server_name'
-    label: Friendly server name, seen by CoMapeo users when adding an archive server
-    defaultValue: 'CoMapeo Archive Server'
+    - id: '$$cap_server_name'
+      label: Friendly server name, seen by CoMapeo users when adding an archive server
+      defaultValue: 'CoMapeo Archive Server'
 
-  - id: '$$cap_allowed_projects'
-    label: Number of projects allowed to register with the server
-    defaultValue: '10'
+    - id: '$$cap_allowed_projects'
+      label: Number of projects allowed to register with the server
+      defaultValue: '10'
