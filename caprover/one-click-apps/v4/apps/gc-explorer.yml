@@ -32,7 +32,7 @@ caproverOneClickApp:
   variables:
     - id: "$$cap_gc_explorer_docker_image"
       label: GC Explorer Docker Image
-      defaultValue: "communityfirst/guardianconnector-explorer:20260513-791"
+      defaultValue: "communityfirst/guardianconnector-explorer:20260603-823"
       validRegex: /^communityfirst\/guardianconnector-explorer:[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/
       description: Check out the tag version on https://hub.docker.com/r/communityfirst/guardianconnector-explorer
 
