@@ -9,6 +9,13 @@
         "description": "Set to true to create a new storage account and file share. Set to false to use existing ones."
       }
     },
+    "existingStorageAccountResourceGroup": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Resource group of an existing storage account in the same Subscription. Leave blank to use the current resource group (this is required when createStorageAccount is true, since this template can't create resources in a different resource group)."
+      }
+    },
     "storageAccountName": {
       "type": "string",
       "minLength": 3,
@@ -432,6 +439,7 @@
     "nicName": "[concat(parameters('vmName'), '-nic') ]",
     "networkSecurityGroupName": "[concat(parameters('vmName'), '-nsg') ]",
     "publicIpName": "[concat(parameters('vmName'), '-ip') ]",
-    "virtualNetworkName": "[concat(parameters('vmName'), '-vnet') ]"
+    "virtualNetworkName": "[concat(parameters('vmName'), '-vnet') ]",
+    "storageAccountResourceGroup": "[if(empty(parameters('existingStorageAccountResourceGroup')), resourceGroup().name, parameters('existingStorageAccountResourceGroup'))]"
   }
 }

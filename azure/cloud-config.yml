@@ -55,7 +55,7 @@ write_files:
     permissions: "0600"
     content: |
       username=', parameters('storageAccountName'), '
-      password=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2022-09-01').keys[0].value, '
+      password=', listKeys(resourceId(variables('storageAccountResourceGroup'), 'Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2022-09-01').keys[0].value, '
 
   # Unit filename must match the mount path, with dashes replaced by escape char and slashes replaced by dashes
   - path: /etc/systemd/system/mnt-persistent', variables('backslash'), 'x2dstorage.mount
