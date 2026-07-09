@@ -21,6 +21,7 @@ import yaml
 OLD_ROOT = "cmistaging.guardianconnector.net"
 
 # Maps YAML config section names → app names in the template backup
+# fmt:off
 YAML_TO_APPS: dict[str, list[str]] = {
     "postgres":       ["postgres"],
     "redis":          ["redis"],
@@ -32,6 +33,7 @@ YAML_TO_APPS: dict[str, list[str]] = {
     "filebrowser":    ["files"],
     "nocodb":         ["nocodb"],
 }
+# fmt:on
 
 
 def _rand(n: int = 16) -> str:
@@ -141,6 +143,7 @@ def generate(template_tar: Path, cfg: dict, out_tar: Path) -> str:
 
         # 5. Values reused across apps — config value if provided, else auto-generated.
         #    Per-app one-off secrets are generated inline below, at their point of use.
+        # fmt:off
         pg_cfg       = _config_section(cfg, "postgres")
         redis_cfg    = _config_section(cfg, "redis")
         superset_cfg = _config_section(cfg, "superset-only")
@@ -155,14 +158,15 @@ def generate(template_tar: Path, cfg: dict, out_tar: Path) -> str:
         pg_host    = "srv-captain--postgres"
         redis_host = "srv-captain--redis"
         pg_url_base = f"postgres://{pg_user}:{pg_pass}@{pg_host}:5432"
+        # fmt:on
 
         for name, app in apps.items():
             ev = app.get("envVars", [])
 
             if name == "postgres":
                 _set_env(ev, "POSTGRES_PASSWORD", pg_pass)
-                _set_env(ev, "POSTGRES_USER",     pg_user)
-                _set_env(ev, "POSTGRES_DB",        pg_db)
+                _set_env(ev, "POSTGRES_USER", pg_user)
+                _set_env(ev, "POSTGRES_DB", pg_db)
 
             elif name in ("windmill", "windmill-worker", "windmill-worker-native"):
                 _set_env(ev, "DATABASE_URL", f"{pg_url_base}/windmill")
@@ -171,6 +175,7 @@ def generate(template_tar: Path, cfg: dict, out_tar: Path) -> str:
                 _set_env(ev, "REDIS_PASSWORD", redis_pass)
 
             elif name == "superset":
+                # fmt:off
                 _set_env(ev, "SECRET_KEY",    _rand())
                 _set_env(ev, "REDIS_URL",     f"redis://:{redis_pass}@{redis_host}:6379")
                 _set_env(ev, "DATABASE_URI",
@@ -186,9 +191,11 @@ def generate(template_tar: Path, cfg: dict, out_tar: Path) -> str:
                 ]:
                     if v := _config_str(superset_cfg, cfg_key):
                         _set_env(ev, env_key, v)
+                # fmt:on
 
             elif name == "gc-landing-page":
                 _set_env(ev, "NUXT_SESSION_PASSWORD", _rand())
+                # fmt:off
                 for cfg_key, env_key in [
                     ("community_name",      "NUXT_PUBLIC_COMMUNITY_NAME"),
                     ("auth0_domain",        "NUXT_OAUTH_AUTH0_DOMAIN"),
@@ -198,20 +205,23 @@ def generate(template_tar: Path, cfg: dict, out_tar: Path) -> str:
                 ]:
                     if v := _config_str(lp_cfg, cfg_key):
                         _set_env(ev, env_key, v)
+                # fmt:on
+
                 # Boolean feature flags — write only when explicitly set in config
                 for cfg_key, env_key in [
-                    ("superset_enabled",    "NUXT_PUBLIC_SUPERSET_ENABLED"),
+                    ("superset_enabled", "NUXT_PUBLIC_SUPERSET_ENABLED"),
                     ("filebrowser_enabled", "NUXT_PUBLIC_FILEBROWSER_ENABLED"),
-                    ("windmill_enabled",    "NUXT_PUBLIC_WINDMILL_ENABLED"),
-                    ("explorer_enabled",    "NUXT_PUBLIC_EXPLORER_ENABLED"),
+                    ("windmill_enabled", "NUXT_PUBLIC_WINDMILL_ENABLED"),
+                    ("explorer_enabled", "NUXT_PUBLIC_EXPLORER_ENABLED"),
                 ]:
                     if cfg_key in lp_cfg:
                         _set_env(ev, env_key, _config_bool(lp_cfg, cfg_key))
 
             elif name == "explorer":
-                _set_env(ev, "NUXT_DB_PASSWORD",        pg_pass)
+                _set_env(ev, "NUXT_DB_PASSWORD", pg_pass)
                 _set_env(ev, "NUXT_PUBLIC_APP_API_KEY", _rand())
-                _set_env(ev, "NUXT_SESSION_PASSWORD",   _rand())
+                _set_env(ev, "NUXT_SESSION_PASSWORD", _rand())
+                # fmt:off
                 for cfg_key, env_key in [
                     ("postgres_database",   "NUXT_DATABASE"),
                     ("auth0_domain",        "NUXT_OAUTH_AUTH0_DOMAIN"),
@@ -220,19 +230,28 @@ def generate(template_tar: Path, cfg: dict, out_tar: Path) -> str:
                 ]:
                     if v := _config_str(explorer_cfg, cfg_key):
                         _set_env(ev, env_key, v)
+                # fmt:on
 
             elif name == "comapeo":
                 _set_env(ev, "SERVER_BEARER_TOKEN", _rand())
 
             elif name == "nocodb":
-                _set_env(ev, "NC_DB_JSON", json.dumps({
-                    "client": "pg",
-                    "connection": {
-                        "host": pg_host, "port": 5432,
-                        "user": pg_user, "password": pg_pass,
-                        "database": "noco",
-                    },
-                }))
+                _set_env(
+                    ev,
+                    "NC_DB_JSON",
+                    json.dumps(
+                        {
+                            "client": "pg",
+                            "connection": {
+                                "host": pg_host,
+                                "port": 5432,
+                                "user": pg_user,
+                                "password": pg_pass,
+                                "database": "noco",
+                            },
+                        }
+                    ),
+                )
                 _set_env(ev, "NC_AUTH_JWT_SECRET", _rand())
 
             # filebrowser ("files"): admin password lives in filebrowser's internal DB,
@@ -302,8 +321,8 @@ def main() -> None:
         description="Generate a CapRover restore tar from a template backup."
     )
     parser.add_argument("--template", required=True, help="Source backup tar")
-    parser.add_argument("--config",   required=True, help="YAML config file")
-    parser.add_argument("--out",      required=True, help="Output tar path")
+    parser.add_argument("--config", required=True, help="YAML config file")
+    parser.add_argument("--out", required=True, help="Output tar path")
     args = parser.parse_args()
 
     cfg = load_config(Path(args.config))
