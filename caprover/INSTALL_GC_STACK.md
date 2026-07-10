@@ -16,7 +16,8 @@ Additionally, if you haven't already, configure disk cleanup and set an appropri
 **You have two options to install apps:**
 
 1. install the entire stack using one script: **`gc-stack-deploy`**
-2. install apps one-at-a-time through the CapRover UI
+2. install the entire stack from a backup: **`gen-backup`**
+3. install apps one-at-a-time through the CapRover UI
 
 ### Option 1. Installing the entire stack with **`gc-stack-deploy`**
 
@@ -64,6 +65,8 @@ gc-stack-deploy init --config-file stack.yaml
 ```
 Then open the file (you could use `nano` or `vi`) and fill in the blanks.
 
+#### Deploy
+
 Finally you are ready to use this same configuration file to deploy the apps to CapRover,
 running on the same machine.
 
@@ -89,7 +92,11 @@ It has been observed that...
 
 In both cases, trying to run the script again typically fixes the issue. For the case of the Docker image building, you can actually monitor the build progress in the CapRover web portal under **Apps** → **Deployment**.
 
-### Option 2. Install One-Click Apps through the CapRover UI
+### Option 2 (beta). Installing the entire stack with **`gen-backup`**
+
+See [gen-backup/README.md](gen-backup/README.md).
+
+### Option 3. Install One-Click Apps through the CapRover UI
 
 #### Runtime Prerequisite
 

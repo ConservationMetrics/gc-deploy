@@ -49,6 +49,11 @@
 
    (Note that `random123` is needed because you set a wildcard entry in your DNS by setting `*.<alias>` as your host, not `<alias>`)
 
+> [!TIP]
+> **Beta alternative available**: We're testing a more reliable CapRover + Guardian Connector stack installation method.
+>
+> See [**Beta Installation Guide**](/caprover/gen-backup/README.md) if interested. This replaces sections III and IV. After, [skip to **Section V**](#v-set-up-ssh-keys-and-backups)
+
 ### III. Set up CapRover
 
 You must configure CapRover using the CapRover CLI _from the server itself._
