@@ -330,12 +330,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Generate a CapRover restore tar from a template backup."
     )
-    parser.add_argument("--config", required=True, help="YAML config file")
+    parser.add_argument("--config-file", required=True, help="YAML config file")
     parser.add_argument("--out", required=True, help="Output tar path")
     args = parser.parse_args()
 
     template_dir = bundled_template()
-    cfg = load_config(Path(args.config))
+    cfg = load_config(Path(args.config_file))
     print(f"Generating backup tar from {template_dir}...")
     password = generate(
         template_dir,

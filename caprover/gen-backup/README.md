@@ -57,7 +57,7 @@ See gc-stack-deploy. (TODO! Friction requiring another tool!)
 ## IV. Mock a "backup" file that contains your stack and install Caprover from it
 
 ```sh
-gen-backup --config stack.yaml --out /captain/backup.tar
+gen-backup --config-file stack.yaml --out /captain/backup.tar
 docker run -p 80:80 -p 443:443 -e BY_PASS_PROXY_CHECK='TRUE' -e ACCEPTED_TERMS=true -v /var/run/docker.sock:/var/run/docker.sock -v /captain:/captain caprover/caprover
 ```
 
