@@ -98,6 +98,7 @@ Role-Based Access Control (RBAC) allows you to control user access to different 
      - `create:role_members` - to assign roles to users
      - `delete:role_members` - to remove roles from users
      - `update:users_app_metadata` - to update user approval status
+     - `delete:users` - to remove users
 
 ### Role Setup
 
