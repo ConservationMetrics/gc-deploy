@@ -3,7 +3,7 @@ import tarfile
 from pathlib import Path
 
 import pytest
-from gen_backup.cli import OLD_ROOT, bundled_template, generate, load_config
+from gen_backup.cli import bundled_template, generate, load_config, old_root
 
 
 def _config(out: Path) -> dict:
@@ -86,7 +86,7 @@ class TestDomainSubstitution:
     def test_top_level_custom_domain(self, tmp_path):
         _, cfg = _run(bundled_template(), tmp_path)
         assert cfg["customDomain"] == "new.example.com"
-        assert OLD_ROOT not in cfg["customDomain"]
+        assert old_root() not in cfg["customDomain"]
 
     def test_redirect_domain_updated(self, tmp_path):
         _, cfg = _run(bundled_template(), tmp_path)
@@ -104,7 +104,7 @@ class TestDomainSubstitution:
         _, cfg = _run(bundled_template(), tmp_path)
         base_url = _env(cfg, "gc-landing-page", "NUXT_PUBLIC_BASE_URL")
         assert "new.example.com" in base_url
-        assert OLD_ROOT not in base_url
+        assert old_root() not in base_url
 
 
 class TestSsl:

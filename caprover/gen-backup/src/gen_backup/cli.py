@@ -6,6 +6,7 @@ and writes a new tar ready to drop at /captain/backup.tar on a fresh CapRover.
 """
 
 import argparse
+import functools
 import json
 import secrets
 import shutil
@@ -18,8 +19,6 @@ from typing import Any
 
 import bcrypt
 import yaml
-
-OLD_ROOT = "cmistaging.guardianconnector.net"
 
 
 def bundled_template() -> Path:
@@ -45,6 +44,19 @@ YAML_TO_APPS: dict[str, list[str]] = {
     "nocodb":         ["nocodb"],
 }
 # fmt:on
+
+
+@functools.lru_cache(maxsize=1)
+def old_root() -> str:
+    """Domain baked into the shipped reference template.
+
+    Read once from the template's config-captain.json and cached, so this
+    is the single source of truth instead of a hard-coded constant.
+    """
+    config_path = bundled_template() / "data" / "config-captain.json"
+    with open(config_path) as f:
+        config = json.load(f)
+    return config["customDomain"]
 
 
 def _rand(n: int = 16) -> str:
@@ -273,7 +285,7 @@ def generate(template_dir: Path, cfg: dict, out_tar: Path) -> str:
 
         # 6. Domain substitution
         def sub(s: str) -> str:
-            return s.replace(OLD_ROOT, root_domain)
+            return s.replace(old_root(), root_domain)
 
         config["customDomain"] = sub(config.get("customDomain", ""))
         for app in apps.values():
@@ -283,7 +295,7 @@ def generate(template_dir: Path, cfg: dict, out_tar: Path) -> str:
                 if cd.get("publicDomain"):
                     cd["publicDomain"] = sub(cd["publicDomain"])
             for ev in app.get("envVars", []):
-                if isinstance(ev.get("value"), str) and OLD_ROOT in ev["value"]:
+                if isinstance(ev.get("value"), str) and old_root() in ev["value"]:
                     ev["value"] = sub(ev["value"])
 
         # 7. SSL off everywhere (Phase 4 will add a config flag to re-enable)

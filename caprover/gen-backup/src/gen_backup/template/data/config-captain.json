@@ -13,7 +13,7 @@
 	"featureFlags": {
 		"isProEnabled": true
 	},
-	"customDomain": "cmistaging.guardianconnector.net",
+	"customDomain": "guardianconnector.example.net",
 	"emailAddress": "guardian@example.net",
 	"hasRootSsl": true,
 	"forceRootSsl": true,
@@ -526,7 +526,7 @@
 			"notExposeAsWebApp": false,
 			"customDomain": [],
 			"hasDefaultSubDomainSsl": true,
-			"redirectDomain": "superset.cmistaging.guardianconnector.net",
+			"redirectDomain": "superset.guardianconnector.example.net",
 			"forceSsl": true,
 			"websocketSupport": false,
 			"containerHttpPort": 8088,
@@ -650,7 +650,7 @@
 				},
 				{
 					"key": "NUXT_PUBLIC_BASE_URL",
-					"value": "https://cmistaging.guardianconnector.net"
+					"value": "https://guardianconnector.example.net"
 				},
 				{
 					"key": "NUXT_PUBLIC_LOGO_URL",
@@ -686,12 +686,12 @@
 			"notExposeAsWebApp": false,
 			"customDomain": [
 				{
-					"publicDomain": "cmistaging.guardianconnector.net",
+					"publicDomain": "guardianconnector.example.net",
 					"hasSsl": true
 				}
 			],
 			"hasDefaultSubDomainSsl": true,
-			"redirectDomain": "cmistaging.guardianconnector.net",
+			"redirectDomain": "guardianconnector.example.net",
 			"forceSsl": true,
 			"websocketSupport": false,
 			"containerHttpPort": 8080,
@@ -765,7 +765,7 @@
 				},
 				{
 					"key": "NUXT_PUBLIC_BASE_URL",
-					"value": "https://explorer.cmistaging.guardianconnector.net"
+					"value": "https://explorer.guardianconnector.example.net"
 				},
 				{
 					"key": "NUXT_SESSION_PASSWORD",
@@ -797,7 +797,7 @@
 			"notExposeAsWebApp": false,
 			"customDomain": [],
 			"hasDefaultSubDomainSsl": true,
-			"redirectDomain": "explorer.cmistaging.guardianconnector.net",
+			"redirectDomain": "explorer.guardianconnector.example.net",
 			"forceSsl": true,
 			"websocketSupport": false,
 			"containerHttpPort": 8080,
@@ -864,7 +864,7 @@
 			"notExposeAsWebApp": false,
 			"customDomain": [],
 			"hasDefaultSubDomainSsl": true,
-			"redirectDomain": "comapeo.cmistaging.guardianconnector.net",
+			"redirectDomain": "comapeo.guardianconnector.example.net",
 			"forceSsl": true,
 			"websocketSupport": true,
 			"containerHttpPort": 8080,
@@ -936,7 +936,7 @@
 			"notExposeAsWebApp": false,
 			"customDomain": [],
 			"hasDefaultSubDomainSsl": true,
-			"redirectDomain": "files.cmistaging.guardianconnector.net",
+			"redirectDomain": "files.guardianconnector.example.net",
 			"forceSsl": true,
 			"websocketSupport": false,
 			"containerHttpPort": 80,
