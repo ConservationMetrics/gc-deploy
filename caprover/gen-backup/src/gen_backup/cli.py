@@ -41,7 +41,6 @@ YAML_TO_APPS: dict[str, list[str]] = {
     "gc-explorer":    ["explorer"],
     "comapeo-cloud":  ["comapeo"],
     "filebrowser":    ["files"],
-    "nocodb":         ["nocodb"],
 }
 # fmt:on
 
@@ -260,25 +259,6 @@ def generate(template_dir: Path, cfg: dict, out_tar: Path) -> str:
 
             elif name == "comapeo":
                 _set_env(ev, "SERVER_BEARER_TOKEN", _rand())
-
-            elif name == "nocodb":
-                _set_env(
-                    ev,
-                    "NC_DB_JSON",
-                    json.dumps(
-                        {
-                            "client": "pg",
-                            "connection": {
-                                "host": pg_host,
-                                "port": 5432,
-                                "user": pg_user,
-                                "password": pg_pass,
-                                "database": "noco",
-                            },
-                        }
-                    ),
-                )
-                _set_env(ev, "NC_AUTH_JWT_SECRET", _rand())
 
             # filebrowser ("files"): admin password lives in filebrowser's internal DB,
             # not an env var — cannot be injected here.

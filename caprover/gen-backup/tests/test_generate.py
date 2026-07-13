@@ -152,7 +152,7 @@ class TestSecrets:
         assert _env(cfg, "postgres", "POSTGRES_PASSWORD") != "TEMPLATE_PG_PASS"
 
     def test_pg_password_consistent_across_apps(self, tmp_path):
-        """postgres, nocodb, and explorer must all use the same new pg password."""
+        """postgres, windmill and explorer must all use the same new pg password."""
         _, cfg = _run(bundled_template(), tmp_path)
         pg_pass = _env(cfg, "postgres", "POSTGRES_PASSWORD")
         windmill_db = _env(cfg, "windmill", "DATABASE_URL")
