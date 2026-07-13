@@ -136,18 +136,12 @@
 				},
 				{
 					"version": 1,
-					"timeStamp": "2026-05-07T14:29:18.891Z",
-					"deployedImageName": "ghcr.io/windmill-labs/windmill:1.648.0",
-					"gitHash": ""
-				},
-				{
-					"version": 2,
 					"timeStamp": "2026-05-12T01:02:21.278Z",
 					"deployedImageName": "ghcr.io/windmill-labs/windmill:1.691.1",
 					"gitHash": ""
 				}
 			],
-			"deployedVersion": 2,
+			"deployedVersion": 1,
 			"notExposeAsWebApp": false,
 			"customDomain": [],
 			"hasDefaultSubDomainSsl": true,
@@ -222,18 +216,12 @@
 				},
 				{
 					"version": 1,
-					"timeStamp": "2026-05-07T14:29:27.376Z",
-					"deployedImageName": "ghcr.io/windmill-labs/windmill:1.648.0",
-					"gitHash": ""
-				},
-				{
-					"version": 2,
 					"timeStamp": "2026-05-12T01:03:48.847Z",
 					"deployedImageName": "ghcr.io/windmill-labs/windmill:1.691.1",
 					"gitHash": ""
 				}
 			],
-			"deployedVersion": 2,
+			"deployedVersion": 1,
 			"notExposeAsWebApp": true,
 			"customDomain": [],
 			"hasDefaultSubDomainSsl": false,
@@ -304,18 +292,12 @@
 				},
 				{
 					"version": 1,
-					"timeStamp": "2026-05-07T14:29:36.880Z",
-					"deployedImageName": "ghcr.io/windmill-labs/windmill:1.648.0",
-					"gitHash": ""
-				},
-				{
-					"version": 2,
 					"timeStamp": "2026-05-12T01:03:55.840Z",
 					"deployedImageName": "ghcr.io/windmill-labs/windmill:1.691.1",
 					"gitHash": ""
 				}
 			],
-			"deployedVersion": 2,
+			"deployedVersion": 1,
 			"notExposeAsWebApp": true,
 			"customDomain": [],
 			"hasDefaultSubDomainSsl": false,
@@ -695,40 +677,12 @@
 				},
 				{
 					"version": 1,
-					"timeStamp": "2026-05-07T14:30:54.525Z",
-					"deployedImageName": "communityfirst/guardianconnector-landing-page:20260407-116",
-					"gitHash": ""
-				},
-				{
-					"version": 2,
-					"timeStamp": "2026-05-11T23:50:14.246Z",
-					"deployedImageName": "communityfirst/guardianconnector-landing-page:20260511-123",
-					"gitHash": ""
-				},
-				{
-					"version": 3,
-					"timeStamp": "2026-05-12T17:18:24.390Z"
-				},
-				{
-					"version": 4,
-					"timeStamp": "2026-05-12T17:18:40.783Z",
-					"deployedImageName": "communityfirst/guardianconnector-landing-page:20260512-127",
-					"gitHash": ""
-				},
-				{
-					"version": 5,
-					"timeStamp": "2026-05-12T21:08:25.485Z",
-					"deployedImageName": "communityfirst/guardianconnector-landing-page:20260512-129",
-					"gitHash": ""
-				},
-				{
-					"version": 6,
 					"timeStamp": "2026-05-13T00:19:26.248Z",
 					"deployedImageName": "communityfirst/guardianconnector-landing-page:20260513-130",
 					"gitHash": ""
 				}
 			],
-			"deployedVersion": 6,
+			"deployedVersion": 1,
 			"notExposeAsWebApp": false,
 			"customDomain": [
 				{
@@ -834,34 +788,12 @@
 				},
 				{
 					"version": 1,
-					"timeStamp": "2026-05-07T14:31:30.495Z",
-					"deployedImageName": "communityfirst/guardianconnector-explorer:20260402-741",
-					"gitHash": ""
-				},
-				{
-					"version": 2,
-					"timeStamp": "2026-05-12T00:41:45.544Z",
-					"deployedImageName": "communityfirst/guardianconnector-explorer:20260511-784",
-					"gitHash": ""
-				},
-				{
-					"version": 3,
-					"timeStamp": "2026-05-12T21:18:27.415Z",
-					"deployedImageName": "communityfirst/guardianconnector-explorer:20260512-790",
-					"gitHash": ""
-				},
-				{
-					"version": 4,
-					"timeStamp": "2026-05-13T00:15:01.902Z"
-				},
-				{
-					"version": 5,
 					"timeStamp": "2026-05-13T00:29:10.878Z",
 					"deployedImageName": "communityfirst/guardianconnector-explorer:20260513-791",
 					"gitHash": ""
 				}
 			],
-			"deployedVersion": 5,
+			"deployedVersion": 1,
 			"notExposeAsWebApp": false,
 			"customDomain": [],
 			"hasDefaultSubDomainSsl": true,
