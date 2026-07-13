@@ -598,7 +598,7 @@
 				{
 					"version": 1,
 					"timeStamp": "2026-05-07T14:30:31.163Z",
-					"deployedImageName": "img-captain-superset-worker:1",
+					"deployedImageName": "communityfirst/superset-deployment:6.0.0_20260303-0213",
 					"gitHash": ""
 				}
 			],

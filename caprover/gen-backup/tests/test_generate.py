@@ -65,26 +65,12 @@ def _run(template_dir, tmp_path, **cfg_overrides) -> tuple[Path, dict]:
     return out, _config(out)
 
 
-class TestAppFiltering:
-    def test_local_image_app_stripped(self, tmp_path):
-        _, cfg = _run(bundled_template(), tmp_path)
-        assert "local-app" not in _apps(cfg)
-
-    def test_public_image_apps_kept(self, tmp_path):
-        _, cfg = _run(bundled_template(), tmp_path)
-        assert {
-            "postgres",
-            "nocodb",
-            "gc-landing-page",
-            "explorer",
-            "superset",
-        } <= _apps(cfg)
-
+class TestDeployBooleanAppFiltering:
     def test_deploy_false_drops_app(self, tmp_path):
         _, cfg = _run(
-            bundled_template(), tmp_path, **{"superset-only": {"deploy": False}}
+            bundled_template(), tmp_path, **{"gc-explorer": {"deploy": False}}
         )
-        assert "superset" not in _apps(cfg)
+        assert "explorer" not in _apps(cfg)
 
     def test_deploy_false_on_windmill_drops_all_three(self, tmp_path):
         # windmill-only maps to three template apps; need them in the template first
@@ -93,6 +79,7 @@ class TestAppFiltering:
         )
         for name in ("windmill", "windmill-worker", "windmill-worker-native"):
             assert name not in _apps(cfg)
+        assert "explorer" in _apps(cfg)
 
 
 class TestDomainSubstitution:

@@ -108,6 +108,10 @@ def load_config(path: Path) -> dict[str, Any]:
     return cfg
 
 
+class LocalImageError(BaseException):
+    pass
+
+
 def generate(template_dir: Path, cfg: dict, out_tar: Path) -> str:
     """Build the new backup tar and return the plaintext CapRover password."""
     root_domain: str = cfg["rootDomain"]
@@ -136,12 +140,12 @@ def generate(template_dir: Path, cfg: dict, out_tar: Path) -> str:
             (new_salt + "captain" + password).encode(), bcrypt.gensalt(rounds=10)
         ).decode()
 
-        # 3. Drop apps with locally-built images (non-pullable)
+        # 3. Ensure all apps use pullable images (none locally-built)
         apps = config["appDefinitions"]
-        to_drop = [n for n, a in apps.items() if _is_local_image(_deployed_image(a))]
-        for name in to_drop:
-            print(f"  dropping {name} (local image)")
-            del apps[name]
+        for n, a in apps.items():
+            img = _deployed_image(a)
+            if _is_local_image(img):
+                raise LocalImageError(f"App {n} uses a local image: {img}")
 
         # 4. Drop apps explicitly disabled in config
         for yaml_key, app_names in YAML_TO_APPS.items():
