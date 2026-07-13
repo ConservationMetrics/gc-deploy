@@ -35,7 +35,7 @@
 				},
 				{
 					"key": "POSTGRES_PASSWORD",
-					"value": "original-pg-pass"
+					"value": "TEMPLATE_PG_PASS"
 				},
 				{
 					"key": "POSTGRES_DB",
@@ -104,7 +104,7 @@
 			"envVars": [
 				{
 					"key": "DATABASE_URL",
-					"value": "postgres://postgres:original-pg-pass@srv-captain--postgres:5432/windmill"
+					"value": "postgres://postgres:TEMPLATE_PG_PASS@srv-captain--postgres:5432/windmill"
 				},
 				{
 					"key": "DATABASE_CONNECTIONS",
@@ -168,7 +168,7 @@
 			"envVars": [
 				{
 					"key": "DATABASE_URL",
-					"value": "postgres://postgres:original-pg-pass@srv-captain--postgres:5432/windmill"
+					"value": "postgres://postgres:TEMPLATE_PG_PASS@srv-captain--postgres:5432/windmill"
 				},
 				{
 					"key": "DATABASE_CONNECTIONS",
@@ -248,7 +248,7 @@
 			"envVars": [
 				{
 					"key": "DATABASE_URL",
-					"value": "postgres://postgres:original-pg-pass@srv-captain--postgres:5432/windmill"
+					"value": "postgres://postgres:TEMPLATE_PG_PASS@srv-captain--postgres:5432/windmill"
 				},
 				{
 					"key": "DATABASE_CONNECTIONS",
@@ -392,7 +392,7 @@
 				},
 				{
 					"key": "DATABASE_URI",
-					"value": "postgresql://postgres:original-pg-pass@srv-captain--postgres:5432/superset_metastore"
+					"value": "postgresql://postgres:TEMPLATE_PG_PASS@srv-captain--postgres:5432/superset_metastore"
 				},
 				{
 					"key": "ADMIN_EMAIL",
@@ -462,7 +462,7 @@
 				},
 				{
 					"key": "DATABASE_URI",
-					"value": "postgresql://postgres:original-pg-pass@srv-captain--postgres:5432/superset_metastore"
+					"value": "postgresql://postgres:TEMPLATE_PG_PASS@srv-captain--postgres:5432/superset_metastore"
 				},
 				{
 					"key": "AUTH0_DOMAIN",
@@ -560,7 +560,7 @@
 				},
 				{
 					"key": "DATABASE_URI",
-					"value": "postgresql://postgres:original-pg-pass@srv-captain--postgres:5432/superset_metastore"
+					"value": "postgresql://postgres:TEMPLATE_PG_PASS@srv-captain--postgres:5432/superset_metastore"
 				}
 			],
 			"volumes": [],
@@ -733,7 +733,7 @@
 				},
 				{
 					"key": "NUXT_DB_PASSWORD",
-					"value": "original-pg-pass"
+					"value": "TEMPLATE_PG_PASS"
 				},
 				{
 					"key": "NUXT_DB_SSL",

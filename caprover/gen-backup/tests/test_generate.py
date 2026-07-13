@@ -149,7 +149,7 @@ class TestPassword:
 class TestSecrets:
     def test_postgres_password_rotated(self, tmp_path):
         _, cfg = _run(bundled_template(), tmp_path)
-        assert _env(cfg, "postgres", "POSTGRES_PASSWORD") != "original-pg-pass"
+        assert _env(cfg, "postgres", "POSTGRES_PASSWORD") != "TEMPLATE_PG_PASS"
 
     def test_pg_password_consistent_across_apps(self, tmp_path):
         """postgres, nocodb, and explorer must all use the same new pg password."""
