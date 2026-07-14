@@ -189,12 +189,6 @@ The landing page uses the same PostgreSQL server as GuardianConnector Explorer.
 `gc-stack-deploy` creates its `guardianconnector` configuration database before
 deploying the landing page.
 
-For existing CapRover installations, add `NUXT_DB_HOST`, `NUXT_DB_PORT`,
-`NUXT_DB_USER`, `NUXT_DB_PASSWORD`, `NUXT_DB_SSL`, and
-`NUXT_CONFIG_DATABASE` to the landing page app manually, using the connection
-values from the Explorer app and `guardianconnector` as the configuration
-database, then redeploy the landing page.
-
 You may also want to check if all of the other environmental variables (like `NUXT_COMMUNITY_NAME`, `NUXT_PUBLIC_LOGO_URL`) are set correctly post-installation. 
 
 ### Redis
