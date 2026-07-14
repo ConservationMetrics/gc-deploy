@@ -5,6 +5,7 @@ webappsUseSsl: false
 
 postgres:
   deploy: true  # Use internal postgres for testing
+  app_name: test-postgres  # matches regex in Makefile to cleanup data volumes
   user: "postgres"
   pass: "test_pg_password"
   database: postgres
@@ -25,7 +26,7 @@ redis:
 
 windmill-only:
   deploy: true
-  app_name: windmill
+  app_name: test-windmill
 
 superset-only:
   deploy: true
@@ -38,8 +39,8 @@ gc-explorer:
 
 comapeo-cloud:
   deploy: true
-  app_name: test-comapeo
+  app_name: test-comapeo  # matches regex in Makefile to cleanup data volumes
 
 filebrowser:
   deploy: true
-  app_name: test-files
+  app_name: test-files  # matches regex in Makefile to cleanup data volumes
