@@ -185,6 +185,10 @@ The `gc-stack-deploy` handles this for you, but if you are setting up the app us
 
 `NUXT_PUBLIC_DOMAIN` should be the domain suffix that follows the community alias (for example, `guardianconnector.net`).
 
+The landing page uses the same PostgreSQL server as GuardianConnector Explorer.
+`gc-stack-deploy` creates its `guardianconnector` configuration database before
+deploying the landing page.
+
 You may also want to check if all of the other environmental variables (like `NUXT_COMMUNITY_NAME`, `NUXT_PUBLIC_LOGO_URL`) are set correctly post-installation. 
 
 ### Redis

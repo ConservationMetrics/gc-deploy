@@ -9,6 +9,12 @@ services:
       NODE_ENV: "production"
       NUXT_SESSION_PASSWORD: $$cap_session_password
 
+      NUXT_DB_HOST: $$cap_postgres_host
+      NUXT_DB_PORT: $$cap_postgres_port
+      NUXT_DB_USER: $$cap_postgres_user
+      NUXT_DB_PASSWORD: $$cap_postgres_pass
+      NUXT_DB_SSL: $$cap_postgres_ssl
+
       NUXT_OAUTH_AUTH0_DOMAIN: $$cap_auth0_domain
       NUXT_OAUTH_AUTH0_CLIENT_SECRET: $$cap_auth0_client_secret
       NUXT_OAUTH_AUTH0_CLIENT_ID: $$cap_auth0_client_id
@@ -34,6 +40,24 @@ caproverOneClickApp:
       defaultValue: "communityfirst/guardianconnector-landing-page:20260713-154"
       validRegex: /^communityfirst\/guardianconnector-landing-page:[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/
       description: Check out the tag version on https://hub.docker.com/r/communityfirst/guardianconnector-landing-page
+
+    - id: "$$cap_postgres_host"
+      label: Postgres service host name
+      defaultValue: "srv-captain--postgres"
+      description: If self-hosted, copy the value from /#/apps/details/postgres
+    - id: "$$cap_postgres_port"
+      label: Postgres service port
+      defaultValue: "5432"
+    - id: "$$cap_postgres_ssl"
+      label: Use SSL to connect to postgres?
+      defaultValue: "false"
+      description: Likely to be true if using an external PostgreSQL server, or false if hosting postgres in Caprover.
+    - id: "$$cap_postgres_user"
+      label: Postgres user
+      description: If self-hosted, copy the value from /#/apps/details/postgres
+    - id: "$$cap_postgres_pass"
+      label: Postgres password
+      description: If self-hosted, copy the value from /#/apps/details/postgres
 
     - id: "$$cap_session_password"
       label: Session Password
