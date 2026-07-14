@@ -2,7 +2,7 @@
 set -e
 
 # Exit if any of the required commands are not found
-for cmd in docker npm node; do
+for cmd in docker; do
     if ! command -v $cmd &> /dev/null; then
         echo "Error: $cmd could not be found. Please install it before running this script."
         exit 1
