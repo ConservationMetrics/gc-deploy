@@ -495,7 +495,6 @@ def deploy_stack(config, gc_repository, dry_run):
             "$$cap_postgres_ssl": postgres_from_container.ssl,
             "$$cap_postgres_user": postgres_from_container.user,
             "$$cap_postgres_pass": postgres_from_container.password,
-            "$$cap_postgres_database": "guardianconnector",
         }
         variables = construct_app_variables(config, one_click_app_name, variables)
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")

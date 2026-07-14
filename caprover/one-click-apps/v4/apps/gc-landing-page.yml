@@ -14,7 +14,6 @@ services:
       NUXT_DB_USER: $$cap_postgres_user
       NUXT_DB_PASSWORD: $$cap_postgres_pass
       NUXT_DB_SSL: $$cap_postgres_ssl
-      NUXT_CONFIG_DATABASE: $$cap_postgres_database
 
       NUXT_OAUTH_AUTH0_DOMAIN: $$cap_auth0_domain
       NUXT_OAUTH_AUTH0_CLIENT_SECRET: $$cap_auth0_client_secret
@@ -59,9 +58,6 @@ caproverOneClickApp:
     - id: "$$cap_postgres_pass"
       label: Postgres password
       description: If self-hosted, copy the value from /#/apps/details/postgres
-    - id: "$$cap_postgres_database"
-      label: "Name of database inside Postgres"
-      defaultValue: "guardianconnector"
 
     - id: "$$cap_session_password"
       label: Session Password
