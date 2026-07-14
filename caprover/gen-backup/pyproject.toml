@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "gen-backup"
 version = "0.1.0"
 requires-python = ">=3.11"
-dependencies = ["bcrypt", "pyyaml"]
+dependencies = ["bcrypt", "ruamel.yaml"]
 
 [project.scripts]
 gen-backup = "gen_backup.cli:main"

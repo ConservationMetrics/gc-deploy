@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any
 
 import bcrypt
-import yaml
+from ruamel.yaml import YAML
 
 
 def bundled_template() -> Path:
@@ -112,8 +112,9 @@ def _config_bool(section: dict, key: str) -> str:
 
 
 def load_config(path: Path) -> dict[str, Any]:
+    yaml = YAML()
     with open(path) as f:
-        cfg = yaml.safe_load(f) or {}
+        cfg = yaml.load(f) or {}
     if not cfg.get("rootDomain"):
         raise SystemExit("Error: config must include a non-empty 'rootDomain'")
     return cfg
