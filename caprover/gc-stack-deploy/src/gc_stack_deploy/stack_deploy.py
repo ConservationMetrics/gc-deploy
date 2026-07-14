@@ -451,11 +451,7 @@ def deploy_stack(config, gc_repository, dry_run):
             )
             if webapps_ssl:
                 cap.enable_ssl(app_name)
-            cap.update_app(
-                app_name,
-                force_ssl=webapps_ssl,
-                redirectDomain=f"{app_name}.{cap.root_domain}",
-            )
+            cap.update_app(app_name, force_ssl=webapps_ssl)
 
             # disable the healthcheck in Service Update Override, which will be maintained
             # in future deploys. This is OPTIONAL here because the one-click app already
@@ -540,7 +536,6 @@ def deploy_stack(config, gc_repository, dry_run):
             cap.update_app(
                 app_name,
                 force_ssl=webapps_ssl,
-                redirectDomain=f"{app_name}.{cap.root_domain}",
             )
             set_memory_limit(cap, app_name)
 
@@ -561,12 +556,7 @@ def deploy_stack(config, gc_repository, dry_run):
             )
             if webapps_ssl:
                 cap.enable_ssl(app_name)
-            cap.update_app(
-                app_name,
-                force_ssl=webapps_ssl,
-                support_websocket=True,
-                redirectDomain=f"{app_name}.{cap.root_domain}",
-            )
+            cap.update_app(app_name, force_ssl=webapps_ssl, support_websocket=True)
             set_memory_limit(cap, app_name)
 
     # Deploy Filebrowser if specified in config
@@ -602,11 +592,7 @@ def deploy_stack(config, gc_repository, dry_run):
             )
             if webapps_ssl:
                 cap.enable_ssl(app_name)
-            cap.update_app(
-                app_name,
-                force_ssl=webapps_ssl,
-                redirectDomain=f"{app_name}.{cap.root_domain}",
-            )
+            cap.update_app(app_name, force_ssl=webapps_ssl)
 
             cap.update_app(
                 app_name,
