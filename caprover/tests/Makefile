@@ -18,8 +18,10 @@ VENV_READY_FILE := $(VENV_DIR)/bin/gc-stack-deploy
 all: test-e2e
 
 # Main end-to-end test target
-test-e2e: uninstall-caprover install-caprover quick-test-e2e uninstall-caprover
+test-e2e: uninstall-caprover install-caprover quick-test-e2e
 	@echo "✅ End-to-end test completed successfully"
+	@# WARNING: does not uninstall-caprover AFTER launching the stack.
+	@# It leaves the stack running.
 
 # Quick stack deployment on already-running CapRover
 # Can be run instead of `test-e2e` for faster testing
