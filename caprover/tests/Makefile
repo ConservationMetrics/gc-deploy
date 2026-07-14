@@ -93,7 +93,7 @@ install-caprover-from-backup: generate-backup
 
 # Full restore smoke-test: tear down, generate, restore, verify.
 test-restore: uninstall-caprover install-caprover-from-backup smoke-test
-	@echo "✅ Restore smoke-test complete — review output above."
+	@echo "Restore smoke-test complete — review output above."
 
 # Basic reachability check: CapRover dashboard + one app.
 smoke-test:

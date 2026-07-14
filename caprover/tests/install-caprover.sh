@@ -17,12 +17,10 @@ echo "127.0.0.1 captain.test-gc-deploy.localhost" | sudo tee -a /etc/hosts
 echo "127.0.0.1 test-gc-deploy.localhost" | sudo tee -a /etc/hosts
 
 echo "🚀 Installing CapRover server..."
-sudo mkdir -p /captain
 
 if [ -n "${BACKUP_TAR:-}" ]; then
     # Restore mode: place the backup tar before starting the container.
-    # config-override.json (skipVerifyingDomains) is baked into the tar.
-    echo "  Restoring from backup: $BACKUP_TAR"
+    sudo mkdir -p /captain
     sudo cp "$BACKUP_TAR" /captain/backup.tar
 else
     # Fresh install: write config-override so the local .localhost domain works.
@@ -37,7 +35,6 @@ docker run -d \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /captain:/captain \
   caprover/caprover
-
 
 echo "⏳ Waiting for CapRover to be ready..."
 sleep 30
@@ -64,30 +61,26 @@ if [ "$ready" -ne 1 ]; then
 fi
 sleep 10  # Wait a bit more for the API to be fully available
 
-if [ -z "${BACKUP_TAR:-}" ]; then
-    echo "⚙️ Setting up CapRover..."
-    # Do not use `caprover serversetup` as it will try to require SSL on your local domain:
-    # https://caprover.com/docs/run-locally.html#setup
-    COOKIESTXT=$(mktemp)
-    TOKEN=$(curl -s 'http://captain.test-gc-deploy.localhost:3000/api/v2/login' \
-      -X POST \
-      -H 'Content-Type: application/json' \
-      -H 'x-namespace: captain' \
-      -c "$COOKIESTXT" \
-      --data '{"password":"captain42","otpToken":""}' | jq -r '.data.token')
+echo "⚙️ Setting up CapRover..."
+# Do not use `caprover serversetup` as it will try to require SSL on your local domain:
+# https://caprover.com/docs/run-locally.html#setup
+COOKIESTXT=$(mktemp)
+TOKEN=$(curl -s 'http://captain.test-gc-deploy.localhost:3000/api/v2/login' \
+  -X POST \
+  -H 'Content-Type: application/json' \
+  -H 'x-namespace: captain' \
+  -c "$COOKIESTXT" \
+  --data '{"password":"captain42","otpToken":""}' | jq -r '.data.token')
 
-    curl -s 'http://captain.test-gc-deploy.localhost:3000/api/v2/user/system/changerootdomain' \
-      -X POST \
-      -H 'Content-Type: application/json' \
-      -H "x-captain-auth: $TOKEN" \
-      -H 'x-namespace: captain' \
-      -b "$COOKIESTXT" \
-      --data '{"rootDomain":"test-gc-deploy.localhost","force":false}'
+curl -s 'http://captain.test-gc-deploy.localhost:3000/api/v2/user/system/changerootdomain' \
+  -X POST \
+  -H 'Content-Type: application/json' \
+  -H "x-captain-auth: $TOKEN" \
+  -H 'x-namespace: captain' \
+  -b "$COOKIESTXT" \
+  --data '{"rootDomain":"test-gc-deploy.localhost","force":false}'
 
-    rm "$COOKIESTXT" || true
-    echo "✅ CapRover setup complete."
-else
-    echo "✅ CapRover restore complete."
-    echo "   Dashboard: http://captain.test-gc-deploy.localhost:3000"
-    echo "   (Password was printed by gen-backup above)"
-fi
+rm "$COOKIESTXT" || true
+
+echo "✅ CapRover setup complete."
+echo "   Dashboard: http://captain.test-gc-deploy.localhost:3000"
