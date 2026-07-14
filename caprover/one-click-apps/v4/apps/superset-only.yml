@@ -69,7 +69,7 @@ caproverOneClickApp:
   variables:
     - id: "$$cap_superset_docker_image"
       label: Superset Docker Image
-      defaultValue: "communityfirst/superset-deployment:6.0.0_20260303-0213"
+      defaultValue: "communityfirst/superset-deployment:6.1.0_20260713-2211"
       description: Check out the tag version on https://hub.docker.com/r/communityfirst/superset-deployment
     - id: "$$cap_secret_key"
       label: Superset Secret Key
