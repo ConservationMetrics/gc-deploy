@@ -30,8 +30,6 @@ quick-test-e2e: setup-venv build-one-click-apps-repo deploy-stack
 uninstall-caprover:
 	@echo "# Uninstalling CapRover..."
 	@./uninstall-caprover.sh
-	@# Also drop data volumes, to avoid conflicting volumes next time.
-	@docker volume ls -q | grep '^captain--test-' || true | xargs --no-run-if-empty docker volume rm
 install-caprover:
 	@echo "# Installing CapRover..."
 	@./install-caprover.sh
