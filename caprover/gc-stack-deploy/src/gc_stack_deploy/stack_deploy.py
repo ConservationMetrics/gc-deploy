@@ -298,6 +298,13 @@ def deploy_stack(config, gc_repository, dry_run):
                 cap, pg_app_name, postgres_from_container, postgres_from_vm
             )
 
+    databases = ["warehouse"]
+    if any(
+        config.get(service_name, {}).get("deploy", False)
+        for service_name in ("gc-landing-page", "gc-explorer")
+    ):
+        databases.append("guardianconnector")
+
     if not dry_run:
         with (
             postgres_patient_connect(
@@ -305,10 +312,11 @@ def deploy_stack(config, gc_repository, dry_run):
             ) as conn,
             conn.cursor() as cur,
         ):
-            try:
-                cur.execute("CREATE DATABASE warehouse;")
-            except psycopg.errors.DuplicateDatabase:
-                pass
+            for database in databases:
+                try:
+                    cur.execute(f"CREATE DATABASE {database};")
+                except psycopg.errors.DuplicateDatabase:
+                    pass
 
     # Deploy Windmill if specified in config
     one_click_app_name = "windmill-only"
@@ -481,7 +489,15 @@ def deploy_stack(config, gc_repository, dry_run):
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
         redirect_to_root = config[one_click_app_name].get("redirect_to_root", True)
-        variables = construct_app_variables(config, one_click_app_name)
+        variables = {
+            "$$cap_postgres_host": postgres_from_container.host,
+            "$$cap_postgres_port": postgres_from_container.port,
+            "$$cap_postgres_ssl": postgres_from_container.ssl,
+            "$$cap_postgres_user": postgres_from_container.user,
+            "$$cap_postgres_pass": postgres_from_container.password,
+            "$$cap_postgres_database": "guardianconnector",
+        }
+        variables = construct_app_variables(config, one_click_app_name, variables)
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
         if not dry_run:
             cap.deploy_one_click_app(
@@ -510,13 +526,6 @@ def deploy_stack(config, gc_repository, dry_run):
     one_click_app_name = "gc-explorer"
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
-        if not dry_run:
-            with (
-                psycopg.connect(postgres_from_vm.connstr(), autocommit=True) as conn,
-                conn.cursor() as cur,
-            ):
-                cur.execute("CREATE DATABASE guardianconnector;")
-
         variables = {
             "$$cap_postgres_host": postgres_from_container.host,
             "$$cap_postgres_port": postgres_from_container.port,
