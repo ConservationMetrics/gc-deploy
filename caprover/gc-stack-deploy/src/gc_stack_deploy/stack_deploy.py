@@ -138,6 +138,11 @@ def construct_app_variables(config, service_name, init=None):
     return variables
 
 
+def enable_and_force_ssl(cap: caprover_api.CaproverAPI, app_name: str):
+    cap.enable_ssl(app_name)
+    cap.update_app(app_name, force_ssl=True)
+
+
 @contextmanager
 def postgres_patient_connect(*args, retries=10, delay_seconds=2, **kwargs):
     """
@@ -202,6 +207,65 @@ class PostgresConnectionConfig:
         return s
 
 
+def setup_windmill_db(
+    postgres_from_vm,
+    windmill_db_user,
+    windmill_db_pass,
+    is_using_azure_db,
+    dry_run=False,
+):
+    if not dry_run:
+        # As superadmin, create a windmill database
+        with (
+            psycopg.connect(
+                postgres_from_vm.connstr("postgres"), autocommit=True
+            ) as conn,
+            conn.cursor() as cur,
+        ):
+            logger.info("Connected to database as superadmin")
+            # Execute a command: this creates a new table
+            cur.execute("CREATE DATABASE windmill;")
+            if is_using_azure_db:
+                cur.execute(
+                    f"CREATE USER {windmill_db_user} PASSWORD '{windmill_db_pass}';"
+                )
+                cur.execute(
+                    f"GRANT ALL PRIVILEGES ON DATABASE windmill TO {windmill_db_user};"
+                )
+                # Azure only:
+                cur.execute(f"GRANT azure_pg_admin TO {windmill_db_user};")
+                cur.execute(f"ALTER USER {windmill_db_user} CREATEROLE;")
+
+    # As windmill_login
+    postgres_azure_user = replace(
+        postgres_from_vm, user=windmill_db_user, password=windmill_db_pass
+    )
+    if is_using_azure_db and not dry_run:
+        with psycopg.connect(postgres_azure_user.connstr("windmill")) as conn:
+            logger.info(f"Connected to database as {postgres_azure_user.user}")
+            with conn.cursor() as cur:
+                # The following comes from https://raw.githubusercontent.com/windmill-labs/windmill/main/init-db-as-superuser.sql
+                cur.execute("CREATE ROLE windmill_user;")
+                cur.execute("""GRANT ALL
+                            ON ALL TABLES IN SCHEMA public
+                            TO windmill_user;""")
+                cur.execute("""GRANT ALL PRIVILEGES
+                            ON ALL SEQUENCES IN SCHEMA public
+                            TO windmill_user;""")
+                cur.execute("""ALTER DEFAULT PRIVILEGES
+                            IN SCHEMA public
+                            GRANT ALL ON TABLES TO windmill_user;""")
+                cur.execute("""ALTER DEFAULT PRIVILEGES
+                            IN SCHEMA public
+                            GRANT ALL ON SEQUENCES TO windmill_user;""")
+                cur.execute("CREATE ROLE windmill_admin;")  # -WITH BYPASSRLS;
+                cur.execute("GRANT windmill_user TO windmill_admin;")
+
+                # Going rogue again.
+                cur.execute(f"GRANT windmill_admin TO {postgres_azure_user.user};")
+                cur.execute(f"GRANT windmill_user TO {postgres_azure_user.user};")
+
+
 def _windmill_default_docker_image(gc_repository: str) -> str:
     """Fetch the default Windmill docker image tag from the one-click app definition."""
     # Mimic download one-click-app from remote repository from CaproverAPI's _download_one_click_app_defn
@@ -231,7 +295,7 @@ def _pre_pull_windmill_image(variables: dict, gc_repository: str) -> None:
     logger.info("Windmill image pre-pull complete.")
 
 
-def deploy_stack(config, gc_repository, dry_run):
+def deploy_stack(config, gc_repository, do_deploy, dry_run):
     """Deploy application stack based on the configuration file."""
 
     # Initialize CapRover API with URL and password from config
@@ -278,7 +342,7 @@ def deploy_stack(config, gc_repository, dry_run):
             "$$cap_postgres_version": config["postgres"].get("version", "16"),
         }
         logger.info("Deploying PostgreSQL")
-        if not dry_run:
+        if do_deploy and not dry_run:
             cap.deploy_one_click_app(
                 one_click_app_name="postgres",
                 app_name=pg_app_name,
@@ -346,58 +410,14 @@ def deploy_stack(config, gc_repository, dry_run):
         # Hacky workaround: pre-pull large Windmill image to avoid CapRover timeout
         _pre_pull_windmill_image(variables, gc_repository)
 
-        if not dry_run:
-            # As superadmin, create a windmill database
-            with (
-                psycopg.connect(
-                    postgres_from_vm.connstr("postgres"), autocommit=True
-                ) as conn,
-                conn.cursor() as cur,
-            ):
-                logger.info("Connected to database as superadmin")
-                # Execute a command: this creates a new table
-                cur.execute("CREATE DATABASE windmill;")
-                if is_using_azure_db:
-                    cur.execute(
-                        f"CREATE USER {windmill_db_user} PASSWORD '{windmill_db_pass}';"
-                    )
-                    cur.execute(
-                        f"GRANT ALL PRIVILEGES ON DATABASE windmill TO {windmill_db_user};"
-                    )
-                    # Azure only:
-                    cur.execute(f"GRANT azure_pg_admin TO {windmill_db_user};")
-                    cur.execute(f"ALTER USER {windmill_db_user} CREATEROLE;")
-
-        # As windmill_login
-        postgres_azure_user = replace(
-            postgres_from_vm, user=windmill_db_user, password=windmill_db_pass
+        setup_windmill_db(
+            postgres_from_vm,
+            windmill_db_user,
+            windmill_db_pass,
+            is_using_azure_db,
+            dry_run,
         )
-        if is_using_azure_db and not dry_run:
-            with psycopg.connect(postgres_azure_user.connstr("windmill")) as conn:
-                logger.info(f"Connected to database as {postgres_azure_user.user}")
-                with conn.cursor() as cur:
-                    # The following comes from https://raw.githubusercontent.com/windmill-labs/windmill/main/init-db-as-superuser.sql
-                    cur.execute("CREATE ROLE windmill_user;")
-                    cur.execute("""GRANT ALL
-                                ON ALL TABLES IN SCHEMA public
-                                TO windmill_user;""")
-                    cur.execute("""GRANT ALL PRIVILEGES
-                                ON ALL SEQUENCES IN SCHEMA public
-                                TO windmill_user;""")
-                    cur.execute("""ALTER DEFAULT PRIVILEGES
-                                IN SCHEMA public
-                                GRANT ALL ON TABLES TO windmill_user;""")
-                    cur.execute("""ALTER DEFAULT PRIVILEGES
-                                IN SCHEMA public
-                                GRANT ALL ON SEQUENCES TO windmill_user;""")
-                    cur.execute("CREATE ROLE windmill_admin;")  # -WITH BYPASSRLS;
-                    cur.execute("GRANT windmill_user TO windmill_admin;")
-
-                    # Going rogue again.
-                    cur.execute(f"GRANT windmill_admin TO {postgres_azure_user.user};")
-                    cur.execute(f"GRANT windmill_user TO {postgres_azure_user.user};")
-
-        if not dry_run:
+        if do_deploy and not dry_run:
             cap.deploy_one_click_app(
                 one_click_app_name,
                 app_name,
@@ -406,9 +426,6 @@ def deploy_stack(config, gc_repository, dry_run):
                 one_click_repository=gc_repository,
             )
             cap.update_app(app_name, support_websocket=True)
-            if webapps_ssl:
-                cap.enable_ssl(app_name)
-                cap.update_app(app_name, force_ssl=True)
 
             for svcname in (
                 app_name,
@@ -417,13 +434,16 @@ def deploy_stack(config, gc_repository, dry_run):
             ):
                 set_memory_limit(cap, svcname)
 
+        if webapps_ssl and not dry_run:
+            enable_and_force_ssl(cap, app_name)
+
     # Deploy Redis if specified in config
     one_click_app_name = "redis"
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
         variables = construct_app_variables(config, one_click_app_name)
         logger.info("Deploying Redis")
-        if not dry_run:
+        if do_deploy and not dry_run:
             cap.deploy_one_click_app(
                 one_click_app_name,
                 app_name,
@@ -450,7 +470,7 @@ def deploy_stack(config, gc_repository, dry_run):
         }
         variables = construct_app_variables(config, one_click_app_name, variables)
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
-        if not dry_run:
+        if do_deploy and not dry_run:
             cap.deploy_one_click_app(
                 one_click_app_name,
                 app_name,
@@ -458,9 +478,6 @@ def deploy_stack(config, gc_repository, dry_run):
                 automated=True,
                 one_click_repository=gc_repository,
             )
-            if webapps_ssl:
-                cap.enable_ssl(app_name)
-            cap.update_app(app_name, force_ssl=webapps_ssl)
 
             # disable the healthcheck in Service Update Override, which will be maintained
             # in future deploys. This is OPTIONAL here because the one-click app already
@@ -480,6 +497,9 @@ def deploy_stack(config, gc_repository, dry_run):
 
             set_memory_limit(cap, app_name)  # The web service (not worker)
 
+        if webapps_ssl and not dry_run:
+            enable_and_force_ssl(cap, app_name)
+
     # Deploy GC Landing Page if specified in config
     # Note: as GC Landing Page is intended to be the default landing page, we don't need to add a redirect domain, and instead, we set the redirectDomain to the root domain. (e.g. so that the landing page will load when a user accesses "your-captain-root.net")
     one_click_app_name = "gc-landing-page"
@@ -495,7 +515,7 @@ def deploy_stack(config, gc_repository, dry_run):
         }
         variables = construct_app_variables(config, one_click_app_name, variables)
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
-        if not dry_run:
+        if do_deploy and not dry_run:
             cap.deploy_one_click_app(
                 one_click_app_name,
                 app_name,
@@ -503,20 +523,20 @@ def deploy_stack(config, gc_repository, dry_run):
                 automated=True,
                 one_click_repository=gc_repository,
             )
-            if webapps_ssl:
-                cap.enable_ssl(app_name)
-                cap.update_app(app_name, force_ssl=True)
             set_memory_limit(cap, app_name)
+
+        if webapps_ssl and not dry_run:
+            enable_and_force_ssl(cap, app_name)
 
         if redirect_to_root:
             logger.info(
                 f"Will serve {app_name} at the root domain: [{cap.root_domain}]"
             )
-            if not dry_run:
+            if do_deploy and not dry_run:
                 cap.add_domain(app_name, cap.root_domain)
-                if webapps_ssl:
-                    cap.enable_ssl(app_name, cap.root_domain)
                 cap.update_app(app_name, redirectDomain=cap.root_domain)
+            if webapps_ssl and not dry_run:
+                enable_and_force_ssl(cap, cap.root_domain)
 
     # Deploy GC Explorer if specified in config
     one_click_app_name = "gc-explorer"
@@ -532,7 +552,7 @@ def deploy_stack(config, gc_repository, dry_run):
         }
         variables = construct_app_variables(config, one_click_app_name, variables)
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
-        if not dry_run:
+        if do_deploy and not dry_run:
             cap.deploy_one_click_app(
                 one_click_app_name,
                 app_name,
@@ -540,13 +560,9 @@ def deploy_stack(config, gc_repository, dry_run):
                 automated=True,
                 one_click_repository=gc_repository,
             )
-            if webapps_ssl:
-                cap.enable_ssl(app_name)
-            cap.update_app(
-                app_name,
-                force_ssl=webapps_ssl,
-            )
             set_memory_limit(cap, app_name)
+        if webapps_ssl and not dry_run:
+            enable_and_force_ssl(cap, app_name)
 
     # Deploy CoMapeo Cloud if specified in config
     one_click_app_name = "comapeo-cloud"
@@ -555,7 +571,7 @@ def deploy_stack(config, gc_repository, dry_run):
         variables = {}
         variables = construct_app_variables(config, one_click_app_name, variables)
         logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
-        if not dry_run:
+        if do_deploy and not dry_run:
             cap.deploy_one_click_app(
                 one_click_app_name,
                 app_name,
@@ -563,10 +579,10 @@ def deploy_stack(config, gc_repository, dry_run):
                 one_click_repository=gc_repository,
                 automated=True,
             )
-            if webapps_ssl:
-                cap.enable_ssl(app_name)
-            cap.update_app(app_name, force_ssl=webapps_ssl, support_websocket=True)
+            cap.update_app(app_name, support_websocket=True)
             set_memory_limit(cap, app_name)
+        if webapps_ssl and not dry_run:
+            enable_and_force_ssl(cap, app_name)
 
     # Deploy Filebrowser if specified in config
     one_click_app_name = "filebrowser"
@@ -592,16 +608,13 @@ def deploy_stack(config, gc_repository, dry_run):
         else:
             logger.info("Filebrowser admin password set from config (username: admin)")
 
-        if not dry_run:
+        if do_deploy and not dry_run:
             cap.deploy_one_click_app(
                 one_click_app_name,
                 app_name,
                 app_variables=variables,
                 automated=True,
             )
-            if webapps_ssl:
-                cap.enable_ssl(app_name)
-            cap.update_app(app_name, force_ssl=webapps_ssl)
 
             cap.update_app(
                 app_name,
@@ -622,6 +635,8 @@ def deploy_stack(config, gc_repository, dry_run):
             time.sleep(20)  # TODO: confirm has started. Now we're just guessing.
             # CaproverAPI doesn't support deletion of an env var, so we just set it to empty
             cap.update_app(app_name, environment_variables={"FB_PASSWORD": ""})
+        if webapps_ssl and not dry_run:
+            enable_and_force_ssl(cap, app_name)
 
 
 def is_local_path(path):
@@ -680,11 +695,11 @@ def main():
         description=__doc__, formatter_class=argparse.RawTextHelpFormatter
     )
 
-    # OPTIONAL "init" or "deploy" subcommand
+    # OPTIONAL "init" or "deploy" or "finish" subcommand
     parser.add_argument(
         "command",
         nargs="?",
-        choices=["init", "deploy"],
+        choices=["init", "deploy", "finish"],
         default="deploy",
         help="Optional subcommand",
     )
@@ -734,7 +749,7 @@ def main():
 
     # Deploy application stack
     with context_manager as repo_url:
-        deploy_stack(config, repo_url, args.dry_run)
+        deploy_stack(config, repo_url, args.command == "deploy", args.dry_run)
 
 
 if __name__ == "__main__":

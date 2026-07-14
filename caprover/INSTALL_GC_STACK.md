@@ -117,11 +117,13 @@ Wait 10 minutes.
 
 #### enable SSL
 
-Enable SSL for caprover itself, and also per app:
-    - `POST /api/v2/user/apps/appDefinitions/enablebasedomainssl` (default subdomains)
-    - `POST /api/v2/user/apps/appDefinitions/enablecustomdomainssl` (custom domains, e.g. gc-landing-page)
+Create databases, enable SSL for caprover and its apps.
 
-TODO: script this.
+It's important to use the same config file as you passed to `gen-backup`.
+
+```sh
+gc-stack-deploy finish --config-file stack.yaml
+```
 
 
 ### Option 3. Install One-Click Apps through the CapRover UI
