@@ -52,7 +52,7 @@
 > [!TIP]
 > **Beta alternative available**: We're testing a more reliable CapRover + Guardian Connector stack installation method.
 >
-> See [**Beta Installation Guide**](/caprover/gen-backup/README.md) if interested. This replaces sections III and IV. After, [skip to **Section V**](#v-set-up-ssh-keys-and-backups)
+> See [**Option 2: Installing the entire stack with gen-backup**](/caprover/INSTALL_GC_STACK.md) if interested. This replaces sections III and IV. After, [skip to **Section V**](#v-set-up-ssh-keys-and-backups)
 
 ### III. Set up CapRover
 

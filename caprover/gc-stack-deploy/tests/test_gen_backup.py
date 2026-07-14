@@ -3,7 +3,7 @@ import tarfile
 from pathlib import Path
 
 import pytest
-from gen_backup.cli import bundled_template, generate, load_config, old_root
+from gc_stack_deploy.gen_backup import bundled_template, generate, load_config, old_root
 
 
 def _config(out: Path) -> dict:
@@ -58,25 +58,21 @@ class TestLoadConfig:
         assert cfg["caproverPassword"] == "pass"
 
 
-def _run(template_dir, tmp_path, **cfg_overrides) -> tuple[Path, dict]:
+def _run(tmp_path, **cfg_overrides) -> tuple[Path, dict]:
     cfg = {"rootDomain": "new.example.com", **cfg_overrides}
     out = tmp_path / "out.tar"
-    generate(template_dir, cfg, out)
+    generate(cfg, out)
     return out, _config(out)
 
 
 class TestDeployBooleanAppFiltering:
     def test_deploy_false_drops_app(self, tmp_path):
-        _, cfg = _run(
-            bundled_template(), tmp_path, **{"gc-explorer": {"deploy": False}}
-        )
+        _, cfg = _run(tmp_path, **{"gc-explorer": {"deploy": False}})
         assert "explorer" not in _apps(cfg)
 
     def test_deploy_false_on_windmill_drops_all_three(self, tmp_path):
         # windmill-only maps to three template apps; need them in the template first
-        _, cfg = _run(
-            bundled_template(), tmp_path, **{"windmill-only": {"deploy": False}}
-        )
+        _, cfg = _run(tmp_path, **{"windmill-only": {"deploy": False}})
         for name in ("windmill", "windmill-worker", "windmill-worker-native"):
             assert name not in _apps(cfg)
         assert "explorer" in _apps(cfg)
@@ -84,43 +80,45 @@ class TestDeployBooleanAppFiltering:
 
 class TestDomainSubstitution:
     def test_top_level_custom_domain(self, tmp_path):
-        _, cfg = _run(bundled_template(), tmp_path)
+        _, cfg = _run(tmp_path)
         assert cfg["customDomain"] == "new.example.com"
-        assert old_root() not in cfg["customDomain"]
+        with bundled_template() as template_dir:
+            assert old_root(template_dir) not in cfg["customDomain"]
 
     def test_redirect_domain_updated(self, tmp_path):
-        _, cfg = _run(bundled_template(), tmp_path)
+        _, cfg = _run(tmp_path)
         assert (
             cfg["appDefinitions"]["explorer"]["redirectDomain"]
             == "explorer.new.example.com"
         )
 
     def test_custom_domain_list_updated(self, tmp_path):
-        _, cfg = _run(bundled_template(), tmp_path)
+        _, cfg = _run(tmp_path)
         cd = cfg["appDefinitions"]["gc-landing-page"]["customDomain"]
         assert cd[0]["publicDomain"] == "new.example.com"
 
     def test_env_var_url_updated(self, tmp_path):
-        _, cfg = _run(bundled_template(), tmp_path)
+        _, cfg = _run(tmp_path)
         base_url = _env(cfg, "gc-landing-page", "NUXT_PUBLIC_BASE_URL")
         assert "new.example.com" in base_url
-        assert old_root() not in base_url
+        with bundled_template() as template_dir:
+            assert old_root(template_dir) not in base_url
 
 
 class TestSsl:
     def test_root_ssl_off(self, tmp_path):
-        _, cfg = _run(bundled_template(), tmp_path)
+        _, cfg = _run(tmp_path)
         assert cfg["hasRootSsl"] is False
         assert cfg["forceRootSsl"] is False
 
     def test_per_app_ssl_off(self, tmp_path):
-        _, cfg = _run(bundled_template(), tmp_path)
+        _, cfg = _run(tmp_path)
         for app in cfg["appDefinitions"].values():
             assert app["hasDefaultSubDomainSsl"] is False
             assert app["forceSsl"] is False
 
     def test_custom_domain_ssl_off(self, tmp_path):
-        _, cfg = _run(bundled_template(), tmp_path)
+        _, cfg = _run(tmp_path)
         for cd in cfg["appDefinitions"]["gc-landing-page"]["customDomain"]:
             assert cd["hasSsl"] is False
 
@@ -129,7 +127,6 @@ class TestPassword:
     def test_password_from_config(self, tmp_path):
         out = tmp_path / "out.tar"
         password = generate(
-            bundled_template(),
             {"rootDomain": "x.com", "caproverPassword": "mypass"},
             out,
         )
@@ -137,23 +134,23 @@ class TestPassword:
 
     def test_random_password_when_absent(self, tmp_path):
         out = tmp_path / "out.tar"
-        password = generate(bundled_template(), {"rootDomain": "x.com"}, out)
+        password = generate({"rootDomain": "x.com"}, out)
         assert password  # non-empty
         assert password != "original"
 
     def test_hashed_password_differs_from_template(self, tmp_path):
-        _, cfg = _run(bundled_template(), tmp_path)
+        _, cfg = _run(tmp_path)
         assert cfg["hashedPassword"] != "$2b$10$original"
 
 
 class TestSecrets:
     def test_postgres_password_rotated(self, tmp_path):
-        _, cfg = _run(bundled_template(), tmp_path)
+        _, cfg = _run(tmp_path)
         assert _env(cfg, "postgres", "POSTGRES_PASSWORD") != "TEMPLATE_PG_PASS"
 
     def test_pg_password_consistent_across_apps(self, tmp_path):
         """postgres, windmill and explorer must all use the same new pg password."""
-        _, cfg = _run(bundled_template(), tmp_path)
+        _, cfg = _run(tmp_path)
         pg_pass = _env(cfg, "postgres", "POSTGRES_PASSWORD")
         windmill_db = _env(cfg, "windmill", "DATABASE_URL")
         assert pg_pass in windmill_db
@@ -161,14 +158,13 @@ class TestSecrets:
 
     def test_salt_rotated(self, tmp_path):
         out = tmp_path / "out.tar"
-        generate(bundled_template(), {"rootDomain": "x.com"}, out)
+        generate({"rootDomain": "x.com"}, out)
         assert _meta(out)["salt"] != "original-salt-uuid"
 
 
 class TestUserSuppliedValues:
     def test_community_name(self, tmp_path):
         _, cfg = _run(
-            bundled_template(),
             tmp_path,
             **{
                 "gc-landing-page": {"community_name": "springfield"},
@@ -180,7 +176,6 @@ class TestUserSuppliedValues:
 
     def test_auth0_creds_on_superset(self, tmp_path):
         _, cfg = _run(
-            bundled_template(),
             tmp_path,
             **{
                 "superset-only": {
@@ -197,7 +192,6 @@ class TestUserSuppliedValues:
     def test_empty_config_value_not_written(self, tmp_path):
         """A blank auth0_domain in config must not overwrite the template value."""
         _, cfg = _run(
-            bundled_template(),
             tmp_path,
             **{
                 "superset-only": {"auth0_domain": ""},
@@ -207,19 +201,16 @@ class TestUserSuppliedValues:
         assert _env(cfg, "superset", "AUTH0_DOMAIN") == "example.auth0.example.com"
 
     def test_email_address_override(self, tmp_path):
-        _, cfg = _run(
-            bundled_template(), tmp_path, emailAddress="admin@new.example.com"
-        )
+        _, cfg = _run(tmp_path, emailAddress="admin@new.example.com")
         assert cfg["emailAddress"] == "admin@new.example.com"
 
     def test_email_address_unchanged_when_absent(self, tmp_path):
         """FIXME: should email be required? especially since we don't enable SSL?"""
-        _, cfg = _run(bundled_template(), tmp_path)
+        _, cfg = _run(tmp_path)
         assert cfg["emailAddress"] == "guardian@example.net"
 
     def test_feature_flag_false(self, tmp_path):
         _, cfg = _run(
-            bundled_template(),
             tmp_path,
             **{
                 "gc-landing-page": {"superset_enabled": False},
@@ -229,9 +220,7 @@ class TestUserSuppliedValues:
 
     def test_feature_flag_not_written_when_absent(self, tmp_path):
         """If the flag isn't in the config, the template's existing value is kept."""
-        _, cfg = _run(
-            bundled_template(), tmp_path, **{"gc-landing-page": {"NOT_A_REAL_NAME": 1}}
-        )
+        _, cfg = _run(tmp_path, **{"gc-landing-page": {"NOT_A_REAL_NAME": 1}})
         # Template didn't include NUXT_PUBLIC_SUPERSET_ENABLED, so it shouldn't appear
         val = _env(cfg, "gc-landing-page", "NOT_A_REAL_NAME")
         assert val is None
@@ -239,17 +228,17 @@ class TestUserSuppliedValues:
 
 class TestTarContents:
     def test_config_override_json_present(self, tmp_path):
-        out, _ = _run(bundled_template(), tmp_path)
+        out, _ = _run(tmp_path)
         assert _tar_has_file(out, "data/config-override.json")
 
     def test_config_override_json_content(self, tmp_path):
-        out, _ = _run(bundled_template(), tmp_path)
+        out, _ = _run(tmp_path)
         with tarfile.open(out) as t:
             data = json.load(t.extractfile("data/config-override.json"))
         assert data == {"skipVerifyingDomains": "true"}
 
     def test_letsencrypt_dirs_empty(self, tmp_path):
-        out, _ = _run(bundled_template(), tmp_path)
+        out, _ = _run(tmp_path)
         for subdir in ("accounts", "archive", "live", "renewal"):
             files = _files_under(out, f"data/letencrypt/etc/{subdir}/")
             assert files == [], f"expected {subdir}/ to be empty, got {files}"

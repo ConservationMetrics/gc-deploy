@@ -13,22 +13,13 @@ import shutil
 import tarfile
 import tempfile
 import uuid
+from contextlib import contextmanager
 from importlib import resources
 from pathlib import Path
 from typing import Any
 
 import bcrypt
 from ruamel.yaml import YAML
-
-
-def bundled_template() -> Path:
-    """Path to the reference backup shipped inside this package.
-
-    Resolves whether gen-backup was pip-installed or run from a source checkout,
-    so callers don't need the repo on disk.
-    """
-    return Path(resources.files("gen_backup") / "template")
-
 
 # Maps YAML config section names → app names in the template backup
 # fmt:off
@@ -45,14 +36,21 @@ YAML_TO_APPS: dict[str, list[str]] = {
 # fmt:on
 
 
+@contextmanager
+def bundled_template() -> Path:
+    tmpl = resources.files("gc_stack_deploy").joinpath("template")
+    with resources.as_file(tmpl) as p:
+        yield Path(p)
+
+
 @functools.lru_cache(maxsize=1)
-def old_root() -> str:
-    """Domain baked into the shipped reference template.
+def old_root(template_dir) -> str:
+    """Return the domain baked into the reference template.
 
     Read once from the template's config-captain.json and cached, so this
     is the single source of truth instead of a hard-coded constant.
     """
-    config_path = bundled_template() / "data" / "config-captain.json"
+    config_path = template_dir / "data" / "config-captain.json"
     with open(config_path) as f:
         config = json.load(f)
     return config["customDomain"]
@@ -124,11 +122,14 @@ class LocalImageError(BaseException):
     pass
 
 
-def generate(template_dir: Path, cfg: dict, out_tar: Path) -> str:
+def generate(cfg: dict, out_tar: Path) -> str:
     """Build the new backup tar and return the plaintext CapRover password."""
     root_domain: str = cfg["rootDomain"]
 
-    with tempfile.TemporaryDirectory() as tmpdir:
+    with (
+        bundled_template() as template_dir,
+        tempfile.TemporaryDirectory() as tmpdir,
+    ):
         tmp = Path(tmpdir)
 
         # 1. Copy template tree
@@ -266,7 +267,7 @@ def generate(template_dir: Path, cfg: dict, out_tar: Path) -> str:
 
         # 6. Domain substitution
         def sub(s: str) -> str:
-            return s.replace(old_root(), root_domain)
+            return s.replace(old_root(template_dir), root_domain)
 
         config["customDomain"] = sub(config.get("customDomain", ""))
         for app in apps.values():
@@ -276,7 +277,10 @@ def generate(template_dir: Path, cfg: dict, out_tar: Path) -> str:
                 if cd.get("publicDomain"):
                     cd["publicDomain"] = sub(cd["publicDomain"])
             for ev in app.get("envVars", []):
-                if isinstance(ev.get("value"), str) and old_root() in ev["value"]:
+                if (
+                    isinstance(ev.get("value"), str)
+                    and old_root(template_dir) in ev["value"]
+                ):
                     ev["value"] = sub(ev["value"])
 
         # 7. SSL off everywhere (Phase 4 will add a config flag to re-enable)
@@ -331,11 +335,9 @@ def main() -> None:
     parser.add_argument("--out", required=True, help="Output tar path")
     args = parser.parse_args()
 
-    template_dir = bundled_template()
     cfg = load_config(Path(args.config_file))
-    print(f"Generating backup tar from {template_dir}...")
+    print("Generating backup tar...")
     password = generate(
-        template_dir,
         cfg=cfg,
         out_tar=Path(args.out),
     )

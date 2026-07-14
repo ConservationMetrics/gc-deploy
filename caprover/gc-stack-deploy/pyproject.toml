@@ -1,6 +1,6 @@
 [project]
 name = "gc-stack-deploy"
-version = "0.2.0"
+version = "0.3.0a1"
 description = "Deploy Guardian Connector stack of apps to the (locally running) Caprover instance."
 requires-python = ">=3.9"
 dependencies = [
@@ -10,6 +10,9 @@ dependencies = [
     "Caprover-API @ git+https://github.com/IamJeffG/Caprover-API.git@all-patches-2025-nov",
 ]
 
+[project.optional-dependencies]
+dev = ["pytest"]
+
 [project.urls]
 Homepage = "https://guardianconnector.net/"
 Documentation = "https://docs.guardianconnector.net"
@@ -17,6 +20,7 @@ Repository = "https://github.com/ConservationMetrics/gc-deploy"
 
 [project.scripts]
 gc-stack-deploy = "gc_stack_deploy.stack_deploy:main"
+gen-backup = "gc_stack_deploy.gen_backup:main"
 
 [build-system]
 requires = ["hatchling"]
@@ -27,3 +31,8 @@ allow-direct-references = true  # TODO remove this once we no longer have a git-
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/gc_stack_deploy"]
+
+[tool.hatch.build.targets.wheel.force-include]
+# Ship the reference backup tempalte (unpacked directory) as package data so
+# the CLI works after a bare `pip install`, with no git checkout on disk.
+"src/gc_stack_deploy/template" = "gc_stack_deploy/template"

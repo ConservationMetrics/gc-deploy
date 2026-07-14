@@ -12,16 +12,18 @@ TOOL_DIR := $(REPO_ROOT)/caprover/gc-stack-deploy
 VENV_DIR := $(REPO_ROOT)/caprover/tests/.venv
 VENV_READY_FILE := $(VENV_DIR)/bin/gc-stack-deploy
 
-GEN_BACKUP_DIR := $(REPO_ROOT)/caprover/gen-backup
-GEN_BACKUP_VENV_DIR := $(GEN_BACKUP_DIR)/.venv
-GEN_BACKUP_VENV_READY := $(GEN_BACKUP_VENV_DIR)/bin/gen-backup
 GENERATED_TAR := $(REPO_ROOT)/build/gen-backup/generated-backup.tar
 
 .PHONY: all quick-test-e2e test-e2e install-caprover uninstall-caprover build-one-click-apps-repo deploy-stack clean setup-venv \
         setup-gen-backup-venv generate-backup install-caprover-from-backup test-restore smoke-test
 
 # Default target
-all: test-e2e
+all: test-unit test-e2e
+
+# Run gc-stack-deploy unit tests (no CapRover required).
+test-unit: setup-venv
+	@"$(VENV_DIR)/bin/pip" install -e "$(TOOL_DIR)[dev]" -q
+	@cd "$(TOOL_DIR)" && "$(VENV_DIR)/bin/pytest" -v
 
 # Main end-to-end test target
 test-e2e: uninstall-caprover install-caprover quick-test-e2e
@@ -50,7 +52,7 @@ install-caprover:
 setup-venv: $(VENV_READY_FILE)
 $(VENV_READY_FILE): $(TOOL_DIR)/pyproject.toml
 	@echo "# Setting up Python virtual environment and dependencies..."
-	@python3 -m venv "$(VENV_DIR)"
+	@python3.12 -m venv "$(VENV_DIR)"
 	@"$(VENV_DIR)/bin/pip" install -e $(TOOL_DIR)
 	@touch $@
 
@@ -76,20 +78,11 @@ clean:
 # gen-backup: PoC to exploit restore-from-backup
 #
 
-# Set up the gen-backup venv. Idempotent; re-runs if pyproject.toml changes.
-setup-gen-backup-venv: $(GEN_BACKUP_VENV_READY)
-$(GEN_BACKUP_VENV_READY): $(GEN_BACKUP_DIR)/pyproject.toml
-	@echo "# Setting up gen-backup venv..."
-	@python3.12 -m venv --without-pip "$(GEN_BACKUP_VENV_DIR)"
-	@curl -sS https://bootstrap.pypa.io/get-pip.py | "$(GEN_BACKUP_VENV_DIR)/bin/python3.12"
-	@"$(GEN_BACKUP_VENV_DIR)/bin/pip" install -e "$(GEN_BACKUP_DIR)" -q
-	@touch $@
-
 # Generate a new backup tar from the reference template.
-generate-backup: setup-gen-backup-venv
+generate-backup: setup-venv
 	@echo "# Generating backup tar..."
 	@mkdir -p "$(dir $(GENERATED_TAR))"
-	@"$(GEN_BACKUP_VENV_DIR)/bin/gen-backup" \
+	@"$(VENV_DIR)/bin/gen-backup" \
 		--config gen-backup-test.yaml \
 		--out "$(GENERATED_TAR)"
 
@@ -98,16 +91,11 @@ install-caprover-from-backup: generate-backup
 	@echo "# Installing CapRover from backup..."
 	@BACKUP_TAR="$(GENERATED_TAR)" ./install-caprover.sh
 
-# Run gen-backup unit tests (no CapRover required).
-test-gen-backup: setup-gen-backup-venv
-	@"$(GEN_BACKUP_VENV_DIR)/bin/pip" install -e "$(GEN_BACKUP_DIR)[dev]" -q
-	@cd "$(GEN_BACKUP_DIR)" && "$(GEN_BACKUP_VENV_DIR)/bin/pytest" -v
-
 # Full restore smoke-test: tear down, generate, restore, verify.
 test-restore: uninstall-caprover install-caprover-from-backup smoke-test
 	@echo "✅ Restore smoke-test complete — review output above."
 
-# Basic reachability check: CapRover dashboard + one app subdomain.
+# Basic reachability check: CapRover dashboard + one app.
 smoke-test:
 	@echo "# Smoke-testing restored CapRover..."
 	@curl -sf --retry 5 --retry-delay 5 \
@@ -115,6 +103,6 @@ smoke-test:
 		echo "  ✅ Dashboard reachable" || \
 		{ echo "  ❌ Dashboard not reachable"; exit 1; }
 	@curl -sf --retry 5 --retry-delay 5 --max-time 10 \
-		http://nocodb.test-gc-deploy.localhost > /dev/null && \
-		echo "  ✅ nocodb subdomain reachable" || \
-		echo "  ⚠️  nocodb not yet reachable (container may still be starting)"
+		http://test-gc-deploy.localhost > /dev/null && \
+		echo "  ✅ landing page app reachable" || \
+		echo "  ⚠️  landing page app not yet reachable (container may still be starting)"

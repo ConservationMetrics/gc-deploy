@@ -94,7 +94,35 @@ In both cases, trying to run the script again typically fixes the issue. For the
 
 ### Option 2 (beta). Installing the entire stack with **`gen-backup`**
 
-See [gen-backup/README.md](gen-backup/README.md).
+Follow the instructions from Option 1 up but stop before "Deploy":
+- Install the tool
+- Create a `stack.yaml` configuration file
+
+Caprover must not already be running. If it is, stop it as follows:
+```sh
+docker swarm leave --force
+rm -rf /captain/*
+```
+
+#### Mock a "backup" file that contains your stack and install Caprover from it
+
+```sh
+gen-backup --config-file stack.yaml --out /captain/backup.tar
+docker run -p 80:80 -p 443:443 -e BY_PASS_PROXY_CHECK='TRUE' -e ACCEPTED_TERMS=true -v /var/run/docker.sock:/var/run/docker.sock -v /captain:/captain caprover/caprover
+```
+
+This will start caprover _and_ initialize the Guardian Connector app stack all at the same time. (Basically caprover's first-time startup knows to look for a `backup.tar` -- and installs it if it finds one.)
+
+Wait 10 minutes.
+
+#### enable SSL
+
+Enable SSL for caprover itself, and also per app:
+    - `POST /api/v2/user/apps/appDefinitions/enablebasedomainssl` (default subdomains)
+    - `POST /api/v2/user/apps/appDefinitions/enablecustomdomainssl` (custom domains, e.g. gc-landing-page)
+
+TODO: script this.
+
 
 ### Option 3. Install One-Click Apps through the CapRover UI
 
