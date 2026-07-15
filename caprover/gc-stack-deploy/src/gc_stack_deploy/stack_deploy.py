@@ -602,10 +602,11 @@ def deploy_stack(config, gc_repository, do_deploy, dry_run):
         ).decode("utf-8")
 
         if generated:
-            print("\n" + "=" * 50)
-            print(f"FILEBROWSER ADMIN PASSWORD: {admin_password}")
-            print("Save this now -- it will not be shown again.")
-            print("=" * 50 + "\n")
+            if do_deploy:
+                print("\n" + "=" * 50)
+                print(f"FILEBROWSER ADMIN PASSWORD: {admin_password}")
+                print("Save this now -- it will not be shown again.")
+                print("=" * 50 + "\n")
         else:
             logger.info("Filebrowser admin password set from config (username: admin)")
 
