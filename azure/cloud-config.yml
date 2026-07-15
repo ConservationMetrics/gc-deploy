@@ -53,9 +53,9 @@ runcmd:
   #
   # With this profile.d script, every user on the box (except runcmd) will put pnpm in their $PATH
   - |
-    cat > /etc/profile.d/pnpm.sh <<EOF
+    cat > /etc/profile.d/pnpm.sh <<"EOF"
     export PNPM_HOME=/opt/pnpm
-    export PATH=\$PNPM_HOME/bin:\$PATH
+    export PATH=$PNPM_HOME/bin:$PATH
     EOF
   # Install pnpm (in a place expected by all users on the VM)
   - . /etc/profile.d/pnpm.sh ; SHELL=bash bash -c "curl -fsSL https://get.pnpm.io/install.sh | sh -"
