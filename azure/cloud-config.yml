@@ -51,6 +51,29 @@ runcmd:
   - . /etc/profile.d/pnpm.sh ; pnpm install -g caprover
 
 write_files:
+  - path: /etc/profile.d/cloud-init-check.sh
+    permissions: "0755"
+    content: |
+      #!/bin/bash
+      ci_out=$(cloud-init status --long 2>/dev/null)
+      if echo "$ci_out" | grep -q "^status: running"; then
+          echo ""
+          echo "⚠️  cloud-init still running..."
+          echo "   The machine is not ready yet; log out and log in again in a minute."
+          echo ""
+      elif echo "$ci_out" | grep -q "^status: error"; then
+          echo ""
+          echo "❌ cloud-init error"
+          echo "For details run:"
+          echo "  sudo cat /var/log/cloud-init-output.log"
+          echo ""
+      elif ! (echo "$ci_out" | grep -q "^status: done"); then
+          echo ""
+          echo "⚠️  cloud-init unknown state:"
+          echo "$ci_out"
+          echo ""
+      fi
+
   - path: /etc/cifs-credentials/persistent-storage
     permissions: "0600"
     content: |
