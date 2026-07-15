@@ -132,7 +132,7 @@ def generate(cfg: dict, out_tar: Path) -> str:
     ):
         tmp = Path(tmpdir)
 
-        # 1. Copy template tree
+        ## Copy template tree
         shutil.copytree(template_dir, tmp, dirs_exist_ok=True)
 
         data_dir = tmp / "data"
@@ -145,7 +145,7 @@ def generate(cfg: dict, out_tar: Path) -> str:
         with open(meta_path) as f:
             meta = json.load(f)
 
-        # 2. New salt + password
+        ## New salt + password
         new_salt = str(uuid.uuid4())
         password = cfg.get("caproverPassword") or secrets.token_urlsafe(16)[:21]
         # CapRover: hash = bcrypt(salt + namespace + password)
@@ -153,14 +153,14 @@ def generate(cfg: dict, out_tar: Path) -> str:
             (new_salt + "captain" + password).encode(), bcrypt.gensalt(rounds=10)
         ).decode()
 
-        # 3. Ensure all apps use pullable images (none locally-built)
+        ## Ensure all apps use pullable images (none locally-built)
         apps = config["appDefinitions"]
         for n, a in apps.items():
             img = _deployed_image(a)
             if _is_local_image(img):
                 raise LocalImageError(f"App {n} uses a local image: {img}")
 
-        # 4. Drop apps explicitly disabled in config
+        ## Drop apps explicitly disabled in config
         for yaml_key, app_names in YAML_TO_APPS.items():
             if _config_section(cfg, yaml_key).get("deploy") is False:
                 for name in app_names:
@@ -168,7 +168,7 @@ def generate(cfg: dict, out_tar: Path) -> str:
                         print(f"  dropping {name} (deploy: false)")
                         del apps[name]
 
-        # 5. Values reused across apps — config value if provided, else auto-generated.
+        ## Values reused across apps — config value if provided, else auto-generated.
         #    Per-app one-off secrets are generated inline below, at their point of use.
         # fmt:off
         pg_cfg       = _config_section(cfg, "postgres")
@@ -265,7 +265,21 @@ def generate(cfg: dict, out_tar: Path) -> str:
             # filebrowser ("files"): admin password lives in filebrowser's internal DB,
             # not an env var — cannot be injected here.
 
-        # 6. Domain substitution
+        ## Set port mapping to server for postgres.
+        #    This is not needed at runtime, but is used by the "gc-stack-deploy finish" step
+        #    to create logical databases and configure DB users.
+        # TODO: add test case for this.
+        for n, a in apps.items():
+            if n == "postgres":
+                a["ports"] = [
+                    {
+                        "hostPort": pg_cfg["from_vm"]["port"],
+                        "containerPort": pg_cfg["from_container"]["port"],
+                    }
+                ]
+                break
+
+        ## Domain substitution
         def sub(s: str) -> str:
             return s.replace(old_root(template_dir), root_domain)
 
@@ -283,7 +297,7 @@ def generate(cfg: dict, out_tar: Path) -> str:
                 ):
                     ev["value"] = sub(ev["value"])
 
-        # 7. SSL off everywhere (Phase 4 will add a config flag to re-enable)
+        ## SSL off everywhere (Phase 4 will add a config flag to re-enable)
         config["hasRootSsl"] = False
         config["forceRootSsl"] = False
         for app in apps.values():
@@ -292,13 +306,13 @@ def generate(cfg: dict, out_tar: Path) -> str:
             for cd in app.get("customDomain", []):
                 cd["hasSsl"] = False
 
-        # 8. Top-level config-captain.json fields
+        ## Top-level config-captain.json fields
         config["hashedPassword"] = hashed
         config["pro"] = {"installationId": str(uuid.uuid4())}
         if email := cfg.get("emailAddress"):
             config["emailAddress"] = email
 
-        # 9. Write updated config and meta
+        ## Write updated config and meta
         with open(config_path, "w") as f:
             json.dump(config, f, indent="\t")
 
@@ -306,7 +320,7 @@ def generate(cfg: dict, out_tar: Path) -> str:
         with open(meta_path, "w") as f:
             json.dump(meta, f)
 
-        # 10. Wipe letsencrypt folder (accounts, archive, live, renewal); keep renewal-hooks
+        ## Wipe letsencrypt folder (accounts, archive, live, renewal); keep renewal-hooks
         le_base = data_dir / "letencrypt" / "etc"
         for d in ("accounts", "archive", "live", "renewal"):
             p = le_base / d
@@ -314,11 +328,11 @@ def generate(cfg: dict, out_tar: Path) -> str:
                 shutil.rmtree(p)
             p.mkdir(parents=True, exist_ok=True)
 
-        # 11. config-override.json: force skipVerifyingDomains on the restore
+        ## config-override.json: force skipVerifyingDomains on the restore
         with open(data_dir / "config-override.json", "w") as f:
             json.dump({"skipVerifyingDomains": "true"}, f)
 
-        # 12. Repack
+        ## Repack
         out_tar.parent.mkdir(parents=True, exist_ok=True)
         with tarfile.open(out_tar, "w") as t:
             t.add(data_dir, arcname="data")

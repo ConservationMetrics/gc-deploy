@@ -54,7 +54,7 @@
 			],
 			"ports": [
 				{
-					"hostPort": 5432,
+					"hostPort": 15432,
 					"containerPort": 5432
 				}
 			],
