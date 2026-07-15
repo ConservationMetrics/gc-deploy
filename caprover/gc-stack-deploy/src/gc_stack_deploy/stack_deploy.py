@@ -224,7 +224,10 @@ def setup_windmill_db(
         ):
             logger.info("Connected to database as superadmin")
             # Execute a command: this creates a new table
-            cur.execute("CREATE DATABASE windmill;")
+            try:
+                cur.execute("CREATE DATABASE windmill;")
+            except psycopg.errors.DuplicateDatabase:
+                pass
             if is_using_azure_db:
                 cur.execute(
                     f"CREATE USER {windmill_db_user} PASSWORD '{windmill_db_pass}';"
