@@ -255,7 +255,7 @@
         },
         "storageProfile": {
           "imageReference": {
-            "offer": "ubuntu-24_04-lts",
+            "offer": "ubuntu-26_04-lts",
             "publisher": "canonical",
             "sku": "server",
             "version": "latest"
