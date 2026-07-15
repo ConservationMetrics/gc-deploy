@@ -111,6 +111,8 @@ gen-backup --config-file stack.yaml --out /captain/backup.tar
 docker run -p 80:80 -p 443:443 -e BY_PASS_PROXY_CHECK='TRUE' -e ACCEPTED_TERMS=true -v /var/run/docker.sock:/var/run/docker.sock -v /captain:/captain caprover/caprover
 ```
 
+(The `docker run` might require `sudo`.)
+
 This will start caprover _and_ initialize the Guardian Connector app stack all at the same time. (Basically caprover's first-time startup knows to look for a `backup.tar` -- and installs it if it finds one.)
 
 Wait 10 minutes.

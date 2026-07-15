@@ -341,8 +341,8 @@ def deploy_stack(config, gc_repository, do_deploy, dry_run):
             "$$cap_pg_database": config["postgres"].get("database", "postgres"),
             "$$cap_postgres_version": config["postgres"].get("version", "16"),
         }
-        logger.info("Deploying PostgreSQL")
         if do_deploy and not dry_run:
+            logger.info("Deploying PostgreSQL")
             cap.deploy_one_click_app(
                 one_click_app_name="postgres",
                 app_name=pg_app_name,
@@ -402,13 +402,7 @@ def deploy_stack(config, gc_repository, do_deploy, dry_run):
         variables = {
             "$$cap_database_url": f"postgres://{windmill_db_user}:{windmill_db_pass}@{postgres_from_container.host}:{postgres_from_container.port}/windmill"
         }
-
         variables = construct_app_variables(config, one_click_app_name, variables)
-
-        logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
-
-        # Hacky workaround: pre-pull large Windmill image to avoid CapRover timeout
-        _pre_pull_windmill_image(variables, gc_repository)
 
         setup_windmill_db(
             postgres_from_vm,
@@ -417,7 +411,12 @@ def deploy_stack(config, gc_repository, do_deploy, dry_run):
             is_using_azure_db,
             dry_run,
         )
+
         if do_deploy and not dry_run:
+            # Hacky workaround: pre-pull large Windmill image to avoid CapRover timeout
+            _pre_pull_windmill_image(variables, gc_repository)
+
+            logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
             cap.deploy_one_click_app(
                 one_click_app_name,
                 app_name,
@@ -442,8 +441,8 @@ def deploy_stack(config, gc_repository, do_deploy, dry_run):
     if config.get(one_click_app_name, {}).get("deploy", False):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
         variables = construct_app_variables(config, one_click_app_name)
-        logger.info("Deploying Redis")
         if do_deploy and not dry_run:
+            logger.info("Deploying Redis")
             cap.deploy_one_click_app(
                 one_click_app_name,
                 app_name,
@@ -469,8 +468,8 @@ def deploy_stack(config, gc_repository, do_deploy, dry_run):
             "$$cap_postgres_userpassword": f"{postgres_from_container.user}:{postgres_from_container.password}",
         }
         variables = construct_app_variables(config, one_click_app_name, variables)
-        logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
         if do_deploy and not dry_run:
+            logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
             cap.deploy_one_click_app(
                 one_click_app_name,
                 app_name,
@@ -514,8 +513,8 @@ def deploy_stack(config, gc_repository, do_deploy, dry_run):
             "$$cap_postgres_pass": postgres_from_container.password,
         }
         variables = construct_app_variables(config, one_click_app_name, variables)
-        logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
         if do_deploy and not dry_run:
+            logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
             cap.deploy_one_click_app(
                 one_click_app_name,
                 app_name,
@@ -529,10 +528,10 @@ def deploy_stack(config, gc_repository, do_deploy, dry_run):
             enable_and_force_ssl(cap, app_name)
 
         if redirect_to_root:
-            logger.info(
-                f"Will serve {app_name} at the root domain: [{cap.root_domain}]"
-            )
             if do_deploy and not dry_run:
+                logger.info(
+                    f"Will serve {app_name} at the root domain: [{cap.root_domain}]"
+                )
                 cap.add_domain(app_name, cap.root_domain)
                 cap.update_app(app_name, redirectDomain=cap.root_domain)
             if webapps_ssl and not dry_run:
@@ -551,8 +550,8 @@ def deploy_stack(config, gc_repository, do_deploy, dry_run):
             "$$cap_postgres_database": config[one_click_app_name]["postgres_database"],
         }
         variables = construct_app_variables(config, one_click_app_name, variables)
-        logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
         if do_deploy and not dry_run:
+            logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
             cap.deploy_one_click_app(
                 one_click_app_name,
                 app_name,
@@ -570,8 +569,8 @@ def deploy_stack(config, gc_repository, do_deploy, dry_run):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
         variables = {}
         variables = construct_app_variables(config, one_click_app_name, variables)
-        logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
         if do_deploy and not dry_run:
+            logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
             cap.deploy_one_click_app(
                 one_click_app_name,
                 app_name,
@@ -590,7 +589,6 @@ def deploy_stack(config, gc_repository, do_deploy, dry_run):
         app_name = config[one_click_app_name].get("app_name", one_click_app_name)
         variables = {}
         variables = construct_app_variables(config, one_click_app_name, variables)
-        logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
 
         admin_password = config["filebrowser"].get("admin_password")
         generated = admin_password is None
@@ -609,6 +607,7 @@ def deploy_stack(config, gc_repository, do_deploy, dry_run):
             logger.info("Filebrowser admin password set from config (username: admin)")
 
         if do_deploy and not dry_run:
+            logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
             cap.deploy_one_click_app(
                 one_click_app_name,
                 app_name,
