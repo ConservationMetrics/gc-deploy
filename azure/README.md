@@ -60,7 +60,9 @@ For security reasons, initial configuration from another machine is disabled, bo
     ```
     (or use the IP address if your domain is not yet pointing to the VM)
 
-2. Run the CapRover setup:
+2. Confirm VM setup is finished by running `$ cloud-init status`. If it says `"status: running"`, wait and check back in a minute or two.
+
+3. Run the CapRover setup:
     ```bash
     caprover serversetup
     ```
