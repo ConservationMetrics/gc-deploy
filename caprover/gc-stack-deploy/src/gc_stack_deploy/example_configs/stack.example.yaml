@@ -1,5 +1,6 @@
 # TODO: make it easier to populate this file, e.g. not needing to put in auth0 domain multiple times.
 
+rootDomain: "your-captain-root.net"
 caproverUrl: "http[s]://captain.your-captain-root.net" # Remove the brackets if using SSL, remove `[s]` if using HTTP.
 caproverPassword: "secret-captain-password" # Set a secure password!
 
