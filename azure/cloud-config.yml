@@ -18,6 +18,13 @@ packages:
   - docker-ce
   - docker-ce-cli
 
+  # Dependency of pnpm
+  # https://pnpm.io/installation#on-posix-systems says:
+  # > The glibc build requires glibc 2.27 or newer plus libatomic.so.1 — both are present on most
+  # > full distros but may be missing from minimal container images. If you see error while loading
+  # > shared libraries: libatomic.so.1, install it with your distro's package manager
+  - libatomic1
+
   # For Caprover CLI
   - nodejs
 
@@ -30,6 +37,11 @@ runcmd:
   - systemctl enable mnt-persistent-storage.mount
   - systemctl start mnt-persistent-storage.mount
 
+  # admin user (not the same as Unix root) can use docker without `sudo`.
+  # Note this gives the admin user ability to escalate to do _anything_ root-y,
+  # but we are not worried about that.
+  - usermod -aG docker ', parameters('adminUsername'), '
+
   # Install & run caprover core server
   #
   # MAIN_NODE_IP_ADDRESS is used ONLY in initial setup. Set it to loopback so we
@@ -39,15 +51,15 @@ runcmd:
 
   # Install caprover-cli (will be used for setup), via pnpm (smaller than npm)
   #
-  # With this profile.d script, very user on the box (except runcmd) will put pnpm in their $PATH
+  # With this profile.d script, every user on the box (except runcmd) will put pnpm in their $PATH
   - |
-    cat > /etc/profile.d/pnpm.sh <<EOF
+    cat > /etc/profile.d/pnpm.sh <<"EOF"
     export PNPM_HOME=/opt/pnpm
-    export PATH=\\$PNPM_HOME:\\$PATH
+    export PATH=$PNPM_HOME/bin:$PATH
     EOF
-  # Install pnpm, having sourced the PNPM environment variables
+  # Install pnpm (in a place expected by all users on the VM)
   - . /etc/profile.d/pnpm.sh ; SHELL=bash bash -c "curl -fsSL https://get.pnpm.io/install.sh | sh -"
-  # Install caprover CLI, having sourced the PNPM environment variables
+  # Install caprover CLI (in a place expected by all users on the VM)
   - . /etc/profile.d/pnpm.sh ; pnpm install -g caprover
 
 write_files:
