@@ -293,6 +293,23 @@ class PostgresApp(AppSpec):
             )
 
 
+class RedisApp(AppSpec):
+    one_click_app_name = "redis"
+
+    def install(self) -> None:
+        variables = construct_app_variables(self.app_cfg)
+
+        self.logger.info("Deploying Redis")
+        if not self.ctx.dry_run:
+            self.ctx.caprover.deploy_one_click_app(
+                self.one_click_app_name,
+                self.app_name,
+                app_variables=variables,
+                automated=True,
+            )
+            set_memory_limit(self.ctx.caprover, self.app_name)
+
+
 def deploy_stack(config, gc_repository, dry_run):
     """Deploy application stack based on the configuration file."""
     ctx = build_deployment_context(config, gc_repository, dry_run)
@@ -446,17 +463,7 @@ def deploy_stack(config, gc_repository, dry_run):
     # Deploy Redis if specified in config
     one_click_app_name = "redis"
     if config.get(one_click_app_name, {}).get("deploy", False):
-        app_name = config[one_click_app_name].get("app_name", one_click_app_name)
-        variables = construct_app_variables(config, one_click_app_name)
-        logger.info("Deploying Redis")
-        if not dry_run:
-            cap.deploy_one_click_app(
-                one_click_app_name,
-                app_name,
-                app_variables=variables,
-                automated=True,
-            )
-            set_memory_limit(cap, app_name)
+        RedisApp(config[one_click_app_name], ctx).install()
 
     # Deploy Superset if specified in config
     one_click_app_name = "superset-only"
