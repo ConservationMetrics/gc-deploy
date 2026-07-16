@@ -24,13 +24,15 @@ import threading
 import time
 import urllib.request
 from contextlib import contextmanager, nullcontext
-from dataclasses import dataclass, replace
+from dataclasses import replace
 from functools import reduce
 
 import bcrypt
 import psycopg
 from caprover_api import caprover_api
 from ruamel.yaml import YAML
+
+from .base import AppSpec, DeploymentContext, PostgresConnectionConfig
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -181,27 +183,6 @@ def postgres_patient_connect(*args, retries=10, delay_seconds=2, **kwargs):
                 raise last_exc
 
 
-@dataclass
-class PostgresConnectionConfig:
-    """Connection info for a PostgreSQL server in a Docker container."""
-
-    host: str
-    user: str
-    password: str
-    ssl: bool
-    port: int = 5432
-
-    def connstr(self, dbname=None):
-        sslmode = "require" if self.ssl else "disable"
-        s = (
-            f"host={self.host} port={self.port} user={self.user} "
-            f"password={self.password} sslmode={sslmode}"
-        )
-        if dbname:
-            s += f" dbname={dbname}"
-        return s
-
-
 def _psql_create_database_if_not_exists(cursor, dbname):
     try:
         q = psycopg.sql.SQL("CREATE DATABASE {}").format(psycopg.sql.Identifier(dbname))
@@ -239,15 +220,11 @@ def _pre_pull_windmill_image(variables: dict, gc_repository: str) -> None:
     logger.info("Windmill image pre-pull complete.")
 
 
-def deploy_stack(config, gc_repository, dry_run):
-    """Deploy application stack based on the configuration file."""
-
+def build_deployment_context(config, gc_repository, dry_run):
     # Initialize CapRover API with URL and password from config
     cap = caprover_api.CaproverAPI(
         dashboard_url=config["caproverUrl"], password=config["caproverPassword"]
     )
-    webapps_ssl = config.get("webappsUseSsl", True)
-
     # Resolve the two Postgres connection configs.
     if config["postgres"].get("deploy", False):
         # We control the deploy: the one-click Postgres has no SSL configured,
@@ -276,35 +253,61 @@ def deploy_stack(config, gc_repository, dry_run):
         ssl=vm_ssl,
     )
 
-    pg_app_name = config["postgres"].get("app_name", "postgres")
-    if config["postgres"].get("deploy", False):
-        # Deploy internal PostgreSQL instance on CapRover
+    webapps_use_ssl = config.get("webappsUseSsl", True)
+    return DeploymentContext(
+        cap,
+        postgres_from_container,
+        postgres_from_vm,
+        gc_repository,
+        webapps_use_ssl,
+        dry_run,
+    )
+
+
+class PostgresApp(AppSpec):
+    one_click_app_name = "postgres"
+
+    def install(self) -> None:
+        cap = self.ctx.caprover
+        pg_app_name = self.app_name
+
         postgres_variables = {
-            "$$cap_pg_user": config["postgres"]["user"],
-            "$$cap_pg_pass": config["postgres"]["pass"],
-            "$$cap_pg_database": config["postgres"].get("database", "postgres"),
-            "$$cap_postgres_version": config["postgres"].get("version", "16"),
+            "$$cap_pg_user": self.app_cfg["user"],
+            "$$cap_pg_pass": self.app_cfg["pass"],
+            "$$cap_pg_database": self.app_cfg.get("database", "postgres"),
+            "$$cap_postgres_version": self.app_cfg.get("version", "16"),
         }
-        logger.info("Deploying PostgreSQL")
-        if not dry_run:
+        self.logger.info("Deploying PostgreSQL")
+        if not self.ctx.dry_run:
             cap.deploy_one_click_app(
-                one_click_app_name="postgres",
+                one_click_app_name=self.one_click_app_name,
                 app_name=pg_app_name,
                 app_variables=postgres_variables,
                 automated=True,
             )
-            # from_vm.port sets the host-side port mapping
             cap.update_app(
                 pg_app_name,
                 port_mapping=[
-                    f"{postgres_from_vm.port}:{postgres_from_container.port}"
+                    f"{self.ctx.postgres_from_vm.port}:{self.ctx.postgres_from_container.port}"
                 ],
             )
+
+
+def deploy_stack(config, gc_repository, dry_run):
+    """Deploy application stack based on the configuration file."""
+    ctx = build_deployment_context(config, gc_repository, dry_run)
+
+    pg_app_name = config["postgres"].get("app_name", "postgres")
+    if config["postgres"].get("deploy", False):
+        PostgresApp(config["postgres"], ctx).install()
     else:
         logger.info("Using already-deployed or external PostgreSQL configuration.")
         if not dry_run:
             _verify_existing_postgres_app(
-                cap, pg_app_name, postgres_from_container, postgres_from_vm
+                ctx.caprover,
+                pg_app_name,
+                ctx.postgres_from_container,
+                ctx.postgres_from_vm,
             )
 
     databases = ["warehouse"]
@@ -317,7 +320,7 @@ def deploy_stack(config, gc_repository, dry_run):
     if not dry_run:
         with (
             postgres_patient_connect(
-                postgres_from_vm.connstr("postgres"), autocommit=True
+                ctx.postgres_from_vm.connstr("postgres"), autocommit=True
             ) as conn,
             conn.cursor() as cur,
         ):
