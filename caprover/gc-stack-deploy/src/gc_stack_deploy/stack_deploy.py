@@ -202,6 +202,13 @@ class PostgresConnectionConfig:
         return s
 
 
+def _psql_create_database_if_not_exists(cursor, dbname):
+    try:
+        cursor.execute(f"CREATE DATABASE {dbname};")
+    except psycopg.errors.DuplicateDatabase:
+        pass
+
+
 def _windmill_default_docker_image(gc_repository: str) -> str:
     """Fetch the default Windmill docker image tag from the one-click app definition."""
     # Mimic download one-click-app from remote repository from CaproverAPI's _download_one_click_app_defn
@@ -314,10 +321,7 @@ def deploy_stack(config, gc_repository, dry_run):
             conn.cursor() as cur,
         ):
             for database in databases:
-                try:
-                    cur.execute(f"CREATE DATABASE {database};")
-                except psycopg.errors.DuplicateDatabase:
-                    pass
+                _psql_create_database_if_not_exists(cur, database)
 
     # Deploy Windmill if specified in config
     one_click_app_name = "windmill-only"
@@ -355,8 +359,10 @@ def deploy_stack(config, gc_repository, dry_run):
                 conn.cursor() as cur,
             ):
                 logger.info("Connected to database as superadmin")
-                # Execute a command: this creates a new table
-                cur.execute("CREATE DATABASE windmill;")
+                # TODO: Run windmill without using a postgres superuser (even when not on azure)
+                # https://www.windmill.dev/docs/advanced/self_host#run-windmill-without-using-a-postgres-superuser
+                _psql_create_database_if_not_exists(cur, "windmill")
+
                 if is_using_azure_db:
                     cur.execute(
                         f"CREATE USER {windmill_db_user} PASSWORD '{windmill_db_pass}';"
