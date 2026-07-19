@@ -23,8 +23,8 @@ from contextlib import nullcontext
 from caprover_api import caprover_api
 from ruamel.yaml import YAML
 
-from .APPS_REGISTRY import APPS_REGISTRY, PostgresApp
 from .base import DeploymentContext, PostgresConnectionConfig
+from .gui import Deployer
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -268,9 +268,10 @@ def main():
     else:
         context_manager = nullcontext(repo_path)
 
-    # Deploy application stack
+    # Load Deployer GUI application
     with context_manager as repo_url:
-        deploy_stack(config, repo_url, args.dry_run)
+        ctx = build_deployment_context(config, repo_url, args.dry_run)
+        Deployer(config, ctx).run()
 
 
 if __name__ == "__main__":
