@@ -23,7 +23,7 @@ import sys
 import threading
 import time
 import urllib.request
-from contextlib import contextmanager, nullcontext
+from contextlib import nullcontext
 from dataclasses import replace
 from functools import reduce
 
@@ -140,57 +140,6 @@ def construct_app_variables(app_cfg, init=None):
     return variables
 
 
-@contextmanager
-def postgres_patient_connect(*args, retries=10, delay_seconds=2, **kwargs):
-    """
-    Context manager that retries initial PostgreSQL connection (e.g. waits for server to be ready)
-
-    After successful connect, it does not retry or reconnect for subsequent errors
-    during the context block.
-
-    Parameters
-    ----------
-    *args :
-        Positional arguments passed directly to psycopg.connect.
-    retries : int, optional
-        Maximum number of connection attempts (default 10).
-    delay_seconds : int, optional
-        Base delay in seconds between retries.
-    **kwargs :
-        Keyword arguments passed directly to psycopg.connect.
-
-    Yields
-    ------
-    psycopg.Connection
-        A live PostgreSQL connection object.
-
-    Raises
-    ------
-    psycopg.OperationalError
-        If connection cannot be established after the given retries.
-    """
-    last_exc = None
-    for attempt in range(1, retries + 1):
-        try:
-            with psycopg.connect(*args, **kwargs) as conn:
-                yield conn
-                return
-        except psycopg.OperationalError as e:
-            last_exc = e
-            if attempt < retries:
-                time.sleep(delay_seconds)
-            else:
-                raise last_exc
-
-
-def _psql_create_database_if_not_exists(cursor, dbname):
-    try:
-        q = psycopg.sql.SQL("CREATE DATABASE {}").format(psycopg.sql.Identifier(dbname))
-        cursor.execute(q)
-    except psycopg.errors.DuplicateDatabase:
-        pass
-
-
 def _windmill_default_docker_image(gc_repository: str) -> str:
     """Fetch the default Windmill docker image tag from the one-click app definition."""
     # Mimic download one-click-app from remote repository from CaproverAPI's _download_one_click_app_defn
@@ -267,7 +216,7 @@ def build_deployment_context(config, gc_repository, dry_run):
 class PostgresApp(AppSpec):
     one_click_app_name = "postgres"
 
-    def install(self) -> None:
+    def _install(self) -> None:
         cap = self.ctx.caprover
         pg_app_name = self.app_name
 
@@ -296,6 +245,7 @@ class PostgresApp(AppSpec):
 class WindmillApp(AppSpec):
     one_click_app_name = "windmill-only"
     depends_on = (PostgresApp.one_click_app_name,)
+    databases = ("warehouse", "windmill")
 
     @property
     def windmill_db_user_and_password(self):
@@ -307,7 +257,7 @@ class WindmillApp(AppSpec):
         )
         return windmill_db_user, windmill_db_pass
 
-    def install(self) -> None:
+    def _install(self) -> None:
         is_using_azure_db = "azure_db_user" in self.app_cfg
         if is_using_azure_db:
             input(
@@ -331,10 +281,6 @@ class WindmillApp(AppSpec):
                 conn.cursor() as cur,
             ):
                 logger.info("Connected to database as superadmin")
-                # TODO: Run windmill without using a postgres superuser (even when not on azure)
-                # https://www.windmill.dev/docs/advanced/self_host#run-windmill-without-using-a-postgres-superuser
-                _psql_create_database_if_not_exists(cur, "windmill")
-
                 if is_using_azure_db:
                     cur.execute(
                         f"CREATE USER {windmill_db_user} PASSWORD '{windmill_db_pass}';"
@@ -419,7 +365,7 @@ class WindmillApp(AppSpec):
 class RedisApp(AppSpec):
     one_click_app_name = "redis"
 
-    def install(self) -> None:
+    def _install(self) -> None:
         variables = construct_app_variables(self.app_cfg)
 
         self.logger.info("Deploying Redis")
@@ -439,8 +385,9 @@ class SupersetApp(AppSpec):
         PostgresApp.one_click_app_name,
         RedisApp.one_click_app_name,
     )
+    databases = ("warehouse",)
 
-    def install(self) -> None:
+    def _install(self) -> None:
         postgres_from_container = self.ctx.postgres_from_container
         cap = self.ctx.caprover
 
@@ -497,8 +444,9 @@ class SupersetApp(AppSpec):
 class GCLandingPageApp(AppSpec):
     one_click_app_name = "gc-landing-page"
     depends_on = (PostgresApp.one_click_app_name,)
+    databases = ("warehouse", "guardianconnector")
 
-    def install(self) -> None:
+    def _install(self) -> None:
         postgres_from_container = self.ctx.postgres_from_container
         cap = self.ctx.caprover
 
@@ -539,8 +487,9 @@ class GCLandingPageApp(AppSpec):
 class GCExplorerApp(AppSpec):
     one_click_app_name = "gc-explorer"
     depends_on = (PostgresApp.one_click_app_name,)
+    databases = ("warehouse", "guardianconnector")
 
-    def install(self) -> None:
+    def _install(self) -> None:
         postgres_from_container = self.ctx.postgres_from_container
         cap = self.ctx.caprover
 
@@ -571,7 +520,7 @@ class GCExplorerApp(AppSpec):
 class ComapeoCloudApp(AppSpec):
     one_click_app_name = "comapeo-cloud"
 
-    def install(self) -> None:
+    def _install(self) -> None:
         variables = {}
         variables = construct_app_variables(self.app_cfg, variables)
         logger.info(f"Deploying {self.one_click_app_name} one-click app")
@@ -597,7 +546,7 @@ class ComapeoCloudApp(AppSpec):
 class FilebrowserApp(AppSpec):
     one_click_app_name = "filebrowser"
 
-    def install(self) -> None:
+    def _install(self) -> None:
 
         cap = self.ctx.caprover
         variables = {}
@@ -668,23 +617,6 @@ def deploy_stack(config, gc_repository, dry_run):
                 ctx.postgres_from_container,
                 ctx.postgres_from_vm,
             )
-
-    databases = ["warehouse"]
-    if any(
-        config.get(service_name, {}).get("deploy", False)
-        for service_name in ("gc-landing-page", "gc-explorer")
-    ):
-        databases.append("guardianconnector")
-
-    if not dry_run:
-        with (
-            postgres_patient_connect(
-                ctx.postgres_from_vm.connstr("postgres"), autocommit=True
-            ) as conn,
-            conn.cursor() as cur,
-        ):
-            for database in databases:
-                _psql_create_database_if_not_exists(cur, database)
 
     # Deploy Windmill if specified in config
     one_click_app_name = "windmill-only"
