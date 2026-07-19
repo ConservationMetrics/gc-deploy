@@ -594,6 +594,64 @@ class ComapeoCloudApp(AppSpec):
             set_memory_limit(cap, self.app_name)
 
 
+class FilebrowserApp(AppSpec):
+    one_click_app_name = "filebrowser"
+
+    def install(self) -> None:
+
+        cap = self.ctx.caprover
+        variables = {}
+        variables = construct_app_variables(self.app_cfg, variables)
+        logger.info(f"Deploying {self.one_click_app_name} one-click app")
+
+        admin_password = self.app_cfg.get("admin_password")
+        generated = admin_password is None
+        if generated:
+            admin_password = secrets.token_urlsafe(16)
+        hashed_password = bcrypt.hashpw(
+            admin_password.encode("utf-8"), bcrypt.gensalt()
+        ).decode("utf-8")
+
+        if generated:
+            print("\n" + "=" * 50)
+            print(f"FILEBROWSER ADMIN PASSWORD: {admin_password}")
+            print("Save this now -- it will not be shown again.")
+            print("=" * 50 + "\n")
+        else:
+            logger.info("Filebrowser admin password set from config (username: admin)")
+
+        if not self.ctx.dry_run:
+            cap.deploy_one_click_app(
+                self.one_click_app_name,
+                self.app_name,
+                app_variables=variables,
+                automated=True,
+            )
+            if self.ctx.webapps_use_ssl:
+                cap.enable_ssl(self.app_name)
+                cap.update_app(self.app_name, force_ssl=True)
+
+            cap.update_app(
+                self.app_name,
+                persistent_directories=[
+                    f"{self.app_name}-database:/database",
+                    f"{self.app_name}-config:/config",
+                    "/mnt/persistent-storage:/srv",  # The files to be served up live here
+                ],
+                # NOTE: You will get warning pages in the filebrowser app before the `datalake` subdir is created in storage:
+                # https://github.com/ConservationMetrics/gc-deploy/pull/12#discussion_r2243697895
+                environment_variables={
+                    "FB_ROOT": "/srv/datalake",
+                    "FB_PASSWORD": hashed_password,
+                },
+            )
+            set_memory_limit(cap, self.app_name)
+            logger.info("Waiting for Filebrowser to initialize its database...")
+            time.sleep(20)  # TODO: confirm has started. Now we're just guessing.
+            # CaproverAPI doesn't support deletion of an env var, so we just set it to empty
+            cap.update_app(self.app_name, environment_variables={"FB_PASSWORD": ""})
+
+
 def deploy_stack(config, gc_repository, dry_run):
     """Deploy application stack based on the configuration file."""
     ctx = build_deployment_context(config, gc_repository, dry_run)
@@ -662,57 +720,7 @@ def deploy_stack(config, gc_repository, dry_run):
     # Deploy Filebrowser if specified in config
     one_click_app_name = "filebrowser"
     if config.get(one_click_app_name, {}).get("deploy", False):
-        app_name = config[one_click_app_name].get("app_name", one_click_app_name)
-        variables = {}
-        variables = construct_app_variables(config, one_click_app_name, variables)
-        logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
-
-        admin_password = config["filebrowser"].get("admin_password")
-        generated = admin_password is None
-        if generated:
-            admin_password = secrets.token_urlsafe(16)
-        hashed_password = bcrypt.hashpw(
-            admin_password.encode("utf-8"), bcrypt.gensalt()
-        ).decode("utf-8")
-
-        if generated:
-            print("\n" + "=" * 50)
-            print(f"FILEBROWSER ADMIN PASSWORD: {admin_password}")
-            print("Save this now -- it will not be shown again.")
-            print("=" * 50 + "\n")
-        else:
-            logger.info("Filebrowser admin password set from config (username: admin)")
-
-        if not dry_run:
-            cap.deploy_one_click_app(
-                one_click_app_name,
-                app_name,
-                app_variables=variables,
-                automated=True,
-            )
-            if webapps_ssl:
-                cap.enable_ssl(app_name)
-            cap.update_app(app_name, force_ssl=webapps_ssl)
-
-            cap.update_app(
-                app_name,
-                persistent_directories=[
-                    f"{app_name}-database:/database",
-                    f"{app_name}-config:/config",
-                    "/mnt/persistent-storage:/srv",  # The files to be served up live here
-                ],
-                # NOTE: You will get warning pages in the filebrowser app before the `datalake` subdir is created in storage:
-                # https://github.com/ConservationMetrics/gc-deploy/pull/12#discussion_r2243697895
-                environment_variables={
-                    "FB_ROOT": "/srv/datalake",
-                    "FB_PASSWORD": hashed_password,
-                },
-            )
-            set_memory_limit(cap, app_name)
-            logger.info("Waiting for Filebrowser to initialize its database...")
-            time.sleep(20)  # TODO: confirm has started. Now we're just guessing.
-            # CaproverAPI doesn't support deletion of an env var, so we just set it to empty
-            cap.update_app(app_name, environment_variables={"FB_PASSWORD": ""})
+        FilebrowserApp(config[one_click_app_name], ctx).install()
 
 
 def is_local_path(path):
