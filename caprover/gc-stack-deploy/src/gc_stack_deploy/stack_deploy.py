@@ -466,13 +466,45 @@ class GCLandingPageApp(AppSpec):
 
         if redirect_to_root:
             logger.info(
-                f"Will serve {app_name} at the root domain: [{cap.root_domain}]"
+                f"Will serve {self.app_name} at the root domain: [{cap.root_domain}]"
             )
             if not self.ctx.dry_run:
                 cap.add_domain(self.app_name, cap.root_domain)
                 if self.ctx.webapps_use_ssl:
                     cap.enable_ssl(self.app_name, cap.root_domain)
                 cap.update_app(self.app_name, redirectDomain=cap.root_domain)
+
+
+class GCExplorerApp(AppSpec):
+    one_click_app_name = "gc-explorer"
+    depends_on = (PostgresApp.one_click_app_name,)
+
+    def install(self) -> None:
+        postgres_from_container = self.ctx.postgres_from_container
+        cap = self.ctx.caprover
+
+        variables = {
+            "$$cap_postgres_host": postgres_from_container.host,
+            "$$cap_postgres_port": postgres_from_container.port,
+            "$$cap_postgres_ssl": postgres_from_container.ssl,
+            "$$cap_postgres_user": postgres_from_container.user,
+            "$$cap_postgres_pass": postgres_from_container.password,
+            "$$cap_postgres_database": self.app_cfg["postgres_database"],
+        }
+        variables = construct_app_variables(self.app_cfg, variables)
+        logger.info(f"Deploying {self.one_click_app_name} one-click app")
+        if not self.ctx.dry_run:
+            cap.deploy_one_click_app(
+                self.one_click_app_name,
+                self.app_name,
+                app_variables=variables,
+                automated=True,
+                one_click_repository=self.ctx.gc_repository,
+            )
+            if self.ctx.webapps_use_ssl:
+                cap.enable_ssl(self.app_name)
+                cap.update_app(self.app_name, force_ssl=True)
+            set_memory_limit(cap, self.app_name)
 
 
 class ComapeoCloudApp(AppSpec):
@@ -602,32 +634,7 @@ def deploy_stack(config, gc_repository, dry_run):
     # Deploy GC Explorer if specified in config
     one_click_app_name = "gc-explorer"
     if config.get(one_click_app_name, {}).get("deploy", False):
-        app_name = config[one_click_app_name].get("app_name", one_click_app_name)
-        variables = {
-            "$$cap_postgres_host": postgres_from_container.host,
-            "$$cap_postgres_port": postgres_from_container.port,
-            "$$cap_postgres_ssl": postgres_from_container.ssl,
-            "$$cap_postgres_user": postgres_from_container.user,
-            "$$cap_postgres_pass": postgres_from_container.password,
-            "$$cap_postgres_database": config[one_click_app_name]["postgres_database"],
-        }
-        variables = construct_app_variables(config, one_click_app_name, variables)
-        logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
-        if not dry_run:
-            cap.deploy_one_click_app(
-                one_click_app_name,
-                app_name,
-                app_variables=variables,
-                automated=True,
-                one_click_repository=gc_repository,
-            )
-            if webapps_ssl:
-                cap.enable_ssl(app_name)
-            cap.update_app(
-                app_name,
-                force_ssl=webapps_ssl,
-            )
-            set_memory_limit(cap, app_name)
+        GCExplorerApp(config[one_click_app_name], ctx).install()
 
     # Deploy CoMapeo Cloud if specified in config
     one_click_app_name = "comapeo-cloud"
