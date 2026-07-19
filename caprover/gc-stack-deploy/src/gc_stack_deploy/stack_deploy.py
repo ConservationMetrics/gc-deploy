@@ -131,9 +131,9 @@ def set_memory_limit(cap, appname, memory_bytes=1610612736):
     cap.update_app(appname, serviceUpdateOverride=new_suo)
 
 
-def construct_app_variables(config, service_name, init=None):
+def construct_app_variables(app_cfg, init=None):
     variables = {} if init is None else init
-    for key, val in config[service_name].items():
+    for key, val in app_cfg.items():
         if key == "deploy":
             continue
         variables[f"$$cap_{key}"] = val
@@ -293,6 +293,129 @@ class PostgresApp(AppSpec):
             )
 
 
+class WindmillApp(AppSpec):
+    one_click_app_name = "windmill-only"
+    depends_on = (PostgresApp.one_click_app_name,)
+
+    @property
+    def windmill_db_user_and_password(self):
+        windmill_db_user = self.app_cfg.pop(  # FIXME: config should be immutable
+            "azure_db_user", self.ctx.postgres_from_container.user
+        )
+        windmill_db_pass = self.app_cfg.pop(
+            "azure_db_pass", self.ctx.postgres_from_container.password
+        )
+        return windmill_db_user, windmill_db_pass
+
+    def install(self) -> None:
+        is_using_azure_db = "azure_db_user" in self.app_cfg
+        if is_using_azure_db:
+            input(
+                "Before continuing, enable UUID-OSSP extension on the Azure database..."
+            )
+
+        windmill_db_user, windmill_db_pass = self.windmill_db_user_and_password
+        variables = {
+            "$$cap_database_url": f"postgres://{windmill_db_user}:{windmill_db_pass}@{self.ctx.postgres_from_container.host}:{self.ctx.postgres_from_container.port}/windmill"
+        }
+        variables = construct_app_variables(self.app_cfg, variables)
+
+        dry_run = self.ctx.dry_run
+        self.logger.info("Settuing up database for Windmill")
+        if not dry_run:
+            # As superadmin, create a windmill database
+            with (
+                psycopg.connect(
+                    self.ctx.postgres_from_vm.connstr("postgres"), autocommit=True
+                ) as conn,
+                conn.cursor() as cur,
+            ):
+                logger.info("Connected to database as superadmin")
+                # TODO: Run windmill without using a postgres superuser (even when not on azure)
+                # https://www.windmill.dev/docs/advanced/self_host#run-windmill-without-using-a-postgres-superuser
+                _psql_create_database_if_not_exists(cur, "windmill")
+
+                if is_using_azure_db:
+                    cur.execute(
+                        f"CREATE USER {windmill_db_user} PASSWORD '{windmill_db_pass}';"
+                    )
+                    cur.execute(
+                        f"GRANT ALL PRIVILEGES ON DATABASE windmill TO {windmill_db_user};"
+                    )
+                    # Azure only:
+                    cur.execute(
+                        psycopg.sql.SQL("GRANT azure_pg_admin TO {};").format(
+                            psycopg.sql.Identifier(windmill_db_user)
+                        )
+                    )
+                    cur.execute(
+                        psycopg.sql.SQL("ALTER USER {} CREATEROLE;").format(
+                            psycopg.sql.Identifier(windmill_db_user)
+                        )
+                    )
+
+        # As windmill_login
+        postgres_azure_user = replace(
+            self.ctx.postgres_from_vm, user=windmill_db_user, password=windmill_db_pass
+        )
+        if is_using_azure_db and not dry_run:
+            with psycopg.connect(postgres_azure_user.connstr("windmill")) as conn:
+                self.logger.info(f"Connected to database as {postgres_azure_user.user}")
+                with conn.cursor() as cur:
+                    # The following comes from https://raw.githubusercontent.com/windmill-labs/windmill/main/init-db-as-superuser.sql
+                    cur.execute("CREATE ROLE windmill_user;")
+                    cur.execute("""GRANT ALL
+                                ON ALL TABLES IN SCHEMA public
+                                TO windmill_user;""")
+                    cur.execute("""GRANT ALL PRIVILEGES
+                                ON ALL SEQUENCES IN SCHEMA public
+                                TO windmill_user;""")
+                    cur.execute("""ALTER DEFAULT PRIVILEGES
+                                IN SCHEMA public
+                                GRANT ALL ON TABLES TO windmill_user;""")
+                    cur.execute("""ALTER DEFAULT PRIVILEGES
+                                IN SCHEMA public
+                                GRANT ALL ON SEQUENCES TO windmill_user;""")
+                    cur.execute("CREATE ROLE windmill_admin;")  # -WITH BYPASSRLS;
+                    cur.execute("GRANT windmill_user TO windmill_admin;")
+
+                    # Going rogue again.
+                    cur.execute(
+                        psycopg.sql.SQL("GRANT windmill_admin TO {};").format(
+                            psycopg.sql.Identifier(postgres_azure_user.user)
+                        )
+                    )
+                    cur.execute(
+                        psycopg.sql.SQL("GRANT windmill_user TO {};").format(
+                            psycopg.sql.Identifier(postgres_azure_user.user)
+                        )
+                    )
+
+        # Hacky workaround: pre-pull large Windmill image to avoid CapRover timeout
+        _pre_pull_windmill_image(variables, self.ctx.gc_repository)
+        self.logger.info("Deploying Windmill one-click-app")
+        if not dry_run:
+            cap = self.ctx.caprover
+            cap.deploy_one_click_app(
+                self.one_click_app_name,
+                self.app_name,
+                app_variables=variables,
+                automated=True,
+                one_click_repository=self.ctx.gc_repository,
+            )
+            cap.update_app(self.app_name, support_websocket=True)
+            if self.ctx.webapps_use_ssl:
+                cap.enable_ssl(self.app_name)
+                cap.update_app(self.app_name, force_ssl=True)
+
+            for svcname in (
+                self.app_name,
+                f"{self.app_name}-worker",
+                f"{self.app_name}-worker-native",
+            ):
+                set_memory_limit(cap, svcname)
+
+
 class RedisApp(AppSpec):
     one_click_app_name = "redis"
 
@@ -347,118 +470,7 @@ def deploy_stack(config, gc_repository, dry_run):
     # Deploy Windmill if specified in config
     one_click_app_name = "windmill-only"
     if config.get(one_click_app_name, {}).get("deploy", False):
-        app_name = config[one_click_app_name].get("app_name", one_click_app_name)
-        windmill_db_user = config[one_click_app_name].pop(
-            "azure_db_user", postgres_from_container.user
-        )
-        windmill_db_pass = config[one_click_app_name].pop(
-            "azure_db_pass", postgres_from_container.password
-        )
-        is_using_azure_db = "azure_db_user" in config[one_click_app_name]
-        if is_using_azure_db:
-            input(
-                "Before continuing, enable UUID-OSSP extension on the Azure database..."
-            )
-
-        variables = {
-            "$$cap_database_url": f"postgres://{windmill_db_user}:{windmill_db_pass}@{postgres_from_container.host}:{postgres_from_container.port}/windmill"
-        }
-
-        variables = construct_app_variables(config, one_click_app_name, variables)
-
-        logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
-
-        # Hacky workaround: pre-pull large Windmill image to avoid CapRover timeout
-        _pre_pull_windmill_image(variables, gc_repository)
-
-        if not dry_run:
-            # As superadmin, create a windmill database
-            with (
-                psycopg.connect(
-                    postgres_from_vm.connstr("postgres"), autocommit=True
-                ) as conn,
-                conn.cursor() as cur,
-            ):
-                logger.info("Connected to database as superadmin")
-                # TODO: Run windmill without using a postgres superuser (even when not on azure)
-                # https://www.windmill.dev/docs/advanced/self_host#run-windmill-without-using-a-postgres-superuser
-                _psql_create_database_if_not_exists(cur, "windmill")
-
-                if is_using_azure_db:
-                    cur.execute(
-                        f"CREATE USER {windmill_db_user} PASSWORD '{windmill_db_pass}';"
-                    )
-                    cur.execute(
-                        f"GRANT ALL PRIVILEGES ON DATABASE windmill TO {windmill_db_user};"
-                    )
-                    # Azure only:
-                    cur.execute(
-                        psycopg.sql.SQL("GRANT azure_pg_admin TO {};").format(
-                            psycopg.sql.Identifier(windmill_db_user)
-                        )
-                    )
-                    cur.execute(
-                        psycopg.sql.SQL("ALTER USER {} CREATEROLE;").format(
-                            psycopg.sql.Identifier(windmill_db_user)
-                        )
-                    )
-
-        # As windmill_login
-        postgres_azure_user = replace(
-            postgres_from_vm, user=windmill_db_user, password=windmill_db_pass
-        )
-        if is_using_azure_db and not dry_run:
-            with psycopg.connect(postgres_azure_user.connstr("windmill")) as conn:
-                logger.info(f"Connected to database as {postgres_azure_user.user}")
-                with conn.cursor() as cur:
-                    # The following comes from https://raw.githubusercontent.com/windmill-labs/windmill/main/init-db-as-superuser.sql
-                    cur.execute("CREATE ROLE windmill_user;")
-                    cur.execute("""GRANT ALL
-                                ON ALL TABLES IN SCHEMA public
-                                TO windmill_user;""")
-                    cur.execute("""GRANT ALL PRIVILEGES
-                                ON ALL SEQUENCES IN SCHEMA public
-                                TO windmill_user;""")
-                    cur.execute("""ALTER DEFAULT PRIVILEGES
-                                IN SCHEMA public
-                                GRANT ALL ON TABLES TO windmill_user;""")
-                    cur.execute("""ALTER DEFAULT PRIVILEGES
-                                IN SCHEMA public
-                                GRANT ALL ON SEQUENCES TO windmill_user;""")
-                    cur.execute("CREATE ROLE windmill_admin;")  # -WITH BYPASSRLS;
-                    cur.execute("GRANT windmill_user TO windmill_admin;")
-
-                    # Going rogue again.
-                    cur.execute(
-                        psycopg.sql.SQL("GRANT windmill_admin TO {};").format(
-                            psycopg.sql.Identifier(postgres_azure_user.user)
-                        )
-                    )
-                    cur.execute(
-                        psycopg.sql.SQL("GRANT windmill_user TO {};").format(
-                            psycopg.sql.Identifier(postgres_azure_user.user)
-                        )
-                    )
-
-        if not dry_run:
-            cap.deploy_one_click_app(
-                one_click_app_name,
-                app_name,
-                app_variables=variables,
-                automated=True,
-                one_click_repository=gc_repository,
-            )
-            cap.update_app(app_name, support_websocket=True)
-            if webapps_ssl:
-                cap.enable_ssl(app_name)
-                cap.update_app(app_name, force_ssl=True)
-
-            for svcname in (
-                app_name,
-                f"{app_name}-worker",
-                f"{app_name}-worker-native",
-            ):
-                set_memory_limit(cap, svcname)
+        WindmillApp(config[one_click_app_name], ctx).install()
 
     # Deploy Redis if specified in config
     one_click_app_name = "redis"
