@@ -433,6 +433,67 @@ class RedisApp(AppSpec):
             set_memory_limit(self.ctx.caprover, self.app_name)
 
 
+class SupersetApp(AppSpec):
+    one_click_app_name = "superset-only"
+    depends_on = (
+        PostgresApp.one_click_app_name,
+        RedisApp.one_click_app_name,
+    )
+
+    def install(self) -> None:
+        postgres_from_container = self.ctx.postgres_from_container
+        cap = self.ctx.caprover
+
+        if not self.ctx.dry_run:
+            with (
+                psycopg.connect(
+                    self.ctx.postgres_from_vm.connstr(), autocommit=True
+                ) as conn,
+                conn.cursor() as cur,
+            ):
+                cur.execute("CREATE DATABASE superset_metastore;")
+
+        variables = {
+            "$$cap_postgres_host": postgres_from_container.host,
+            "$$cap_postgres_port": postgres_from_container.port,
+            "$$cap_postgres_userpassword": f"{postgres_from_container.user}:{postgres_from_container.password}",
+        }
+        variables = construct_app_variables(self.app_cfg, variables)
+        logger.info(f"Deploying {self.one_click_app_name} one-click app")
+        if not self.ctx.dry_run:
+            cap.deploy_one_click_app(
+                self.one_click_app_name,
+                self.app_name,
+                app_variables=variables,
+                automated=True,
+                one_click_repository=self.ctx.gc_repository,
+            )
+            if self.ctx.webapps_use_ssl:
+                cap.enable_ssl(self.app_name)
+                cap.update_app(self.app_name, force_ssl=True)
+
+            # disable the healthcheck in Service Update Override, which will be maintained
+            # in future deploys. This is OPTIONAL here because the one-click app already
+            # does this in a custom dockerfileLines, but recommended to ease upgrades.
+            for appname in (
+                f"{self.app_name}-init-and-beat",
+                f"{self.app_name}-worker",
+            ):
+                worker_app = cap.get_app(appname)
+                new_suo = set_yaml_value(
+                    worker_app["serviceUpdateOverride"],
+                    "TaskTemplate.HealthCheck.Test",
+                    ["NONE"],
+                )
+                # Also set memory limit to workers
+                new_suo = set_yaml_value(
+                    new_suo, "TaskTemplate.Resources.Limits.MemoryBytes", 1610612736
+                )
+                cap.update_app(appname, serviceUpdateOverride=new_suo)
+
+            set_memory_limit(cap, self.app_name)  # The web service (not worker)
+
+
 class GCLandingPageApp(AppSpec):
     one_click_app_name = "gc-landing-page"
     depends_on = (PostgresApp.one_click_app_name,)
@@ -580,50 +641,7 @@ def deploy_stack(config, gc_repository, dry_run):
     # Deploy Superset if specified in config
     one_click_app_name = "superset-only"
     if config.get(one_click_app_name, {}).get("deploy", False):
-        app_name = config[one_click_app_name].get("app_name", one_click_app_name)
-        if not dry_run:
-            with (
-                psycopg.connect(postgres_from_vm.connstr(), autocommit=True) as conn,
-                conn.cursor() as cur,
-            ):
-                cur.execute("CREATE DATABASE superset_metastore;")
-
-        variables = {
-            "$$cap_postgres_host": postgres_from_container.host,
-            "$$cap_postgres_port": postgres_from_container.port,
-            "$$cap_postgres_userpassword": f"{postgres_from_container.user}:{postgres_from_container.password}",
-        }
-        variables = construct_app_variables(config, one_click_app_name, variables)
-        logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
-        if not dry_run:
-            cap.deploy_one_click_app(
-                one_click_app_name,
-                app_name,
-                app_variables=variables,
-                automated=True,
-                one_click_repository=gc_repository,
-            )
-            if webapps_ssl:
-                cap.enable_ssl(app_name)
-            cap.update_app(app_name, force_ssl=webapps_ssl)
-
-            # disable the healthcheck in Service Update Override, which will be maintained
-            # in future deploys. This is OPTIONAL here because the one-click app already
-            # does this in a custom dockerfileLines, but recommended to ease upgrades.
-            for appname in (f"{app_name}-init-and-beat", f"{app_name}-worker"):
-                worker_app = cap.get_app(appname)
-                new_suo = set_yaml_value(
-                    worker_app["serviceUpdateOverride"],
-                    "TaskTemplate.HealthCheck.Test",
-                    ["NONE"],
-                )
-                # Also set memory limit to workers
-                new_suo = set_yaml_value(
-                    new_suo, "TaskTemplate.Resources.Limits.MemoryBytes", 1610612736
-                )
-                cap.update_app(appname, serviceUpdateOverride=new_suo)
-
-            set_memory_limit(cap, app_name)  # The web service (not worker)
+        SupersetApp(config[one_click_app_name], ctx).install()
 
     # Deploy GC Landing Page if specified in config
     # Note: as GC Landing Page is intended to be the default landing page, we don't need to add a redirect domain, and instead, we set the redirectDomain to the root domain. (e.g. so that the landing page will load when a user accesses "your-captain-root.net")
