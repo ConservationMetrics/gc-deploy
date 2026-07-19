@@ -433,6 +433,32 @@ class RedisApp(AppSpec):
             set_memory_limit(self.ctx.caprover, self.app_name)
 
 
+class ComapeoCloudApp(AppSpec):
+    one_click_app_name = "comapeo-cloud"
+
+    def install(self) -> None:
+        variables = {}
+        variables = construct_app_variables(self.app_cfg, variables)
+        logger.info(f"Deploying {self.one_click_app_name} one-click app")
+        cap = self.ctx.caprover
+        if not self.ctx.dry_run:
+            cap.deploy_one_click_app(
+                self.one_click_app_name,
+                self.app_name,
+                app_variables=variables,
+                one_click_repository=self.ctx.gc_repository,
+                automated=True,
+            )
+            if self.ctx.webapps_use_ssl:
+                cap.enable_ssl(self.app_name)
+            cap.update_app(
+                self.app_name,
+                force_ssl=self.ctx.webapps_use_ssl,
+                support_websocket=True,
+            )
+            set_memory_limit(cap, self.app_name)
+
+
 def deploy_stack(config, gc_repository, dry_run):
     """Deploy application stack based on the configuration file."""
     ctx = build_deployment_context(config, gc_repository, dry_run)
@@ -596,22 +622,7 @@ def deploy_stack(config, gc_repository, dry_run):
     # Deploy CoMapeo Cloud if specified in config
     one_click_app_name = "comapeo-cloud"
     if config.get(one_click_app_name, {}).get("deploy", False):
-        app_name = config[one_click_app_name].get("app_name", one_click_app_name)
-        variables = {}
-        variables = construct_app_variables(config, one_click_app_name, variables)
-        logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
-        if not dry_run:
-            cap.deploy_one_click_app(
-                one_click_app_name,
-                app_name,
-                app_variables=variables,
-                one_click_repository=gc_repository,
-                automated=True,
-            )
-            if webapps_ssl:
-                cap.enable_ssl(app_name)
-            cap.update_app(app_name, force_ssl=webapps_ssl, support_websocket=True)
-            set_memory_limit(cap, app_name)
+        ComapeoCloudApp(config[one_click_app_name], ctx).install()
 
     # Deploy Filebrowser if specified in config
     one_click_app_name = "filebrowser"
