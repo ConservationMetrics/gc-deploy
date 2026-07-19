@@ -204,7 +204,8 @@ class PostgresConnectionConfig:
 
 def _psql_create_database_if_not_exists(cursor, dbname):
     try:
-        cursor.execute(f"CREATE DATABASE {dbname};")
+        q = psycopg.sql.SQL("CREATE DATABASE {}").format(psycopg.sql.Identifier(dbname))
+        cursor.execute(q)
     except psycopg.errors.DuplicateDatabase:
         pass
 
@@ -371,8 +372,16 @@ def deploy_stack(config, gc_repository, dry_run):
                         f"GRANT ALL PRIVILEGES ON DATABASE windmill TO {windmill_db_user};"
                     )
                     # Azure only:
-                    cur.execute(f"GRANT azure_pg_admin TO {windmill_db_user};")
-                    cur.execute(f"ALTER USER {windmill_db_user} CREATEROLE;")
+                    cur.execute(
+                        psycopg.sql.SQL("GRANT azure_pg_admin TO {};").format(
+                            psycopg.sql.Identifier(windmill_db_user)
+                        )
+                    )
+                    cur.execute(
+                        psycopg.sql.SQL("ALTER USER {} CREATEROLE;").format(
+                            psycopg.sql.Identifier(windmill_db_user)
+                        )
+                    )
 
         # As windmill_login
         postgres_azure_user = replace(
@@ -400,8 +409,16 @@ def deploy_stack(config, gc_repository, dry_run):
                     cur.execute("GRANT windmill_user TO windmill_admin;")
 
                     # Going rogue again.
-                    cur.execute(f"GRANT windmill_admin TO {postgres_azure_user.user};")
-                    cur.execute(f"GRANT windmill_user TO {postgres_azure_user.user};")
+                    cur.execute(
+                        psycopg.sql.SQL("GRANT windmill_admin TO {};").format(
+                            psycopg.sql.Identifier(postgres_azure_user.user)
+                        )
+                    )
+                    cur.execute(
+                        psycopg.sql.SQL("GRANT windmill_user TO {};").format(
+                            psycopg.sql.Identifier(postgres_azure_user.user)
+                        )
+                    )
 
         if not dry_run:
             cap.deploy_one_click_app(
