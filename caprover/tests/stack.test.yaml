@@ -15,7 +15,7 @@ postgres:
     port: 15432   # the container will map to this port on the host VM
     ssl: false
   from_container:
-    host: srv-captain--postgres
+    host: srv-captain--test-postgres  # matches app_name
     port: 5432
     ssl: false
 
