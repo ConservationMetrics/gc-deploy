@@ -605,11 +605,32 @@ def deploy_stack(config, gc_repository, dry_run):
     """Deploy application stack based on the configuration file."""
     ctx = build_deployment_context(config, gc_repository, dry_run)
 
-    pg_app_name = config["postgres"].get("app_name", "postgres")
-    if config["postgres"].get("deploy", False):
-        PostgresApp(config["postgres"], ctx).install()
-    else:
+    APP_REGISTRY: list[type[AppSpec]] = [
+        PostgresApp,
+        WindmillApp,
+        RedisApp,
+        SupersetApp,
+        GCLandingPageApp,
+        GCExplorerApp,
+        ComapeoCloudApp,
+        FilebrowserApp,
+    ]
+    # Apps in the registry that have a config block, in registry order
+    apps_with_config = [cls for cls in APP_REGISTRY if cls.one_click_app_name in config]
+    # Further filter to those where deployed:true, and intantiate an instance with the config and DeploymentContext
+    apps_to_deploy = [
+        cls
+        for cls in apps_with_config
+        if config[cls.one_click_app_name].get("deploy", False)
+    ]
+
+    # Edge case: not deploying postgres, but we want to check it because so much
+    # downstream depends on it.
+    if PostgresApp in apps_with_config and PostgresApp not in apps_to_deploy:
         logger.info("Using already-deployed or external PostgreSQL configuration.")
+        pg_app_name = config[PostgresApp.one_click_app_name].get(
+            "app_name", PostgresApp.one_click_app_name
+        )
         if not dry_run:
             _verify_existing_postgres_app(
                 ctx.caprover,
@@ -618,41 +639,10 @@ def deploy_stack(config, gc_repository, dry_run):
                 ctx.postgres_from_vm,
             )
 
-    # Deploy Windmill if specified in config
-    one_click_app_name = "windmill-only"
-    if config.get(one_click_app_name, {}).get("deploy", False):
-        WindmillApp(config[one_click_app_name], ctx).install()
-
-    # Deploy Redis if specified in config
-    one_click_app_name = "redis"
-    if config.get(one_click_app_name, {}).get("deploy", False):
-        RedisApp(config[one_click_app_name], ctx).install()
-
-    # Deploy Superset if specified in config
-    one_click_app_name = "superset-only"
-    if config.get(one_click_app_name, {}).get("deploy", False):
-        SupersetApp(config[one_click_app_name], ctx).install()
-
-    # Deploy GC Landing Page if specified in config
-    # Note: as GC Landing Page is intended to be the default landing page, we don't need to add a redirect domain, and instead, we set the redirectDomain to the root domain. (e.g. so that the landing page will load when a user accesses "your-captain-root.net")
-    one_click_app_name = "gc-landing-page"
-    if config.get(one_click_app_name, {}).get("deploy", False):
-        GCLandingPageApp(config[one_click_app_name], ctx).install()
-
-    # Deploy GC Explorer if specified in config
-    one_click_app_name = "gc-explorer"
-    if config.get(one_click_app_name, {}).get("deploy", False):
-        GCExplorerApp(config[one_click_app_name], ctx).install()
-
-    # Deploy CoMapeo Cloud if specified in config
-    one_click_app_name = "comapeo-cloud"
-    if config.get(one_click_app_name, {}).get("deploy", False):
-        ComapeoCloudApp(config[one_click_app_name], ctx).install()
-
-    # Deploy Filebrowser if specified in config
-    one_click_app_name = "filebrowser"
-    if config.get(one_click_app_name, {}).get("deploy", False):
-        FilebrowserApp(config[one_click_app_name], ctx).install()
+    # Install apps!
+    for cls in apps_to_deploy:
+        app = cls(config[cls.one_click_app_name], ctx)
+        app.install()
 
 
 def is_local_path(path):
