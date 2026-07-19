@@ -433,6 +433,48 @@ class RedisApp(AppSpec):
             set_memory_limit(self.ctx.caprover, self.app_name)
 
 
+class GCLandingPageApp(AppSpec):
+    one_click_app_name = "gc-landing-page"
+    depends_on = (PostgresApp.one_click_app_name,)
+
+    def install(self) -> None:
+        postgres_from_container = self.ctx.postgres_from_container
+        cap = self.ctx.caprover
+
+        redirect_to_root = self.app_cfg.get("redirect_to_root", True)
+        variables = {
+            "$$cap_postgres_host": postgres_from_container.host,
+            "$$cap_postgres_port": postgres_from_container.port,
+            "$$cap_postgres_ssl": postgres_from_container.ssl,
+            "$$cap_postgres_user": postgres_from_container.user,
+            "$$cap_postgres_pass": postgres_from_container.password,
+        }
+        variables = construct_app_variables(self.app_cfg, variables)
+        logger.info(f"Deploying {self.one_click_app_name} one-click app")
+        if not self.ctx.dry_run:
+            cap.deploy_one_click_app(
+                self.one_click_app_name,
+                self.app_name,
+                app_variables=variables,
+                automated=True,
+                one_click_repository=self.ctx.gc_repository,
+            )
+            if self.ctx.webapps_use_ssl:
+                cap.enable_ssl(self.app_name)
+                cap.update_app(self.app_name, force_ssl=True)
+            set_memory_limit(cap, self.app_name)
+
+        if redirect_to_root:
+            logger.info(
+                f"Will serve {app_name} at the root domain: [{cap.root_domain}]"
+            )
+            if not self.ctx.dry_run:
+                cap.add_domain(self.app_name, cap.root_domain)
+                if self.ctx.webapps_use_ssl:
+                    cap.enable_ssl(self.app_name, cap.root_domain)
+                cap.update_app(self.app_name, redirectDomain=cap.root_domain)
+
+
 class ComapeoCloudApp(AppSpec):
     one_click_app_name = "comapeo-cloud"
 
@@ -555,39 +597,7 @@ def deploy_stack(config, gc_repository, dry_run):
     # Note: as GC Landing Page is intended to be the default landing page, we don't need to add a redirect domain, and instead, we set the redirectDomain to the root domain. (e.g. so that the landing page will load when a user accesses "your-captain-root.net")
     one_click_app_name = "gc-landing-page"
     if config.get(one_click_app_name, {}).get("deploy", False):
-        app_name = config[one_click_app_name].get("app_name", one_click_app_name)
-        redirect_to_root = config[one_click_app_name].get("redirect_to_root", True)
-        variables = {
-            "$$cap_postgres_host": postgres_from_container.host,
-            "$$cap_postgres_port": postgres_from_container.port,
-            "$$cap_postgres_ssl": postgres_from_container.ssl,
-            "$$cap_postgres_user": postgres_from_container.user,
-            "$$cap_postgres_pass": postgres_from_container.password,
-        }
-        variables = construct_app_variables(config, one_click_app_name, variables)
-        logger.info(f"Deploying {one_click_app_name.capitalize()} one-click app")
-        if not dry_run:
-            cap.deploy_one_click_app(
-                one_click_app_name,
-                app_name,
-                app_variables=variables,
-                automated=True,
-                one_click_repository=gc_repository,
-            )
-            if webapps_ssl:
-                cap.enable_ssl(app_name)
-                cap.update_app(app_name, force_ssl=True)
-            set_memory_limit(cap, app_name)
-
-        if redirect_to_root:
-            logger.info(
-                f"Will serve {app_name} at the root domain: [{cap.root_domain}]"
-            )
-            if not dry_run:
-                cap.add_domain(app_name, cap.root_domain)
-                if webapps_ssl:
-                    cap.enable_ssl(app_name, cap.root_domain)
-                cap.update_app(app_name, redirectDomain=cap.root_domain)
+        GCLandingPageApp(config[one_click_app_name], ctx).install()
 
     # Deploy GC Explorer if specified in config
     one_click_app_name = "gc-explorer"
