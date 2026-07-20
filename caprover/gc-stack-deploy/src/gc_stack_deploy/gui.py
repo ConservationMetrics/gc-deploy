@@ -151,7 +151,7 @@ class ChecklistScreen(Vertical):
         """Build one row per installable app, then a Go button."""
         yield Static(
             "Check the apps you want installed. "
-            # TODO: "Unchecking an app that is currently installed will uninstall it. "
+            "Unchecking an app that is currently installed will uninstall it. "
             "Nothing changes until you press Go.",
             id="instructions",
         )
@@ -334,7 +334,7 @@ class Deployer(App):
             app_id = spec.one_click_app_name
             self.call_from_thread(self._set_and_refresh, app_id, AppStatus.UNINSTALLING)
             try:
-                raise NotImplementedError()  # TODO spec.uninstall()
+                spec.uninstall()  # Blocking call, runs directly on this worker thread
                 self.call_from_thread(
                     self._set_and_refresh, app_id, AppStatus.NOT_INSTALLED
                 )
