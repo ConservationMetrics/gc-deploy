@@ -268,10 +268,27 @@ def main():
     else:
         context_manager = nullcontext(repo_path)
 
-    # Load Deployer GUI application
+    # Launch Deployer GUI application
     with context_manager as repo_url:
         ctx = build_deployment_context(config, repo_url, args.dry_run)
         Deployer(config, ctx).run()
+
+
+def dev_target() -> None:
+    """Zero-arg entry point for `textual run --dev`.
+
+    No argparse here: use defaults that make sense for local iteration.
+
+    Usage
+    -----
+    $ source tests/.venv/bin/activate
+    $ pip install textual-dev
+    $ textual run --dev "gc_stack_deploy.stack_deploy:dev_target"
+    """
+    config = load_config("./tests/stack.test.yaml")
+    repo_url = "https://conservationmetrics.github.io/gc-deploy/one-click-apps/v4/apps/"
+    ctx = build_deployment_context(config, repo_url, False)
+    return Deployer(config, ctx)
 
 
 if __name__ == "__main__":
