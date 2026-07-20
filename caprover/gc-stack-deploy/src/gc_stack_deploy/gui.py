@@ -184,6 +184,13 @@ class ChecklistScreen(Vertical):
             note = self.query_one(f"#note_{app_id}", Label)
             _apply_status_note(note, status, chk.value)
 
+    def set_is_enabled(self, new_state) -> None:
+        for appspec in self.apps_with_config:
+            app_id = appspec.one_click_app_name
+            chk = self.query_one(f"#chk_{app_id}", Checkbox)
+            chk.disabled = not new_state
+        self.query_one("#go", Button).disabled = not new_state
+
 
 class RichLogHandler(logging.Handler):
     """Adapts stdlib logging to a Textual RichLog widget."""
@@ -242,14 +249,9 @@ class Deployer(App):
 
     def _on_deploy_finished(self) -> None:
         """Runs on the main thread once _run_deploy returns."""
-        self.query_one(ChecklistScreen).sync_to_state()
-
-        # Unlock the Checklist items and Button
-        for appspec in self.apps_with_config:
-            app_id = appspec.one_click_app_name
-            chk = self.query_one(f"#chk_{app_id}", Checkbox)
-            chk.disabled = False
-        self.query_one("#go", Button).disabled = False
+        checklist = self.query_one(ChecklistScreen)
+        checklist.sync_to_state()
+        checklist.set_is_enabled(True)  # Unlock the Checklist items and Button
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Go was pressed: partition apps by resolve_action (same function
@@ -270,9 +272,7 @@ class Deployer(App):
             (to_install if action is Action.INSTALL else to_uninstall).append(appspec)
 
         # Lock the checklist so nothing changes mid-run.
-        checklist.query_one("#go", Button).disabled = True
-        for chk in checklist.query(Checkbox):
-            chk.disabled = True
+        checklist.set_is_enabled(False)
 
         self.query_one("#log", RichLog).clear()
         self._run_deploy(to_uninstall, to_install)
