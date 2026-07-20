@@ -31,6 +31,7 @@ def resolve_action(current: AppStatus, checked: bool) -> Action:
     install/uninstall dispatch read from this, so they can't disagree."""
     is_installed = current == AppStatus.INSTALLED
     if checked and not is_installed:
+        # includes NOT_INSTALLED and FAILED
         return Action.INSTALL
     if not checked and is_installed:
         return Action.UNINSTALL
@@ -184,6 +185,14 @@ class Deployer(App):
         handler.setFormatter(logging.Formatter("%(name)s: %(message)s"))
         logging.getLogger().addHandler(handler)
 
+    def _on_deploy_finished(self) -> None:
+        """Runs on the main thread once _run_deploy returns."""
+        for cls in self.apps_with_config:
+            chk = self.query_one(f"#chk_{cls.one_click_app_name}", Checkbox)
+            # TODO: re-read self.state for every app and refresh checkboxes/notes
+            chk.disabled = False
+        self.query_one("#go", Button).disabled = False
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Go was pressed: partition apps by resolve_action (same function
         the checklist notes used), instantiate only the ones with real work
@@ -208,6 +217,7 @@ class Deployer(App):
         for chk in checklist.query(Checkbox):
             chk.disabled = True
 
+        self.query_one("#log", RichLog).clear()
         self._run_deploy(to_uninstall, to_install)
 
     @work(exclusive=True, thread=True)
@@ -263,3 +273,5 @@ class Deployer(App):
                 self.call_from_thread(
                     self.state.set, spec.one_click_app_name, AppStatus.FAILED
                 )
+
+        self.call_from_thread(self._on_deploy_finished)
