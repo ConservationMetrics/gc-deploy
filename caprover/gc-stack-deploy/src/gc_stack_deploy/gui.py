@@ -8,15 +8,7 @@ from textual.content import Content
 from textual.widgets import Button, Checkbox, Header, Label, RichLog, Static
 
 from .apps_registry import APPS_REGISTRY
-from .base import AppSpec, DeploymentContext
-
-
-class AppStatus(str, Enum):
-    NOT_INSTALLED = "not installed"
-    INSTALLING = "installing"
-    INSTALLED = "installed"
-    FAILED = "failed"
-    UNINSTALLING = "uninstalling"
+from .base import AppSpec, AppStatus, DeploymentContext
 
 
 class Action(Enum):

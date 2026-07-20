@@ -15,8 +15,17 @@ import logging
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass
+from enum import Enum
 
 import psycopg
+
+
+class AppStatus(str, Enum):
+    NOT_INSTALLED = "not installed"
+    INSTALLING = "installing"
+    INSTALLED = "installed"
+    FAILED = "failed"
+    UNINSTALLING = "uninstalling"
 
 
 @dataclass
