@@ -130,9 +130,7 @@ class ChecklistScreen(Vertical):
     }
     """
 
-    def __init__(
-        self, apps_with_config: list[type[AppSpec]], state: StateStore, **kwargs
-    ):
+    def __init__(self, apps_with_config: list[AppSpec], state: StateStore, **kwargs):
         super().__init__(**kwargs)
         # Only apps with a config block reach the UI; others are skipped entirely,
         # so there's no way to check a box for an app that can't actually run.
@@ -148,20 +146,19 @@ class ChecklistScreen(Vertical):
             id="instructions",
         )
         with VerticalScroll():
-            for cls in self.apps_with_config:
-                current = self.state.get(cls.one_click_app_name)
+            for appspec in self.apps_with_config:
+                app_id = appspec.one_click_app_name
+                current = self.state.get(app_id)
                 is_installed = current == AppStatus.INSTALLED
                 note_text, note_class = _status_note(current, is_installed)
 
                 with Horizontal(classes="app-row"):
-                    yield Checkbox(
-                        "", id=f"chk_{cls.one_click_app_name}", value=is_installed
-                    )
+                    yield Checkbox("", id=f"chk_{app_id}", value=is_installed)
                     with Vertical(classes="checkbox-lines"):
-                        yield Label(Content.styled(cls.one_click_app_name, "bold cyan"))
+                        yield Label(Content.styled(appspec.app_name, "bold cyan"))
                         yield Label(
                             note_text,
-                            id=f"note_{cls.one_click_app_name}",
+                            id=f"note_{app_id}",
                             classes=note_class,
                         )
 
@@ -179,12 +176,12 @@ class ChecklistScreen(Vertical):
 
         Re-read self.state for every app and refresh checkboxes/notes.
         """
-        for cls in self.apps_with_config:
-            name = cls.one_click_app_name
-            status = self.state.get(name)
-            chk = self.query_one(f"#chk_{name}", Checkbox)
+        for appspec in self.apps_with_config:
+            app_id = appspec.one_click_app_name
+            status = self.state.get(app_id)
+            chk = self.query_one(f"#chk_{app_id}", Checkbox)
             chk.value = status == AppStatus.INSTALLED
-            note = self.query_one(f"#note_{name}", Label)
+            note = self.query_one(f"#note_{app_id}", Label)
             _apply_status_note(note, status, chk.value)
 
 
@@ -221,7 +218,9 @@ class Deployer(App):
 
         # Apps in the registry that have a config block, in registry order
         self.apps_with_config = [
-            cls for cls in APPS_REGISTRY if cls.one_click_app_name in config
+            cls(config[cls.one_click_app_name], ctx)  # instantiate!
+            for cls in APPS_REGISTRY
+            if cls.one_click_app_name in config
         ]
 
     def compose(self) -> ComposeResult:
@@ -246,8 +245,9 @@ class Deployer(App):
         self.query_one(ChecklistScreen).sync_to_state()
 
         # Unlock the Checklist items and Button
-        for cls in self.apps_with_config:
-            chk = self.query_one(f"#chk_{cls.one_click_app_name}", Checkbox)
+        for appspec in self.apps_with_config:
+            app_id = appspec.one_click_app_name
+            chk = self.query_one(f"#chk_{app_id}", Checkbox)
             chk.disabled = False
         self.query_one("#go", Button).disabled = False
 
@@ -261,13 +261,12 @@ class Deployer(App):
 
         to_install: list[AppSpec] = []
         to_uninstall: list[AppSpec] = []
-        for cls in self.apps_with_config:
-            app_name = cls.one_click_app_name
-            checked = checklist.query_one(f"#chk_{app_name}", Checkbox).value
-            action = resolve_action(self.state.get(app_name), checked)
+        for appspec in self.apps_with_config:
+            app_id = appspec.one_click_app_name
+            checked = checklist.query_one(f"#chk_{app_id}", Checkbox).value
+            action = resolve_action(self.state.get(app_id), checked)
             if action is Action.NOOP:
                 continue
-            appspec = cls(app_config=self.config[app_name], ctx=self.ctx)
             (to_install if action is Action.INSTALL else to_uninstall).append(appspec)
 
         # Lock the checklist so nothing changes mid-run.
@@ -301,35 +300,25 @@ class Deployer(App):
         # Uninstalls first: This supports the future (TODO) "retry" workflow of
         # uninstall then reinstall the same app in one go.
         for spec in to_uninstall:
-            self.call_from_thread(
-                self.state.set, spec.one_click_app_name, AppStatus.UNINSTALLING
-            )
+            app_id = spec.one_click_app_name
+            self.call_from_thread(self.state.set, app_id, AppStatus.UNINSTALLING)
             try:
                 raise NotImplementedError()  # TODO spec.uninstall()
-                self.call_from_thread(
-                    self.state.set, spec.one_click_app_name, AppStatus.NOT_INSTALLED
-                )
+                self.call_from_thread(self.state.set, app_id, AppStatus.NOT_INSTALLED)
             except Exception:
                 # Log and record FAILED rather than raising: one app's
                 # failure shouldn't abort the rest of the batch.
                 spec.logger.exception("uninstall failed")
-                self.call_from_thread(
-                    self.state.set, spec.one_click_app_name, AppStatus.FAILED
-                )
+                self.call_from_thread(self.state.set, app_id, AppStatus.FAILED)
 
         for spec in to_install:
-            self.call_from_thread(
-                self.state.set, spec.one_click_app_name, AppStatus.INSTALLING
-            )
+            app_id = spec.one_click_app_name
+            self.call_from_thread(self.state.set, app_id, AppStatus.INSTALLING)
             try:
                 spec.install()  # Blocking call, runs directly on this worker thread
-                self.call_from_thread(
-                    self.state.set, spec.one_click_app_name, AppStatus.INSTALLED
-                )
+                self.call_from_thread(self.state.set, app_id, AppStatus.INSTALLED)
             except Exception:
                 spec.logger.exception("install failed")
-                self.call_from_thread(
-                    self.state.set, spec.one_click_app_name, AppStatus.FAILED
-                )
+                self.call_from_thread(self.state.set, app_id, AppStatus.FAILED)
 
         self.call_from_thread(self._on_deploy_finished)
