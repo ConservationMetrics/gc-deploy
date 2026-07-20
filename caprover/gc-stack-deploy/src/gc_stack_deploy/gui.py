@@ -43,16 +43,28 @@ def _status_note(current: AppStatus, checked: bool) -> str:
 
     Describes what submitting the form will do (install/uninstall if that differs
     from current state), or otherwise describes current state as-is.
+
+    Returns
+    -------
+    (display text, css class)
     """
     action = resolve_action(current, checked)
     if action is Action.INSTALL:
-        return "will install"
+        return "will install", "will-install"
     if action is Action.UNINSTALL:
-        return "will uninstall"
+        return "will uninstall", "will-uninstall"
     # Action.NOOP: box matches current state, describe that state instead
-    if current == AppStatus.FAILED:
-        return AppStatus.FAILED.value.upper()
-    return f"currently: {current.value.replace('_', ' ')}"
+    if current is AppStatus.FAILED:
+        return AppStatus.FAILED.value.upper(), "failed"
+    if current is AppStatus.INSTALLED:
+        return f"currently: {current.value.replace('_', ' ')}", "currently-installed"
+    return f"currently: {current.value.replace('_', ' ')}", "currently-not-installed"
+
+
+def _apply_status_note(note: Label, current: AppStatus, checked: bool) -> None:
+    text, css_class = _status_note(current, checked)
+    note.update(text)
+    note.set_classes(css_class)
 
 
 class StateStore:
@@ -75,7 +87,6 @@ class ChecklistScreen(Vertical):
     state-change annotation ('will install', 'will uninstall', or blank
     if the checkbox matches current state)."""
 
-    # Grid keeps every row the same width; CSS below caps row height at 2 lines.
     DEFAULT_CSS = """
     ChecklistScreen {
         height: auto;
@@ -86,10 +97,36 @@ class ChecklistScreen(Vertical):
         height: auto;
     }
     .app-row {
+        # Grid keeps every row the same width and height
         height: 3;
         width: 100%;
         layout: horizontal;
         content-align: left middle;
+    }
+
+    ChecklistScreen .will-install {
+        color: $success;
+        text-style: italic;
+    }
+
+    ChecklistScreen .will-uninstall {
+        color: $warning;
+        text-style: italic;
+    }
+
+    ChecklistScreen .currently-installed {
+        color: $text-muted;
+        text-style: dim italic;
+    }
+
+    ChecklistScreen .currently-not-installed {
+        color: $text-muted;
+        text-style: dim italic;
+    }
+
+    ChecklistScreen .failed {
+        color: $error;
+        text-style: bold italic;
     }
     """
 
@@ -114,27 +151,28 @@ class ChecklistScreen(Vertical):
             for cls in self.apps_with_config:
                 current = self.state.get(cls.one_click_app_name)
                 is_installed = current == AppStatus.INSTALLED
+                note_text, note_class = _status_note(current, is_installed)
+
                 with Horizontal(classes="app-row"):
                     yield Checkbox(
-                        "",
-                        id=f"chk_{cls.one_click_app_name}",
+                        "", id=f"chk_{cls.one_click_app_name}", value=is_installed
                     )
                     with Vertical(classes="checkbox-lines"):
                         yield Label(Content.styled(cls.one_click_app_name, "bold cyan"))
                         yield Label(
-                            Content.styled(
-                                _status_note(current, is_installed), "dim italic"
-                            ),
+                            note_text,
                             id=f"note_{cls.one_click_app_name}",
+                            classes=note_class,
                         )
+
         yield Button("Go", id="go", variant="primary")
 
     def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
         """Recompute the status note annotation whenever a box is toggled."""
         app_name = event.checkbox.id.removeprefix("chk_")
         current = self.state.get(app_name)
-        note = self.query_one(f"#note_{app_name}", Static)
-        note.update(_status_note(current, event.value))
+        note = self.query_one(f"#note_{app_name}", Label)
+        _apply_status_note(note, current, event.value)
 
     def sync_to_state(self) -> None:
         """Refresh the Checkboxes to match what's in self.state
@@ -146,9 +184,8 @@ class ChecklistScreen(Vertical):
             status = self.state.get(name)
             chk = self.query_one(f"#chk_{name}", Checkbox)
             chk.value = status == AppStatus.INSTALLED
-            self.query_one(f"#note_{name}", Static).update(
-                _status_note(status, chk.value)
-            )
+            note = self.query_one(f"#note_{name}", Label)
+            _apply_status_note(note, status, chk.value)
 
 
 class RichLogHandler(logging.Handler):
