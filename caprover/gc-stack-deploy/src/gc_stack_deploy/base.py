@@ -139,6 +139,7 @@ class AppSpec(abc.ABC):
         return self.app_cfg.get("app_name", self.one_click_app_name)
 
     def install(self) -> None:
+        self.logger.info(f"Beginning install of {self.app_name}")
         if self.databases and not self.ctx.dry_run:
             with (
                 postgres_patient_connect(
@@ -150,6 +151,8 @@ class AppSpec(abc.ABC):
                     _psql_create_database_if_not_exists(cur, dbname)
 
         self._install()  # subclass-specific logic
+
+        self.logger.info(f"Finished install of {self.app_name}")
 
     @abc.abstractmethod
     def _install(self) -> None:

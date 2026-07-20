@@ -1,6 +1,7 @@
 import logging
 from enum import Enum
 
+from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.content import Content
@@ -74,8 +75,10 @@ class ChecklistScreen(Vertical):
     }
     """
 
-    def __init__(self, apps_with_config: list[type[AppSpec]], state: StateStore):
-        super().__init__()
+    def __init__(
+        self, apps_with_config: list[type[AppSpec]], state: StateStore, **kwargs
+    ):
+        super().__init__(**kwargs)
         # Only apps with a config block reach the UI; others are skipped entirely,
         # so there's no way to check a box for an app that can't actually run.
         self.apps_with_config = apps_with_config
@@ -142,6 +145,19 @@ class RichLogHandler(logging.Handler):
 
 
 class Deployer(App):
+    CSS = """
+    #main {
+        height: 1fr;
+    }
+    ChecklistScreen {
+        width: 40%;
+        border-right: solid $panel;
+    }
+    RichLog {
+        width: 1fr;
+    }
+    """
+
     def __init__(self, config: dict, ctx: DeploymentContext):
         super().__init__()
         self.config = config
@@ -154,10 +170,19 @@ class Deployer(App):
         ]
 
     def compose(self) -> ComposeResult:
-        """Entry screen: pass the filtered app list and state store down
-        so the checklist can render current-state annotations."""
         yield Header()
-        yield ChecklistScreen(self.apps_with_config, self.state)
+        with Horizontal(id="main"):
+            # pass the filtered app list and state store down
+            yield ChecklistScreen(self.apps_with_config, self.state, id="checklist")
+            yield RichLog(id="log", highlight=True, markup=True)
+
+    def on_mount(self) -> None:
+        """Wire up the log handler"""
+        # Single scrolling log for the whole run (tabbed per-app logs come later).
+        log = self.query_one("#log", RichLog)
+        handler = RichLogHandler(log)
+        handler.setFormatter(logging.Formatter("%(name)s: %(message)s"))
+        logging.getLogger().addHandler(handler)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Go was pressed: partition apps by resolve_action (same function
@@ -178,43 +203,63 @@ class Deployer(App):
             appspec = cls(app_config=self.config[app_name], ctx=self.ctx)
             (to_install if action is Action.INSTALL else to_uninstall).append(appspec)
 
-        self.run_worker(self._run_deploy(to_uninstall, to_install), exclusive=True)
+        # Lock the checklist so nothing changes mid-run.
+        checklist.query_one("#go", Button).disabled = True
+        for chk in checklist.query(Checkbox):
+            chk.disabled = True
 
-    async def _run_deploy(
+        self._run_deploy(to_uninstall, to_install)
+
+    @work(exclusive=True, thread=True)
+    def _run_deploy(
         self,
         to_uninstall: list[AppSpec],
         to_install: list[AppSpec],
     ) -> None:
-        """Run uninstalls first, then installs."""
-        await self.query_one(ChecklistScreen).remove()
+        """This Worker uninstalls and installs apps.
 
-        # Single scrolling log for the whole run (tabbed per-app logs come later).
-        # Mounting this is what was missing — without it there's nothing on
-        # screen after the checklist is removed, and no visible output at all.
-        log = RichLog()
-        await self.mount(log)
-        handler = RichLogHandler(log)
-        handler.setFormatter(logging.Formatter("%(name)s: %(message)s"))
-        logging.getLogger("deploy").addHandler(handler)
+        @work(thread=True) moves the entire _run_deploy call onto a worker thread
+        managed by Textual. This keeps the event loop free to render frames
+        while app.install()/uninstall() block.
+        https://textual.textualize.io/guide/workers/#thread-workers
 
+        We are running on a worker thread, so:
+        - Every call in this method is a plain synchronous call
+        - Never touch app state or widgets directly from here.
+          Textual widget/state mutation is only safe on the main thread, so
+          we route state updates through call_from_thread.
+
+        """
         # Uninstalls first: This supports the future (TODO) "retry" workflow of
         # uninstall then reinstall the same app in one go.
         for spec in to_uninstall:
-            self.state.set(spec.one_click_app_name, AppStatus.UNINSTALLING)
+            self.call_from_thread(
+                self.state.set, spec.one_click_app_name, AppStatus.UNINSTALLING
+            )
             try:
                 raise NotImplementedError()  # TODO spec.uninstall()
-                self.state.set(spec.one_click_app_name, AppStatus.NOT_INSTALLED)
+                self.call_from_thread(
+                    self.state.set, spec.one_click_app_name, AppStatus.NOT_INSTALLED
+                )
             except Exception:
                 # Log and record FAILED rather than raising: one app's
                 # failure shouldn't abort the rest of the batch.
                 spec.logger.exception("uninstall failed")
-                self.state.set(spec.one_click_app_name, AppStatus.FAILED)
+                self.call_from_thread(
+                    self.state.set, spec.one_click_app_name, AppStatus.FAILED
+                )
 
         for spec in to_install:
-            self.state.set(spec.one_click_app_name, AppStatus.INSTALLING)
+            self.call_from_thread(
+                self.state.set, spec.one_click_app_name, AppStatus.INSTALLING
+            )
             try:
-                spec.install()
-                self.state.set(spec.one_click_app_name, AppStatus.INSTALLED)
+                spec.install()  # Blocking call, runs directly on this worker thread
+                self.call_from_thread(
+                    self.state.set, spec.one_click_app_name, AppStatus.INSTALLED
+                )
             except Exception:
                 spec.logger.exception("install failed")
-                self.state.set(spec.one_click_app_name, AppStatus.FAILED)
+                self.call_from_thread(
+                    self.state.set, spec.one_click_app_name, AppStatus.FAILED
+                )
