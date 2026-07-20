@@ -38,6 +38,23 @@ def resolve_action(current: AppStatus, checked: bool) -> Action:
     return Action.NOOP
 
 
+def _status_note(current: AppStatus, checked: bool) -> str:
+    """Text shown next to a checkbox
+
+    Describes what submitting the form will do (install/uninstall if that differs
+    from current state), or otherwise describes current state as-is.
+    """
+    action = resolve_action(current, checked)
+    if action is Action.INSTALL:
+        return "will install"
+    if action is Action.UNINSTALL:
+        return "will uninstall"
+    # Action.NOOP: box matches current state, describe that state instead
+    if current == AppStatus.FAILED:
+        return AppStatus.FAILED.value.upper()
+    return f"currently: {current.value.replace('_', ' ')}"
+
+
 class StateStore:
     """In-memory per-app status tracking."""
 
@@ -106,32 +123,32 @@ class ChecklistScreen(Vertical):
                         yield Label(Content.styled(cls.one_click_app_name, "bold cyan"))
                         yield Label(
                             Content.styled(
-                                self._status_note(current, is_installed), "dim italic"
+                                _status_note(current, is_installed), "dim italic"
                             ),
                             id=f"note_{cls.one_click_app_name}",
                         )
         yield Button("Go", id="go", variant="primary")
-
-    def _status_note(self, current: AppStatus, checked: bool) -> str:
-        """Text shown next to a checkbox
-
-        Describes what submitting the form will do (install/uninstall if that differs
-        from current state), or otherwise describes current state as-is.
-        """
-        action = resolve_action(current, checked)
-        if action is Action.INSTALL:
-            return "will install"
-        if action is Action.UNINSTALL:
-            return "will uninstall"
-        # Action.NOOP: box matches current state, describe that state instead
-        return f"currently: {current.value.replace('_', ' ')}"
 
     def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
         """Recompute the status note annotation whenever a box is toggled."""
         app_name = event.checkbox.id.removeprefix("chk_")
         current = self.state.get(app_name)
         note = self.query_one(f"#note_{app_name}", Static)
-        note.update(self._status_note(current, event.value))
+        note.update(_status_note(current, event.value))
+
+    def sync_to_state(self) -> None:
+        """Refresh the Checkboxes to match what's in self.state
+
+        Re-read self.state for every app and refresh checkboxes/notes.
+        """
+        for cls in self.apps_with_config:
+            name = cls.one_click_app_name
+            status = self.state.get(name)
+            chk = self.query_one(f"#chk_{name}", Checkbox)
+            chk.value = status == AppStatus.INSTALLED
+            self.query_one(f"#note_{name}", Static).update(
+                _status_note(status, chk.value)
+            )
 
 
 class RichLogHandler(logging.Handler):
@@ -187,9 +204,11 @@ class Deployer(App):
 
     def _on_deploy_finished(self) -> None:
         """Runs on the main thread once _run_deploy returns."""
+        self.query_one(ChecklistScreen).sync_to_state()
+
+        # Unlock the Checklist items and Button
         for cls in self.apps_with_config:
             chk = self.query_one(f"#chk_{cls.one_click_app_name}", Checkbox)
-            # TODO: re-read self.state for every app and refresh checkboxes/notes
             chk.disabled = False
         self.query_one("#go", Button).disabled = False
 
