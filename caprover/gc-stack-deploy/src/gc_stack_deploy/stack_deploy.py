@@ -85,14 +85,6 @@ def build_deployment_context(config, gc_repository, dry_run):
     cap = caprover_api.CaproverAPI(
         dashboard_url=config["caproverUrl"], password=config["caproverPassword"]
     )
-    # Resolve the two Postgres connection configs.
-    if config["postgres"].get("deploy", False):
-        # We control the deploy: the one-click Postgres has no SSL configured,
-        # so any `ssl` field in YAML is ignored to avoid foot-guns.
-        container_ssl = vm_ssl = False
-    else:
-        container_ssl = bool(config["postgres"]["from_container"]["ssl"])
-        vm_ssl = bool(config["postgres"]["from_vm"]["ssl"])
 
     # this is the connection to be used by inter-container networking:
     # i.e. how other CapRover apps reach Postgres. Used in connection strings.
@@ -101,7 +93,7 @@ def build_deployment_context(config, gc_repository, dry_run):
         port=int(config["postgres"]["from_container"]["port"]),
         user=config["postgres"]["user"],
         password=config["postgres"]["pass"],
-        ssl=container_ssl,
+        ssl=bool(config["postgres"]["from_container"]["ssl"]),
     )
     # this is the connection to be used from this script (which runs on the host).
     # Used for one-time setup of databases, users, etc.
@@ -110,7 +102,7 @@ def build_deployment_context(config, gc_repository, dry_run):
         port=int(config["postgres"]["from_vm"]["port"]),
         user=config["postgres"]["user"],
         password=config["postgres"]["pass"],
-        ssl=vm_ssl,
+        ssl=bool(config["postgres"]["from_vm"]["ssl"]),
     )
 
     webapps_use_ssl = config.get("webappsUseSsl", True)
