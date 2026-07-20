@@ -22,7 +22,7 @@ packages:
   # https://pnpm.io/installation#on-posix-systems says:
   # > The glibc build requires glibc 2.27 or newer plus libatomic.so.1 — both are present on most
   # > full distros but may be missing from minimal container images. If you see error while loading
-  # > shared libraries: libatomic.so.1, install it with your distro's package manager
+  # > shared libraries: libatomic.so.1, install it with your distro package manager
   - libatomic1
 
   # For Caprover CLI
