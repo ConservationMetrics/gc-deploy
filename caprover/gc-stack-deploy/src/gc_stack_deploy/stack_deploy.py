@@ -617,7 +617,7 @@ def deploy_stack(config, gc_repository, dry_run):
     ]
     # Apps in the registry that have a config block, in registry order
     apps_with_config = [cls for cls in APP_REGISTRY if cls.one_click_app_name in config]
-    # Further filter to those where deployed:true, and intantiate an instance with the config and DeploymentContext
+    # Further filter to those where deployed:true, and instantiate an instance with the config and DeploymentContext
     apps_to_deploy = [
         cls
         for cls in apps_with_config
