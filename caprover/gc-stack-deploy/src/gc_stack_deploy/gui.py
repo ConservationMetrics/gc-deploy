@@ -234,10 +234,12 @@ class Deployer(App):
     def on_mount(self) -> None:
         """Wire up the log handler"""
         # Single scrolling log for the whole run (tabbed per-app logs come later).
-        log = self.query_one("#log", RichLog)
-        handler = RichLogHandler(log)
+        logwindow = self.query_one("#log", RichLog)
+        handler = RichLogHandler(logwindow)
         handler.setFormatter(logging.Formatter("%(name)s: %(message)s"))
-        logging.getLogger().addHandler(handler)
+        logger = logging.getLogger()
+        logger.handlers.clear()  # An existing StreamHandler to stdout would garble the TUI output.
+        logger.addHandler(handler)
 
     def _on_deploy_finished(self) -> None:
         """Runs on the main thread once _run_deploy returns."""
