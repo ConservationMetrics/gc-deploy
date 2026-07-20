@@ -148,6 +148,14 @@ class AppSpec(abc.ABC):
     def app_name(self) -> str:
         return self.app_cfg.get("app_name", self.one_click_app_name)
 
+    def check_installed(self) -> AppStatus:
+        """Query CapRover for this app's current status."""
+        return (
+            AppStatus.INSTALLED
+            if self.ctx.caprover.get_app(self.app_name)
+            else AppStatus.NOT_INSTALLED
+        )
+
     def install(self) -> None:
         self.logger.info(f"Beginning install of {self.app_name}")
         if self.databases and not self.ctx.dry_run:
