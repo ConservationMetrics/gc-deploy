@@ -2,7 +2,7 @@ caproverUrl: "http[s]://captain.your-captain-root.net" # Remove the brackets if 
 caproverPassword: "secret-captain-password" # Set a secure password!
 
 auth0:
-  domain: # your Auth0 tenant host, e.g. "your-tenant.us.auth0.com". Propagated to all apps below.
+  domain: # your Auth0 tenant host, e.g. "your-tenant.us.auth0.com". Propagated to many apps below.
 
 community_name: # URL slug / alias, e.g. "springfield" in "springfield.your-captain-root.net". Propagated to landing page + explorer.
 
@@ -11,7 +11,7 @@ postgres:
 
   # REQUIRED in all cases:
   user: "postgres" # Do not change this
-  pass: "your_pg_password" # Set a new password, avoid special chars that apps may misparse in connection strings
+  pass: "your_pg_password" # IMPORTANT: set a new password, avoid special chars that apps may misparse in connection strings
   database: postgres # `warehouse` will be created in the stack deploy script
   version: 17
   from_vm:
