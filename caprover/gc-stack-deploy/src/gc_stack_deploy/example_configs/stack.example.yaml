@@ -62,12 +62,13 @@ gc-landing-page:
   auth0_domain:
   auth0_client_id:
   auth0_client_secret:
-  ### OPTIONAL, but you probably want to override. Should be set according to services available in the community (e.g. if you don't have Superset, set `superset_enabled: false`)
-  superset_enabled:
-  filebrowser_enabled:
-  windmill_enabled:
-  explorer_enabled:
+  ### OPTIONAL — defaults are probably true; override depending on your use case (e.g. set `superset_enabled: false` if Superset is not deployed)
+  superset_enabled: true
+  filebrowser_enabled: true
+  windmill_enabled: true
+  explorer_enabled: true
   logo_url: # If you want to add a logo; can also be set later
+  background_image_url: # If you want to add a background image; can also be set later
 
 gc-explorer:
   deploy: true

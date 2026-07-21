@@ -29,6 +29,7 @@ services:
       NUXT_PUBLIC_EXPLORER_ENABLED: $$cap_explorer_enabled
 
       NUXT_PUBLIC_LOGO_URL: $$cap_logo_url
+      NUXT_PUBLIC_BACKGROUND_IMAGE_URL: $$cap_background_image_url
 
     caproverExtra:
       containerHttpPort: "8080"
@@ -101,6 +102,10 @@ caproverOneClickApp:
     - id: "$$cap_logo_url"
       label: Logo URL
       description: URL of the community logo to display on the landing page
+
+    - id: "$$cap_background_image_url"
+      label: Background Image URL
+      description: URL of the community background image to display on the landing page
 
   instructions:
     start: |-
