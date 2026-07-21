@@ -85,7 +85,7 @@ If the script ran successfully, you can proceed to the [Post-install app configu
 It has been observed that...
 - the script can time out before a Docker image successfully pulls and builds
 - the script fails to enable SSL for a given webapp
-- CapRover or Docker misbehaves until the VM is rebooted once (`sudo shutdown -r now`), including some nodeId-related failures
+- CapRover or Docker misbehaves until the VM is rebooted once (`sudo shutdown -r now`)
 
 In both cases, trying to run the script again typically fixes the issue. For the case of the Docker image building, you can actually monitor the build progress in the CapRover web portal under **Apps** → **Deployment**.
 
