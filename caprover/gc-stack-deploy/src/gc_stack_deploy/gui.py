@@ -3,9 +3,10 @@ from enum import Enum
 
 from textual import work
 from textual.app import App, ComposeResult
+from textual.binding import Binding
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.content import Content
-from textual.widgets import Button, Checkbox, Header, Label, RichLog, Static
+from textual.widgets import Button, Checkbox, Footer, Header, Label, RichLog, Static
 
 from .apps_registry import APPS_REGISTRY
 from .base import AppSpec, AppStatus, DeploymentContext
@@ -94,6 +95,9 @@ class ChecklistScreen(Vertical):
         width: 100%;
         layout: horizontal;
         content-align: left middle;
+    }
+    #go {
+        width: 1fr;
     }
 
     ChecklistScreen .will-install {
@@ -200,14 +204,26 @@ class Deployer(App):
     #main {
         height: 1fr;
     }
-    ChecklistScreen {
+    .left-col {
         width: 40%;
         border-right: solid $panel;
     }
     RichLog {
         width: 1fr;
     }
+    #dry-run-banner {
+        dock: bottom;
+        width: 100%;
+        background: $warning;
+        color: $text;
+        text-align: center;
+        text-style: bold;
+        height: 1;
+    }
     """
+    BINDINGS = [
+        Binding(key="^q", action="quit", description="Quit the app"),
+    ]
 
     def __init__(self, config: dict, ctx: DeploymentContext):
         super().__init__()
@@ -225,9 +241,13 @@ class Deployer(App):
     def compose(self) -> ComposeResult:
         yield Header()
         with Horizontal(id="main"):
-            # pass the filtered app list and state store down
-            yield ChecklistScreen(self.apps_with_config, self.state, id="checklist")
+            with Vertical(classes="left-col"):
+                # pass the filtered app list and state store down
+                yield ChecklistScreen(self.apps_with_config, self.state, id="checklist")
+                if self.ctx.dry_run:
+                    yield Label("WARNING: DRY RUN", id="dry-run-banner")
             yield RichLog(id="log", highlight=True, markup=True)
+        yield Footer(show_command_palette=False)
 
     def on_mount(self) -> None:
         """Wire up the log handler"""
