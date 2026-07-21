@@ -46,7 +46,6 @@ superset-only:
   auth0_client_secret:
   admin_email: "admin@guardianconnector.net" # IMPORTANT: this should be changed to the email address of the first admin user who will log in with auth0
   mapbox_api_key: # If you want to use Mapbox for maps; can also be set later.
-  app_icon: # If you want to add a logo; can also be set later
   app_title: "Dashboard: Biocultural Monitoring Demo" # Change this to an appropriate title for your community.
   ### Optional: one-click app already has sane defaults
   # superset_docker_image:
