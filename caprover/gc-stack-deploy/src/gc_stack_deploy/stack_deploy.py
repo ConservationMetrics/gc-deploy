@@ -31,7 +31,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
 def load_config(file_path):
     """Load configuration from YAML file."""
     try:
@@ -41,6 +40,14 @@ def load_config(file_path):
     except FileNotFoundError:
         print(f"Configuration file {file_path} not found.")
         sys.exit(1)
+
+    # Top-level auth0.domain fills auth0_domain on apps that don't set their own.
+    domain = (config.get("auth0") or {}).get("domain")
+    if domain:
+        for name in ("superset-only", "gc-landing-page", "gc-explorer"):
+            app = config.get(name)
+            if isinstance(app, dict) and not app.get("auth0_domain"):
+                app["auth0_domain"] = domain
     return config
 
 

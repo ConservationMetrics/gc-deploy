@@ -1,7 +1,8 @@
-# TODO: make it easier to populate this file, e.g. not needing to put in auth0 domain multiple times.
-
 caproverUrl: "http[s]://captain.your-captain-root.net" # Remove the brackets if using SSL, remove `[s]` if using HTTP.
 caproverPassword: "secret-captain-password" # Set a secure password!
+
+auth0:
+  domain: # your Auth0 tenant host, e.g. "your-tenant.us.auth0.com". Propagated to all apps below.
 
 postgres:
   deploy: true # Set to false to skip PostgreSQL deployment (including on a resume run).
@@ -41,7 +42,6 @@ superset-only:
   redis_url: "redis[s]://:secretkey@srv-captain--redis:6379" # for locally hosted redis, remove `[s]`
   redis_key_prefix: "eg_"
   ### OPTIONAL, but you probably want to override:
-  auth0_domain:
   auth0_client_id:
   auth0_client_secret:
   admin_email: "admin@guardianconnector.net" # IMPORTANT: this should be changed to the email address of the first admin user who will log in with auth0
@@ -59,7 +59,6 @@ gc-landing-page:
   ### REQUIRED:
   community_name: # this is the URL slug of the community, e.g. "springfield" in "springfield.your-captain-root.net". It must not contain any special characters or spaces.
   root_domain: # this is the root domain of the community, e.g. "your-captain-root.net".
-  auth0_domain:
   auth0_client_id:
   auth0_client_secret:
   ### OPTIONAL — defaults are probably true; override depending on your use case (e.g. set `superset_enabled: false` if Superset is not deployed)
@@ -75,7 +74,6 @@ gc-explorer:
   app_name: explorer # IMPORTANT so that your app doesn't get deployed as "gcexplorer"
   ### REQUIRED:
   postgres_database: "warehouse"
-  auth0_domain:
   auth0_client_id:
   auth0_client_secret:
   community_name: # this is the URL slug of the community, e.g. "springfield" in "springfield.your-captain-root.net". It must not contain any special characters or spaces.
