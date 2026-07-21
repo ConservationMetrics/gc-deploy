@@ -269,6 +269,10 @@ You can log in with the email and password you set as `ADMIN_EMAIL` and `ADMIN_P
 
 If you are using Auth0, you can log in with the email account (either as username/password or as a social login) - the `ADMIN_PASSWORD` is not used in this case.
 
+#### Setting up a database connection
+
+As an admin user, you can set up a database connection to the `warehouse` database. Navigate to **Settings** → **Database Connections** and add a new (PostgreSQL) connection. For host, you can use `srv-captain--postgres` (assuming your app is called "postgres"). Keep SSL disabled.
+
 #### Disabling the healthcheck for worker and init-and-beat services
 
 Consider following the post-install instructions of adding the following lines
