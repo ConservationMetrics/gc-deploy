@@ -41,21 +41,31 @@ def _derive_status_note(current: AppStatus, checked: bool) -> str:
     -------
     (display text, css class)
     """
+    # Transient states (INSTALLING/UNINSTALLING) describe themselves regardless
+    # of checkbox value. An install in flight is what it is, the checkbox can't
+    # change that until it finishes.
+    if current is AppStatus.INSTALLING:
+        return "installing…", "in-progress"
+    elif current is AppStatus.UNINSTALLING:
+        return "uninstalling…", "in-progress"
+
     action = resolve_action(current, checked)
     if action is Action.INSTALL:
         return "will install", "will-install"
-    if action is Action.UNINSTALL:
+    elif action is Action.UNINSTALL:
         return "will uninstall", "will-uninstall"
-    # Action.NOOP: box matches current state, describe that state instead
-    if current is AppStatus.FAILED:
-        return AppStatus.FAILED.value.upper(), "failed"
-    if current is AppStatus.INSTALLING:
-        return "installing…", "will-install"
-    if current is AppStatus.UNINSTALLING:
-        return "uninstalling…", "will-uninstall"
-    if current is AppStatus.INSTALLED:
-        return f"currently: {current.value.replace('_', ' ')}", "currently-installed"
-    return f"currently: {current.value.replace('_', ' ')}", "currently-not-installed"
+    else:  # Action.NOOP: box matches current state, describe that state instead
+        if current is AppStatus.FAILED:
+            return AppStatus.FAILED.value.upper(), "failed"
+        if current is AppStatus.INSTALLED:
+            return (
+                f"currently: {current.value.replace('_', ' ')}",
+                "currently-installed",
+            )
+        return (
+            f"currently: {current.value.replace('_', ' ')}",
+            "currently-not-installed",
+        )
 
 
 def _apply_status_note(note: Label, current_status: AppStatus, checked: bool) -> None:
