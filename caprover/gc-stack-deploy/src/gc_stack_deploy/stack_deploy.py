@@ -23,8 +23,9 @@ from contextlib import nullcontext
 from caprover_api import caprover_api
 from ruamel.yaml import YAML
 
-from .APPS_REGISTRY import APPS_REGISTRY, PostgresApp
+from .apps_registry import PostgresApp
 from .base import DeploymentContext, PostgresConnectionConfig
+from .gui import Deployer
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -53,9 +54,12 @@ def _verify_existing_postgres_app(
 
     Warn on mismatch. We don't fail (but maybe we should).
     """
+    # FIXME: this check short-circuits when we are deploying a local Postgres
+    # and downstream apps in the same go, even though we could have benefited from
+    # these important checks.
     app = cap.get_app(pg_app_name)
     if not app:
-        # No `postgres` app in CapRover — assume external Postgres.
+        # No `postgres` app in CapRover — external Postgres or has not been deployed yet.
         return
 
     if postgres_from_container.host != "srv-captain--postgres":
@@ -85,14 +89,6 @@ def build_deployment_context(config, gc_repository, dry_run):
     cap = caprover_api.CaproverAPI(
         dashboard_url=config["caproverUrl"], password=config["caproverPassword"]
     )
-    # Resolve the two Postgres connection configs.
-    if config["postgres"].get("deploy", False):
-        # We control the deploy: the one-click Postgres has no SSL configured,
-        # so any `ssl` field in YAML is ignored to avoid foot-guns.
-        container_ssl = vm_ssl = False
-    else:
-        container_ssl = bool(config["postgres"]["from_container"]["ssl"])
-        vm_ssl = bool(config["postgres"]["from_vm"]["ssl"])
 
     # this is the connection to be used by inter-container networking:
     # i.e. how other CapRover apps reach Postgres. Used in connection strings.
@@ -101,7 +97,7 @@ def build_deployment_context(config, gc_repository, dry_run):
         port=int(config["postgres"]["from_container"]["port"]),
         user=config["postgres"]["user"],
         password=config["postgres"]["pass"],
-        ssl=container_ssl,
+        ssl=bool(config["postgres"]["from_container"]["ssl"]),
     )
     # this is the connection to be used from this script (which runs on the host).
     # Used for one-time setup of databases, users, etc.
@@ -110,8 +106,17 @@ def build_deployment_context(config, gc_repository, dry_run):
         port=int(config["postgres"]["from_vm"]["port"]),
         user=config["postgres"]["user"],
         password=config["postgres"]["pass"],
-        ssl=vm_ssl,
+        ssl=bool(config["postgres"]["from_vm"]["ssl"]),
     )
+
+    # Upfront validation: does not change or persist anything
+    if not dry_run:
+        _verify_existing_postgres_app(
+            cap,
+            config["postgres"].get("app_name", PostgresApp.one_click_app_name),
+            postgres_from_container,
+            postgres_from_vm,
+        )
 
     webapps_use_ssl = config.get("webappsUseSsl", True)
     return DeploymentContext(
@@ -122,42 +127,6 @@ def build_deployment_context(config, gc_repository, dry_run):
         webapps_use_ssl,
         dry_run,
     )
-
-
-def deploy_stack(config, gc_repository, dry_run):
-    """Deploy application stack based on the configuration file."""
-    ctx = build_deployment_context(config, gc_repository, dry_run)
-
-    # Apps in the registry that have a config block, in registry order
-    apps_with_config = [
-        cls for cls in APPS_REGISTRY if cls.one_click_app_name in config
-    ]
-    # Further filter to those where deployed:true, and instantiate an instance with the config and DeploymentContext
-    apps_to_deploy = [
-        cls
-        for cls in apps_with_config
-        if config[cls.one_click_app_name].get("deploy", False)
-    ]
-
-    # Edge case: not deploying postgres, but we want to check it because so much
-    # downstream depends on it.
-    if PostgresApp in apps_with_config and PostgresApp not in apps_to_deploy:
-        logger.info("Using already-deployed or external PostgreSQL configuration.")
-        pg_app_name = config[PostgresApp.one_click_app_name].get(
-            "app_name", PostgresApp.one_click_app_name
-        )
-        if not dry_run:
-            _verify_existing_postgres_app(
-                ctx.caprover,
-                pg_app_name,
-                ctx.postgres_from_container,
-                ctx.postgres_from_vm,
-            )
-
-    # Install apps!
-    for cls in apps_to_deploy:
-        app = cls(config[cls.one_click_app_name], ctx)
-        app.install()
 
 
 def is_local_path(path):
@@ -268,9 +237,27 @@ def main():
     else:
         context_manager = nullcontext(repo_path)
 
-    # Deploy application stack
+    # Launch Deployer GUI application
     with context_manager as repo_url:
-        deploy_stack(config, repo_url, args.dry_run)
+        ctx = build_deployment_context(config, repo_url, args.dry_run)
+        Deployer(config, ctx).run()
+
+
+def dev_target() -> None:
+    """Zero-arg entry point for `textual run --dev`.
+
+    No argparse here: use defaults that make sense for local iteration.
+
+    Usage
+    -----
+    $ source tests/.venv/bin/activate
+    $ pip install textual-dev
+    $ textual run --dev "gc_stack_deploy.stack_deploy:dev_target"
+    """
+    config = load_config("./tests/stack.test.yaml")
+    repo_url = "https://conservationmetrics.github.io/gc-deploy/one-click-apps/v4/apps/"
+    ctx = build_deployment_context(config, repo_url, False)
+    return Deployer(config, ctx)
 
 
 if __name__ == "__main__":

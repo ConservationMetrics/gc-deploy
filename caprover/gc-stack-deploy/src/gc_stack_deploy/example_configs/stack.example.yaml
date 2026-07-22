@@ -4,8 +4,6 @@ caproverUrl: "http[s]://captain.your-captain-root.net" # Remove the brackets if 
 caproverPassword: "secret-captain-password" # Set a secure password!
 
 postgres:
-  deploy: true # Set to false to skip PostgreSQL deployment (including on a resume run).
-
   # REQUIRED in all cases:
   user: "postgres" # Do not change this
   pass: "your_pg_password" # Set a new password, avoid special chars that apps may misparse in connection strings
@@ -14,14 +12,13 @@ postgres:
   from_vm:
     host: 127.0.0.1
     port: 15432 # when deploy:true, the container will map to this port on the host VM
-    ssl: false # ignored when deploy:true (forced false). Set true for external Postgres requiring SSL.
+    ssl: false # false for same-VM deployment. Set true for external Postgres requiring SSL.
   from_container:
     host: srv-captain--postgres
     port: 5432
-    ssl: false # ignored when deploy:true (forced false). Set true for external Postgres requiring SSL.
+    ssl: false # false for same-VM deployment. Set true for external Postgres requiring SSL.
 
 windmill-only:
-  deploy: true
   app_name: windmill # IMPORTANT so that your app doesn't get deployed as "windmill-only"
   # app_version: 1.518.2  # Optional: one-click app already has a sane default
 
@@ -30,12 +27,10 @@ windmill-only:
   # azure_db_pass: changeme
 
 redis:
-  deploy: true
   app_name: redis # optional override
   redis_password: "secretkey" # also optional override since redis is only accessible internally on the VM
 
 superset-only:
-  deploy: true
   app_name: superset # IMPORTANT so that your app doesn't get deployed as "superset-only"
   ### REQUIRED:
   redis_url: "redis[s]://:secretkey@srv-captain--redis:6379" # for locally hosted redis, remove `[s]`
@@ -53,7 +48,6 @@ superset-only:
   # secret_key:
 
 gc-landing-page:
-  deploy: true
   app_name: gc-landing-page # optional override
   redirect_to_root: true # make gc-landing-page the landing page when no subdomain specified
   ### REQUIRED:
@@ -70,7 +64,6 @@ gc-landing-page:
   logo_url: # If you want to add a logo; can also be set later
 
 gc-explorer:
-  deploy: true
   app_name: explorer # IMPORTANT so that your app doesn't get deployed as "gcexplorer"
   ### REQUIRED:
   postgres_database: "warehouse"
@@ -80,10 +73,8 @@ gc-explorer:
   community_name: # this is the URL slug of the community, e.g. "springfield" in "springfield.your-captain-root.net". It must not contain any special characters or spaces.
 
 comapeo-cloud:
-  deploy: true
   app_name: comapeo # IMPORTANT so that your app doesn't get deployed as "comapeo-cloud"
 
 filebrowser:
-  deploy: true
   app_name: files # IMPORTANT so that your app doesn't get deployed as "filebrowser"
   admin_password: "changeme" # optional
