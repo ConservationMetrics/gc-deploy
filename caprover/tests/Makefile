@@ -12,10 +12,15 @@ TOOL_DIR := $(REPO_ROOT)/caprover/gc-stack-deploy
 VENV_DIR := $(REPO_ROOT)/caprover/tests/.venv
 VENV_READY_FILE := $(VENV_DIR)/bin/gc-stack-deploy
 
-.PHONY: all quick-test-e2e test-e2e install-caprover uninstall-caprover build-one-click-apps-repo deploy-stack clean setup-venv
+.PHONY: all quick-test-e2e test-e2e test-unit install-caprover uninstall-caprover build-one-click-apps-repo deploy-stack clean setup-venv
 
 # Default target
-all: test-e2e
+all: test-unit test-e2e
+
+# Run gc-stack-deploy unit tests (no CapRover required).
+test-unit: setup-venv
+	@"$(VENV_DIR)/bin/pip" install -e "$(TOOL_DIR)[dev]" -q
+	@cd "$(TOOL_DIR)" && "$(VENV_DIR)/bin/pytest" -v
 
 # Main end-to-end test target
 test-e2e: uninstall-caprover install-caprover quick-test-e2e

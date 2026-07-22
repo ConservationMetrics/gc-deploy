@@ -1,6 +1,6 @@
 [project]
 name = "gc-stack-deploy"
-version = "0.2.1"
+version = "0.3.0"
 description = "Deploy Guardian Connector stack of apps to the (locally running) Caprover instance."
 requires-python = ">=3.9"
 dependencies = [
@@ -16,6 +16,9 @@ dependencies = [
 Homepage = "https://guardianconnector.net/"
 Documentation = "https://docs.guardianconnector.net"
 Repository = "https://github.com/ConservationMetrics/gc-deploy"
+
+[project.optional-dependencies]
+dev = ["pytest"]
 
 [project.scripts]
 gc-stack-deploy = "gc_stack_deploy.stack_deploy:main"
