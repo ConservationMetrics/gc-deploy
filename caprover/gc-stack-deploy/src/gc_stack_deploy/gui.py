@@ -294,6 +294,10 @@ class Deployer(App):
         self.query_one("#log", RichLog).clear()
         self._run_deploy(to_uninstall, to_install)
 
+    def _set_and_refresh(self, app_id, status: AppStatus) -> None:
+        self.state.set(app_id, status)
+        self.query_one(ChecklistScreen).refresh_one_note_to_state(app_id)
+
     @work(exclusive=True, thread=True)
     def _run_deploy(
         self,
@@ -318,24 +322,28 @@ class Deployer(App):
         # uninstall then reinstall the same app in one go.
         for spec in to_uninstall:
             app_id = spec.one_click_app_name
-            self.call_from_thread(self.state.set, app_id, AppStatus.UNINSTALLING)
+            self.call_from_thread(self._set_and_refresh, app_id, AppStatus.UNINSTALLING)
             try:
                 raise NotImplementedError()  # TODO spec.uninstall()
-                self.call_from_thread(self.state.set, app_id, AppStatus.NOT_INSTALLED)
+                self.call_from_thread(
+                    self._set_and_refresh, app_id, AppStatus.NOT_INSTALLED
+                )
             except Exception:
                 # Log and record FAILED rather than raising: one app's
                 # failure shouldn't abort the rest of the batch.
                 spec.logger.exception("uninstall failed")
-                self.call_from_thread(self.state.set, app_id, AppStatus.FAILED)
+                self.call_from_thread(self._set_and_refresh, app_id, AppStatus.FAILED)
 
         for spec in to_install:
             app_id = spec.one_click_app_name
-            self.call_from_thread(self.state.set, app_id, AppStatus.INSTALLING)
+            self.call_from_thread(self._set_and_refresh, app_id, AppStatus.INSTALLING)
             try:
                 spec.install()  # Blocking call, runs directly on this worker thread
-                self.call_from_thread(self.state.set, app_id, AppStatus.INSTALLED)
+                self.call_from_thread(
+                    self._set_and_refresh, app_id, AppStatus.INSTALLED
+                )
             except Exception:
                 spec.logger.exception("install failed")
-                self.call_from_thread(self.state.set, app_id, AppStatus.FAILED)
+                self.call_from_thread(self._set_and_refresh, app_id, AppStatus.FAILED)
 
         self.call_from_thread(self._on_deploy_finished)
