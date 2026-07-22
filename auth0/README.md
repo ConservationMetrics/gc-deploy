@@ -130,7 +130,7 @@ See the GC Explorer [RBAC documentation](https://github.com/ConservationMetrics/
      ```
 4. Once approved, the user can log in to GuardianConnector services.
 5. For the GC-Explorer and GC-Landing Page applications: in the **Roles** tab for the user, assign the appropriate role. (Or, alternatively, on the **User Management > Roles** page, you can assign the user to the role.)
-6. For Superset, the user is initially assigned the **Alpha** role by default (controlled via the `USER_ROLE` environment variable). A Superset admin can then upgrade the user’s role or share specific dashboards.
+6. For Superset, assign an Auth0 role (`Admin` → Admin, `Member` → Alpha, `Guest` → Gamma, `SignedIn` → Public). Roles sync on every login.
 
 ## Using Terraform
 
