@@ -90,10 +90,11 @@ If the script ran successfully, proceed to the [Post-install app configuration s
 
 > [!TIP]
 > If something goes wrong partway through `gc-stack-deploy`:
-> - Just re-run `gc-stack-deploy --config-file stack.yaml`. Apps that installed
->   successfully already show as checked/installed and won't be touched again.
 > - You can uninstall a failed or unwanted app directly from the same checklist
->   by unchecking it and pressing Go.
+>   by unchecking it and pressing Go. Then can opt to install the same app again
+>   after having uninstalled it. (i.e. re-installing an installed app is a 2-phase process)
+> - You may re-run `gc-stack-deploy --config-file stack.yaml` later. Apps that
+>   installed successfully already show as checked/installed and won't be touched again.
 > - You can still fall back to manually installing the apps using the one-click app install menu.
 >   See [Manually installing apps section](#manually-installing-apps).
 
