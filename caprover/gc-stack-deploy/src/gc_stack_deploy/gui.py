@@ -145,11 +145,11 @@ class ChecklistScreen(Vertical):
             for appspec in self.apps_with_config:
                 app_id = appspec.one_click_app_name
                 current = self.state.get(app_id)
-                is_installed = current == AppStatus.INSTALLED
-                note_text, note_class = _status_note(current, is_installed)
+                initial_value = True  # likely the user will install everything.
+                note_text, note_class = _status_note(current, initial_value)
 
                 with Horizontal(classes="app-row"):
-                    yield Checkbox("", id=f"chk_{app_id}", value=is_installed)
+                    yield Checkbox("", id=f"chk_{app_id}", value=initial_value)
                     with Vertical(classes="checkbox-lines"):
                         yield Label(Content.styled(appspec.app_name, "bold cyan"))
                         yield Label(
