@@ -31,7 +31,7 @@ def resolve_action(current: AppStatus, checked: bool) -> Action:
     return Action.NOOP
 
 
-def _status_note(current: AppStatus, checked: bool) -> str:
+def _derive_status_note(current: AppStatus, checked: bool) -> str:
     """Text shown next to a checkbox
 
     Describes what submitting the form will do (install/uninstall if that differs
@@ -49,13 +49,17 @@ def _status_note(current: AppStatus, checked: bool) -> str:
     # Action.NOOP: box matches current state, describe that state instead
     if current is AppStatus.FAILED:
         return AppStatus.FAILED.value.upper(), "failed"
+    if current is AppStatus.INSTALLING:
+        return "installing…", "will-install"
+    if current is AppStatus.UNINSTALLING:
+        return "uninstalling…", "will-uninstall"
     if current is AppStatus.INSTALLED:
         return f"currently: {current.value.replace('_', ' ')}", "currently-installed"
     return f"currently: {current.value.replace('_', ' ')}", "currently-not-installed"
 
 
-def _apply_status_note(note: Label, current: AppStatus, checked: bool) -> None:
-    text, css_class = _status_note(current, checked)
+def _apply_status_note(note: Label, current_status: AppStatus, checked: bool) -> None:
+    text, css_class = _derive_status_note(current_status, checked)
     note.update(text)
     note.set_classes(css_class)
 
@@ -146,7 +150,7 @@ class ChecklistScreen(Vertical):
                 app_id = appspec.one_click_app_name
                 current = self.state.get(app_id)
                 initial_value = True  # likely the user will install everything.
-                note_text, note_class = _status_note(current, initial_value)
+                note_text, note_class = _derive_status_note(current, initial_value)
 
                 with Horizontal(classes="app-row"):
                     yield Checkbox("", id=f"chk_{app_id}", value=initial_value)
@@ -160,25 +164,26 @@ class ChecklistScreen(Vertical):
 
         yield Button("Go", id="go", variant="primary")
 
+    def refresh_one_note_to_state(self, app_id: str) -> None:
+        """Recompute and apply the status note for one app, using its
+        current checkbox value as the desired end state.
+
+        Checkbox values are not changed.
+        """
+        app_status = self.state.get(app_id)
+        chk = self.query_one(f"#chk_{app_id}", Checkbox)
+        note = self.query_one(f"#note_{app_id}", Label)
+        _apply_status_note(note, app_status, chk.value)
+
+    def refresh_all_notes_to_state(self) -> None:
+        """Refresh every app's status note to match self.state."""
+        for appspec in self.apps_with_config:
+            self.refresh_one_note_to_state(appspec.one_click_app_name)
+
     def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
         """Recompute the status note annotation whenever a box is toggled."""
-        app_name = event.checkbox.id.removeprefix("chk_")
-        current = self.state.get(app_name)
-        note = self.query_one(f"#note_{app_name}", Label)
-        _apply_status_note(note, current, event.value)
-
-    def sync_to_state(self) -> None:
-        """Refresh the Checkboxes to match what's in self.state
-
-        Re-read self.state for every app and refresh checkboxes/notes.
-        """
-        for appspec in self.apps_with_config:
-            app_id = appspec.one_click_app_name
-            status = self.state.get(app_id)
-            chk = self.query_one(f"#chk_{app_id}", Checkbox)
-            chk.value = status == AppStatus.INSTALLED
-            note = self.query_one(f"#note_{app_id}", Label)
-            _apply_status_note(note, status, chk.value)
+        app_id = event.checkbox.id.removeprefix("chk_")
+        self.refresh_one_note_to_state(app_id)
 
     def set_is_enabled(self, new_state) -> None:
         for appspec in self.apps_with_config:
@@ -262,7 +267,7 @@ class Deployer(App):
     def _on_deploy_finished(self) -> None:
         """Runs on the main thread once _run_deploy returns."""
         checklist = self.query_one(ChecklistScreen)
-        checklist.sync_to_state()
+        checklist.refresh_all_notes_to_state()
         checklist.set_is_enabled(True)  # Unlock the Checklist items and Button
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
