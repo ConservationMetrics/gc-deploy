@@ -1,13 +1,14 @@
 """Core data classes for gc-stack-deploy
 
 AppSpec: Superclass for a deployable app (Postgres, Windmill, Redis, ...).
-    Each implements install(ctx) and declares depends_on.
+    Subclasses MUST override _install() and declare depends_on.
+    In rare cases, subclasses MAY want to override _uninstall() and/or check_installed()
 
 DeploymentContext: shared, immutable-ish state (CapRover client, resolved
     postgres connection configs, dry_run flag) passed into every call instead
     of being closed over.
 
-TODO: Unit test these in isolation.  Assert install calls on CapRover API.
+TODO: Unit test these in isolation.  Assert install / uninstall calls on CapRover API.
 """
 
 import abc
@@ -53,7 +54,7 @@ class PostgresConnectionConfig:
 class DeploymentContext:
     """Container of state that's global-ish and immutable-ish over the entire script execution.
 
-    It gets passed to every app that needs to be installed
+    It gets passed to every app that needs to be installed / uninstalled
     """
 
     caprover: "caprover_api.CaproverAPI"
@@ -147,6 +148,14 @@ class AppSpec(abc.ABC):
     def app_name(self) -> str:
         return self.app_cfg.get("app_name", self.one_click_app_name)
 
+    def check_installed(self) -> AppStatus:
+        """Query CapRover for this app's current status."""
+        return (
+            AppStatus.INSTALLED
+            if self.ctx.caprover.get_app(self.app_name)
+            else AppStatus.NOT_INSTALLED
+        )
+
     def install(self) -> None:
         self.logger.info(f"Beginning install of {self.app_name}")
         if self.databases and not self.ctx.dry_run:
@@ -168,3 +177,25 @@ class AppSpec(abc.ABC):
         """App-specific install steps. Called by install() after
         this app's `databases` have been created. Do not call directly."""
         raise NotImplementedError()
+
+    def uninstall(self) -> None:
+        self.logger.info(f"Beginning uninstall of {self.app_name}")
+        self._uninstall()
+        self.logger.info(f"Finished uninstall of {self.app_name}")
+
+    def _uninstall(self) -> None:
+        """Uninstall the app from caprover.
+
+        It removes ALL apps matching the app_name prefix.  That will handle examples like
+
+            mywebapp
+            mywebapp-worker
+
+        This implementation DOES delete docker volume mounts (since those are managed by CapRover),
+        but does NOT undo any database setup (e.g. CREATE DATABASE ...) done as part of install().
+
+        Override for different behavior.
+        """
+        self.ctx.caprover.delete_app_matching_pattern(
+            rf"^{self.app_name}", automated=True
+        )

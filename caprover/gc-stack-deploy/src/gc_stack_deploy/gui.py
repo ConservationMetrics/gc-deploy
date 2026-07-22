@@ -6,7 +6,16 @@ from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.content import Content
-from textual.widgets import Button, Checkbox, Footer, Header, Label, RichLog, Static
+from textual.widgets import (
+    Button,
+    Checkbox,
+    Footer,
+    Header,
+    Label,
+    LoadingIndicator,
+    RichLog,
+    Static,
+)
 
 from .apps_registry import APPS_REGISTRY
 from .base import AppSpec, AppStatus, DeploymentContext
@@ -149,13 +158,14 @@ class ChecklistScreen(Vertical):
 
     def compose(self) -> ComposeResult:
         """Build one row per installable app, then a Go button."""
+        yield LoadingIndicator(id="probe-spinner")
         yield Static(
             "Check the apps you want installed. "
-            # TODO: "Unchecking an app that is currently installed will uninstall it. "
+            "Unchecking an app that is currently installed will uninstall it. "
             "Nothing changes until you press Go.",
             id="instructions",
         )
-        with VerticalScroll():
+        with VerticalScroll(id="app-rows-container", classes="hidden"):
             for appspec in self.apps_with_config:
                 app_id = appspec.one_click_app_name
                 current = self.state.get(app_id)
@@ -163,16 +173,42 @@ class ChecklistScreen(Vertical):
                 note_text, note_class = _derive_status_note(current, initial_value)
 
                 with Horizontal(classes="app-row"):
-                    yield Checkbox("", id=f"chk_{app_id}", value=initial_value)
+                    # On initial compose, Checkboxes are disabled and notes are "checking".
+                    # _probe_installed_apps() will update them async.
+                    yield Checkbox(
+                        "", id=f"chk_{app_id}", value=initial_value, disabled=True
+                    )
                     with Vertical(classes="checkbox-lines"):
                         yield Label(Content.styled(appspec.app_name, "bold cyan"))
                         yield Label(
-                            note_text,
-                            id=f"note_{app_id}",
-                            classes=note_class,
+                            "checking...", id=f"note_{app_id}", classes="checking"
                         )
 
         yield Button("Go", id="go", variant="primary")
+
+    def on_mount(self) -> None:
+        self._probe_installed_apps()
+
+    @work(exclusive=True, thread=True)
+    def _probe_installed_apps(self) -> None:
+        """Query each app's install state from CapRover, and update self.state"""
+        for appspec in self.apps_with_config:
+            try:
+                status = appspec.check_installed()
+            except Exception:
+                appspec.logger.exception("check_installed failed")
+                status = AppStatus.FAILED
+            self.app.call_from_thread(
+                self.state.set, appspec.one_click_app_name, status
+            )
+        self.app.call_from_thread(self._on_probe_finished)
+
+    def _on_probe_finished(self) -> None:
+        """Reveal the checklist and hide the spinner."""
+        self.query_one("#probe-spinner").display = False
+        self.query_one("#app-rows-container").display = True
+        self.refresh_all_notes_to_state()
+        self.set_is_enabled(True)
 
     def refresh_one_note_to_state(self, app_id: str) -> None:
         """Recompute and apply the status note for one app, using its
@@ -334,7 +370,7 @@ class Deployer(App):
             app_id = spec.one_click_app_name
             self.call_from_thread(self._set_and_refresh, app_id, AppStatus.UNINSTALLING)
             try:
-                raise NotImplementedError()  # TODO spec.uninstall()
+                spec.uninstall()  # Blocking call, runs directly on this worker thread
                 self.call_from_thread(
                     self._set_and_refresh, app_id, AppStatus.NOT_INSTALLED
                 )
