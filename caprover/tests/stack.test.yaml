@@ -4,7 +4,6 @@ caproverPassword: "captain42"  # the Caprover default
 webappsUseSsl: false
 
 postgres:
-  deploy: true  # Use internal postgres for testing
   app_name: test-postgres  # matches regex in Makefile to cleanup data volumes
   user: "postgres"
   pass: "test_pg_password"
@@ -20,27 +19,24 @@ postgres:
     ssl: false
 
 redis:
-  deploy: true
   app_name: test-redis
   redis_password: "test-redis-key"
 
 windmill-only:
-  deploy: true
   app_name: test-windmill
 
 superset-only:
-  deploy: true
   redis_url: "redis://:test-redis-key@srv-captain--test-redis:6379"
   redis_key_prefix: ""
 
+gc-landing-page:
+  app_name: gc-landing-page
+
 gc-explorer:
-  deploy: true
   postgres_database: "warehouse"
 
 comapeo-cloud:
-  deploy: true
   app_name: test-comapeo  # matches regex in Makefile to cleanup data volumes
 
 filebrowser:
-  deploy: true
   app_name: test-files  # matches regex in Makefile to cleanup data volumes

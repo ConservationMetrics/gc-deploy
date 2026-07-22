@@ -62,7 +62,7 @@ def set_memory_limit(cap, appname, memory_bytes=1610612736):
 def construct_app_variables(app_cfg, init=None):
     variables = {} if init is None else init
     for key, val in app_cfg.items():
-        if key == "deploy":
+        if key == "deploy":  # No longer supported, but may appear in legacy YAMLs.
             continue
         variables[f"$$cap_{key}"] = val
     return variables

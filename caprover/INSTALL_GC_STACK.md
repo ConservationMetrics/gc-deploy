@@ -68,24 +68,42 @@ Finally you are ready to use this same configuration file to deploy the apps to 
 running on the same machine.
 
 ```sh
-# First, dry-run to check for misconfigurations
-gc-stack-deploy --config-file stack.yaml --dry-run
-# Then repeat without --dry-run
+gc-stack-deploy --config-file stack.yaml
 ```
 
-If the script ran successfully, you can proceed to the [Post-install app configuration section](#post-install-app-configuration).
+#### The install/uninstall checklist
+
+Running `gc-stack-deploy` (without `init`) opens a checklist screen, one row per app defined
+in your `stack.yaml`.
+
+Each row's checkbox reflects whether the app is currently installed, and a
+status note tells you what pressing Go will actually do. Only apps whose checkbox state differs
+from their current state will result in taking an action: apps left in their current state are not touched.
+
+You may use the mouse. On keyboard, <kbd>Tab</kbd> and <kbd>Shift+Tab</kbd> switch between checkboxes;
+<kbd>Space</kbd> toggles a checkbox.
+
+Nothing happens until you press **Go**. Once you do, each app is installed or uninstalled in turn.
+Progress and errors stream to the log, and the checklist updates to reflect the new state of every app.
+
+If the script ran successfully, proceed to the [Post-install app configuration section](#post-install-app-configuration).
 
 > [!TIP]
-> If something goes wrong in the middle of the `gc-stack-deploy` script, you have several options:
-> - You can delete the app from CapRover and redeploy it using the `gc-stack-deploy` script. For any applications that were installed successfully, you can set `deploy: false` in the `stack.yaml` file to skip them in the next run.
-> - You can manually install the apps using the one-click app install menu. See [Manually installing apps section](#manually-installing-apps) for more details.
+> If something goes wrong partway through `gc-stack-deploy`:
+> - You can uninstall a failed or unwanted app directly from the same checklist
+>   by unchecking it and pressing Go. Then can opt to install the same app again
+>   after having uninstalled it. (i.e. re-installing an installed app is a 2-phase process)
+> - You may re-run `gc-stack-deploy --config-file stack.yaml` later. Apps that
+>   installed successfully already show as checked/installed and won't be touched again.
+> - You can still fall back to manually installing the apps using the one-click app install menu.
+>   See [Manually installing apps section](#manually-installing-apps).
 
 #### What could go wrong?
 
 It has been observed that...
 - the script can time out before a Docker image successfully pulls and builds
 - the script fails to enable SSL for a given webapp
-- CapRover or Docker misbehaves until the VM is rebooted once (`sudo shutdown -r now`), including some nodeId-related failures
+- CapRover or Docker misbehaves until the VM is rebooted once (`sudo shutdown -r now`)
 
 In both cases, trying to run the script again typically fixes the issue. For the case of the Docker image building, you can actually monitor the build progress in the CapRover web portal under **Apps** → **Deployment**.
 
