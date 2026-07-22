@@ -8,7 +8,8 @@ dependencies = [
     "psycopg[binary]",
     "ruamel.yaml",
     "textual",
-    "Caprover-API @ git+https://github.com/IamJeffG/Caprover-API.git@all-patches-2025-nov",
+    # This Git branch on a fork is an undeployed fix to https://github.com/ConservationMetrics/gc-deploy/issues/124
+    "Caprover-API @ git+https://github.com/IamJeffG/Caprover-API.git@deploy_one_click_app-uses-create_and_update",
 ]
 
 [project.urls]
