@@ -18,7 +18,7 @@ It covers the manual steps that are not already automated through the scripts an
 - [ ] Did I deploy all required apps?
 - [ ] Did I configure environment variables and settings for each app correctly? (c.f. [caprover/INSTALL_GC_STACK.md#post-install-app-configuration](caprover/INSTALL_GC_STACK.md#post-install-app-configuration))
 - [ ] Did I store the CapRover admin password in KeePass?
-- [ ] Did I enable disk cleanup and set an appropriate cron schedule in the CapRover web UI?
+- [ ] Did I enable disk cleanup and set an appropriate cron schedule in the CapRover web UI, such as `0 3 * * *` (daily at 3:00 AM), at an appropriate timezone?
 - [ ] (CMI only) Did I add the Caprover root subdomain to the `.env` file for our CapRover batch deploy script?
 
 ### Landing Page
@@ -85,6 +85,7 @@ _No manual steps required until datasets exist._
 - [ ] Did I create a Mapbox account and set up an API key to use for the domain?
 - [ ] Did I set up any maps required i.e. for the alerts dashboard?
 - [ ] Did I store the credentials for Mapbox in KeePass?
+- [ ] Did I create a secret key `sk.ey...` for the [Create or Update a Mapbox Tile Script](https://github.com/ConservationMetrics/gc-scripts-hub/tree/main/f/connectors/mapbox)?
 
 ### Uptime Robot
 

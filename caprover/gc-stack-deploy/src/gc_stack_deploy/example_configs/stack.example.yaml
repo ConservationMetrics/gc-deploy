@@ -1,12 +1,14 @@
-# TODO: make it easier to populate this file, e.g. not needing to put in auth0 domain multiple times.
-
 caproverUrl: "http[s]://captain.your-captain-root.net" # Remove the brackets if using SSL, remove `[s]` if using HTTP.
 caproverPassword: "secret-captain-password" # Set a secure password!
+
+# Shared values — set once, referenced below with *name (YAML anchors).
+auth0_domain: &auth0_domain # your Auth0 tenant host, e.g. "your-tenant.us.auth0.com"
+community_name: &community_name # URL slug / alias, e.g. "springfield" in "springfield.your-captain-root.net"
 
 postgres:
   # REQUIRED in all cases:
   user: "postgres" # Do not change this
-  pass: "your_pg_password" # Set a new password, avoid special chars that apps may misparse in connection strings
+  pass: "your_pg_password" # IMPORTANT: set a new password, avoid special chars that apps may misparse in connection strings
   database: postgres # `warehouse` will be created in the stack deploy script
   version: 17
   from_vm:
@@ -36,12 +38,11 @@ superset-only:
   redis_url: "redis[s]://:secretkey@srv-captain--redis:6379" # for locally hosted redis, remove `[s]`
   redis_key_prefix: "eg_"
   ### OPTIONAL, but you probably want to override:
-  auth0_domain:
+  auth0_domain: *auth0_domain
   auth0_client_id:
   auth0_client_secret:
   admin_email: "admin@guardianconnector.net" # IMPORTANT: this should be changed to the email address of the first admin user who will log in with auth0
   mapbox_api_key: # If you want to use Mapbox for maps; can also be set later.
-  app_icon: # If you want to add a logo; can also be set later
   app_title: "Dashboard: Biocultural Monitoring Demo" # Change this to an appropriate title for your community.
   ### Optional: one-click app already has sane defaults
   # superset_docker_image:
@@ -51,26 +52,27 @@ gc-landing-page:
   app_name: gc-landing-page # optional override
   redirect_to_root: true # make gc-landing-page the landing page when no subdomain specified
   ### REQUIRED:
-  community_name: # this is the URL slug of the community, e.g. "springfield" in "springfield.your-captain-root.net". It must not contain any special characters or spaces.
+  community_name: *community_name
   root_domain: # this is the root domain of the community, e.g. "your-captain-root.net".
-  auth0_domain:
+  auth0_domain: *auth0_domain
   auth0_client_id:
   auth0_client_secret:
-  ### OPTIONAL, but you probably want to override. Should be set according to services available in the community (e.g. if you don't have Superset, set `superset_enabled: false`)
-  superset_enabled:
-  filebrowser_enabled:
-  windmill_enabled:
-  explorer_enabled:
+  ### OPTIONAL — defaults are probably true; override depending on your use case (e.g. set `superset_enabled: false` if Superset is not deployed)
+  superset_enabled: true
+  filebrowser_enabled: true
+  windmill_enabled: true
+  explorer_enabled: true
   logo_url: # If you want to add a logo; can also be set later
+  background_image_url: # If you want to add a background image; can also be set later
 
 gc-explorer:
   app_name: explorer # IMPORTANT so that your app doesn't get deployed as "gcexplorer"
   ### REQUIRED:
   postgres_database: "warehouse"
-  auth0_domain:
+  community_name: *community_name
+  auth0_domain: *auth0_domain
   auth0_client_id:
   auth0_client_secret:
-  community_name: # this is the URL slug of the community, e.g. "springfield" in "springfield.your-captain-root.net". It must not contain any special characters or spaces.
 
 comapeo-cloud:
   app_name: comapeo # IMPORTANT so that your app doesn't get deployed as "comapeo-cloud"
