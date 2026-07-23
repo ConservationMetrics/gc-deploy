@@ -16,7 +16,6 @@ services:
       AUTH0_CLIENTID: $$cap_auth0_client_id
       AUTH0_CLIENT_SECRET: $$cap_auth0_client_secret
       MAPBOX_API_KEY: $$cap_mapbox_api_key
-      APP_ICON: $$cap_app_icon
       APP_NAME: $$cap_app_title
       LANGUAGES: '{"en": {"flag": "us", "name": "English"}, "pt_BR": {"flag": "br", "name": "Português"}, "es": {"flag": "mx", "name": "Español"}, "fr": {"flag": "fr", "name": "Français"}, "nl": {"flag": "sr", "name": "Nederlands"}}'
       FRAME_ANCESTORS: $$cap_frame_ancestors

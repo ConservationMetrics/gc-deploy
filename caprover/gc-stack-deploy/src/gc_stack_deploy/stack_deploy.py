@@ -32,7 +32,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
 def load_config(file_path):
     """Load configuration from YAML file."""
     try:

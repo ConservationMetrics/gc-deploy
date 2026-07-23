@@ -72,7 +72,7 @@ For security reasons, initial configuration from another machine is disabled, bo
     - For "Valid email addresses": enter an admin email address from your organization.
     - For "Caprover machine name", enter your alias for the VM (`<alias>`)
 
-    Note that it may take the server a few minutes to install CapRover. If, when running this command, you get an error that `caprover: command not found`, wait a few minutes and try again.
+    Note that it may take the server a few minutes to install CapRover. If, when running this command, you get an error that `caprover: command not found` or `Error Code: 1001  Message: Captain is not ready yet...`, wait a few minutes and try again.
 
 ### IV. Install the Guardian Connector software stack
 
