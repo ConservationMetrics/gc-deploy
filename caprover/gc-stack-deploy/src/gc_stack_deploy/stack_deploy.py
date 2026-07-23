@@ -41,26 +41,6 @@ def load_config(file_path):
     except FileNotFoundError:
         print(f"Configuration file {file_path} not found.")
         sys.exit(1)
-
-    # Top-level shared values fill per-app keys when unset.
-    def propagate(key, value, apps):
-        if not value:
-            return
-        for name in apps:
-            app = config.get(name)
-            if isinstance(app, dict) and not app.get(key):
-                app[key] = value
-
-    propagate(
-        "auth0_domain",
-        (config.get("auth0") or {}).get("domain"),
-        ("superset-only", "gc-landing-page", "gc-explorer"),
-    )
-    propagate(
-        "community_name",
-        config.get("community_name"),
-        ("gc-landing-page", "gc-explorer"),
-    )
     return config
 
 
