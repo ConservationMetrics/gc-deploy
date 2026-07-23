@@ -45,12 +45,14 @@ You will need a Google Cloud Platform (GCP) OAuth 2.0 Client in order to [avoid 
      - **Callback URL**: `https://<domain>.guardianconnector.net/login`
      - **Allowed Web Origins**: `https://<domain>.guardianconnector.net`
 5. Create a M2M application for metrics with a name like **GC Metrics**, and grant `read:users` and `read:stats` scopes to it. This authorizes the [GC Metrics script](https://github.com/ConservationMetrics/gc-scripts-hub/tree/main/f/metrics/guardianconnector) (which runs in Windmill) against the Auth0 Management API. Follow [**Setting up resources**](/caprover/INSTALL_GC_STACK.md#setting-up-resources) in the stack install guide to add these as a Windmill resource `oauth_client_credentials`.
-6. In **Actions**, configure a Login Flow Action to handle user approval. (See [ User Approval Flow](#user-approval-flow) below.)
+6. In **Actions**, configure Login Flow Actions for user approval and the roles claim. (See [Flows](#flows) below.)
 7. Set up **Role-Based Access Control** for the applications that use it. (See [RBAC Configuration](#rbac-configuration) below.)
 8. **Sign in** to an auth0 application with at least one user, who will serve as the initial admin user and can manage approval and roles for others using GC Landing Page. This user should be given the **Admin** role, and be approved (see [Auth0 approval process](#auth0-approval-process) below.)
 9. (Optional) in **Branding**, a few minor customizations like adding an organization logo and setting the background color to gray #F9F9F9 instead of standard black.
 
-## User approval flow
+## Flows
+
+### 1. User approval flow
 
 To restrict access until a user is approved, a Post-Login Trigger Action is used in Auth0. This action intercepts login attempts and denies access unless the user’s `app_metadata` includes `"approved": true`.
 
@@ -69,13 +71,35 @@ To restrict access until a user is approved, a Post-Login Trigger Action is used
     };
     ```
 4. Name the action "Check Approval".
-5. Drag the new action into the flow, so it looks like this:
+5. Drag the new action into the Login flow (see diagram below).
 
-    ```mermaid
-    graph TD
-    A[Start: User Logged In] --> B["<> Check Approval"]
-    B --> C[Complete: Token Issued]
+### 2. Add roles claim (Superset)
+
+Superset reads Auth0 RBAC roles from a custom ID-token claim on `/userinfo`. Auth0 rewrites `urn:gc:roles` → `urn.gc.roles` in that response. Create a second Post-Login Action and add it to the same Login flow:
+
+1. On the Auth0 Page, navigate to **Actions -> Triggers** page.
+2. Modify the **Post Login** Flow.
+3. Create a custom action using this trigger code:
+
+    ```jsx
+    exports.onExecutePostLogin = async (event, api) => {
+      if (event.authorization) {
+        api.idToken.setCustomClaim("urn:gc:roles", event.authorization.roles);
+      }
+    };
     ```
+4. Name the action "Add Roles Claim".
+
+### 3. Drag actions into the flow
+
+Drag both actions into the Post-Login flow, so it looks like this:
+
+```mermaid
+graph TD
+A[Start: User Logged In] --> B["<> Check Approval"]
+B --> C["<> Add Roles Claim"]
+C --> D[Complete: Token Issued]
+```
 
 ## Setting up RBAC
 
