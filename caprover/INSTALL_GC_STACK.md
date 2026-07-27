@@ -207,7 +207,7 @@ The landing page uses the same PostgreSQL server as GuardianConnector Explorer.
 `gc-stack-deploy` creates its `guardianconnector` configuration database before
 deploying the landing page.
 
-You may also want to check if all of the other environmental variables (like `NUXT_COMMUNITY_NAME`, `NUXT_PUBLIC_LOGO_URL`) are set correctly post-installation. 
+You may also want to check if all of the other environmental variables (like `NUXT_PUBLIC_COMMUNITY_NAME`) are set correctly post-installation. Logo and login background are configured in the landing page Theme Settings (Admin), stored in `gc_settings`.
 
 ### Redis
 
