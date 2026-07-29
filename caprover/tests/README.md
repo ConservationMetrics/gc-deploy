@@ -14,9 +14,9 @@ setting up and tearing down a CapRover server).
 
 ## When to run Tests
 
-Since we have not automated running tests (e.g. in CI), we provide a simple recommendation:
-
-* Run the tests locally for every change to `stack_deploy.py` or `stack.example.yaml`
+Unit tests (`make -C caprover/tests test-unit`) run in GitHub Actions on branch push.
+CapRover e2e tests cannot; run those locally for every change to `stack_deploy.py` or
+`stack.example.yaml`.
 
 You probably do not need to run the tests when adding/modifying one-click app definitions,
 because that build step is in fact run automatically in CI.
