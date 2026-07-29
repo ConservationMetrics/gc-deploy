@@ -14,12 +14,11 @@ setting up and tearing down a CapRover server).
 
 ## When to run Tests
 
-Since we have not automated running tests (e.g. in CI), we provide a simple recommendation:
+GitHub Actions runs **unit tests only**.  It cannot run e2e tests.
 
-* Run the tests locally for every change to `stack_deploy.py` or `stack.example.yaml`
-
-You probably do not need to run the tests when adding/modifying one-click app definitions,
-because that build step is in fact run automatically in CI.
+For every change to `gc-stack-deploy`, including the YAML file,
+and every change to one-click apps,
+run the E2E tests locally (`make -C caprover/tests all`)
 
 
 ## Prerequisites
