@@ -297,6 +297,8 @@ Consider following the post-install instructions of adding the following lines
 to the new `-worker` and `-init-and-beat` services.
 
 ```yaml
+TaskTemplate:
+  ContainerSpec:
     HealthCheck:
       Test: ["NONE"]
 ```
