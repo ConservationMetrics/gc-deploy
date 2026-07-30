@@ -49,6 +49,21 @@ def set_yaml_value(yaml_str: str | None, key: str | list[str], value: object) ->
     return buf.getvalue()
 
 
+def disable_healthcheck(suo: str | None) -> str:
+    """
+    Return a serviceUpdateOverride YAML with the Docker healthcheck disabled.
+
+    HealthCheck gets nested under TaskTemplate.ContainerSpec; I can't find
+    documentation for that, you will have to trust me (from trial-and-error).
+
+    TaskTemplate:
+      ContainerSpec:
+        HealthCheck:
+          Test: ["NONE"]
+    """
+    return set_yaml_value(suo, "TaskTemplate.ContainerSpec.HealthCheck.Test", ["NONE"])
+
+
 def set_memory_limit(cap, appname, memory_bytes=1610612736):
     app = cap.get_app(appname)
     new_suo = set_yaml_value(
@@ -311,11 +326,7 @@ class SupersetApp(AppSpec):
                 f"{self.app_name}-worker",
             ):
                 worker_app = cap.get_app(appname)
-                new_suo = set_yaml_value(
-                    worker_app["serviceUpdateOverride"],
-                    "TaskTemplate.HealthCheck.Test",
-                    ["NONE"],
-                )
+                new_suo = disable_healthcheck(worker_app["serviceUpdateOverride"])
                 # Also set memory limit to workers
                 new_suo = set_yaml_value(
                     new_suo, "TaskTemplate.Resources.Limits.MemoryBytes", 1610612736
