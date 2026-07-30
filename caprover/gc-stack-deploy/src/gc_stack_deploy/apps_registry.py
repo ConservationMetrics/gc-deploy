@@ -64,14 +64,30 @@ def disable_healthcheck(suo: str | None) -> str:
     return set_yaml_value(suo, "TaskTemplate.ContainerSpec.HealthCheck.Test", ["NONE"])
 
 
-def set_memory_limit(cap, appname, memory_bytes=1610612736):
-    app = cap.get_app(appname)
-    new_suo = set_yaml_value(
-        app["serviceUpdateOverride"],
-        "TaskTemplate.Resources.Limits.MemoryBytes",
-        memory_bytes,
+def apply_memory_limit(suo: str | None, memory_bytes=1610612736) -> str:
+    return set_yaml_value(
+        suo, "TaskTemplate.Resources.Limits.MemoryBytes", memory_bytes
     )
-    cap.update_app(appname, serviceUpdateOverride=new_suo)
+
+
+def patch_service_update_override(cap, appname: str, *transforms) -> None:
+    """
+    Fetch an app's serviceUpdateOverride, apply transforms in order, then update.
+
+    Parameters
+    ----------
+    cap
+        CapRover API client.
+    appname
+        Name of the CapRover app to patch.
+    *transforms
+        Callables that accept and return a YAML string, applied left to
+        right. Examples: `disable_healthcheck`, `apply_memory_limit`.
+    """
+    suo = cap.get_app(appname)["serviceUpdateOverride"]
+    for t in transforms:
+        suo = t(suo)
+    cap.update_app(appname, serviceUpdateOverride=suo)
 
 
 def construct_app_variables(app_cfg, init=None):
@@ -258,7 +274,7 @@ class WindmillApp(AppSpec):
                 f"{self.app_name}-worker",
                 f"{self.app_name}-worker-native",
             ):
-                set_memory_limit(cap, svcname)
+                patch_service_update_override(cap, svcname, apply_memory_limit)
 
 
 class RedisApp(AppSpec):
@@ -275,7 +291,9 @@ class RedisApp(AppSpec):
                 app_variables=variables,
                 automated=True,
             )
-            set_memory_limit(self.ctx.caprover, self.app_name)
+            patch_service_update_override(
+                self.ctx.caprover, self.app_name, apply_memory_limit
+            )
 
 
 class SupersetApp(AppSpec):
@@ -317,23 +335,18 @@ class SupersetApp(AppSpec):
             if self.ctx.webapps_use_ssl:
                 cap.enable_ssl(self.app_name)
                 cap.update_app(self.app_name, force_ssl=True)
+            patch_service_update_override(cap, self.app_name, apply_memory_limit)
 
             # disable the healthcheck in Service Update Override, which will be maintained
             # in future deploys. This is OPTIONAL here because the one-click app already
             # does this in a custom dockerfileLines, but recommended to ease upgrades.
-            for appname in (
+            for svcname in (
                 f"{self.app_name}-init-and-beat",
                 f"{self.app_name}-worker",
             ):
-                worker_app = cap.get_app(appname)
-                new_suo = disable_healthcheck(worker_app["serviceUpdateOverride"])
-                # Also set memory limit to workers
-                new_suo = set_yaml_value(
-                    new_suo, "TaskTemplate.Resources.Limits.MemoryBytes", 1610612736
+                patch_service_update_override(
+                    cap, svcname, disable_healthcheck, apply_memory_limit
                 )
-                cap.update_app(appname, serviceUpdateOverride=new_suo)
-
-            set_memory_limit(cap, self.app_name)  # The web service (not worker)
 
 
 class GCLandingPageApp(AppSpec):
@@ -366,7 +379,7 @@ class GCLandingPageApp(AppSpec):
             if self.ctx.webapps_use_ssl:
                 cap.enable_ssl(self.app_name)
                 cap.update_app(self.app_name, force_ssl=True)
-            set_memory_limit(cap, self.app_name)
+            patch_service_update_override(cap, self.app_name, apply_memory_limit)
 
         if redirect_to_root:
             self.logger.info(
@@ -409,7 +422,7 @@ class GCExplorerApp(AppSpec):
             if self.ctx.webapps_use_ssl:
                 cap.enable_ssl(self.app_name)
                 cap.update_app(self.app_name, force_ssl=True)
-            set_memory_limit(cap, self.app_name)
+            patch_service_update_override(cap, self.app_name, apply_memory_limit)
 
 
 class ComapeoCloudApp(AppSpec):
@@ -435,7 +448,7 @@ class ComapeoCloudApp(AppSpec):
                 force_ssl=self.ctx.webapps_use_ssl,
                 support_websocket=True,
             )
-            set_memory_limit(cap, self.app_name)
+            patch_service_update_override(cap, self.app_name, apply_memory_limit)
 
 
 class FilebrowserApp(AppSpec):
@@ -491,7 +504,7 @@ class FilebrowserApp(AppSpec):
                     "FB_PASSWORD": hashed_password,
                 },
             )
-            set_memory_limit(cap, self.app_name)
+            patch_service_update_override(cap, self.app_name, apply_memory_limit)
             self.logger.info("Waiting for Filebrowser to initialize its database...")
             time.sleep(20)  # TODO: confirm has started. Now we're just guessing.
             # CaproverAPI doesn't support deletion of an env var, so we just set it to empty

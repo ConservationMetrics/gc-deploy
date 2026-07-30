@@ -1,7 +1,9 @@
-import pytest
+from gc_stack_deploy.apps_registry import (
+    apply_memory_limit,
+    disable_healthcheck,
+    set_yaml_value,
+)
 from ruamel.yaml import YAML
-
-from gc_stack_deploy.apps_registry import disable_healthcheck, set_yaml_value
 
 
 def load_yaml(s):
@@ -75,3 +77,26 @@ class TestDisableHealthcheck:
             "      - NONE\n"
         )
         assert disable_healthcheck(existing) == expected
+
+
+class TestApplyMemoryLimit:
+    def test_sets_memory_bytes(self):
+        expected = (
+            "TaskTemplate:\n"
+            "  Resources:\n"
+            "    Limits:\n"
+            "      MemoryBytes: 1610612736\n"
+        )
+        assert apply_memory_limit(None) == expected
+
+    def test_preserves_existing_keys(self):
+        existing = "TaskTemplate:\n  ContainerSpec:\n    Image: myimage\n"
+        expected = (
+            "TaskTemplate:\n"
+            "  ContainerSpec:\n"
+            "    Image: myimage\n"
+            "  Resources:\n"
+            "    Limits:\n"
+            "      MemoryBytes: 1610612736\n"
+        )
+        assert apply_memory_limit(existing) == expected
