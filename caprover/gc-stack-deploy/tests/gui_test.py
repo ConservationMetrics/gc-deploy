@@ -44,15 +44,12 @@ class TestStatusNoteSettledStates:
         assert text == "currently: not installed"
         assert css_class == "currently-not-installed"
 
-    def test_failed_checked_will_install(self):
-        # Current behavior: FAILED + checked routes through resolve_action's
-        # INSTALL branch, same as NOT_INSTALLED. If Problem 1's REINSTALL
-        # action is added, this test's expected action changes.
+    def test_failed_checked_will_reinstall(self):
         text, css_class = _derive_status_note(AppStatus.FAILED, True)
-        assert text == "will install"
-        assert css_class == "will-install"
+        assert text == "will reinstall"
+        assert css_class == "will-reinstall"
 
-    def test_failed_unchecked_shows_failed(self):
+    def test_failed_unchecked_will_uninstall(self):
         text, css_class = _derive_status_note(AppStatus.FAILED, False)
-        assert text == AppStatus.FAILED.value.upper()
-        assert css_class == "failed"
+        assert text == "will uninstall"
+        assert css_class == "will-uninstall"

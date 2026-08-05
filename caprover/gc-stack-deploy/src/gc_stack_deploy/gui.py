@@ -24,6 +24,7 @@ from .base import AppSpec, AppStatus, DeploymentContext
 class Action(Enum):
     INSTALL = "install"
     UNINSTALL = "uninstall"
+    REINSTALL = "reinstall"
     NOOP = "noop"
 
 
@@ -31,9 +32,10 @@ def resolve_action(current: AppStatus, checked: bool) -> Action:
     """The single source of truth for what a checkbox state means, given
     where the app currently stands. Both the UI note and the actual
     install/uninstall dispatch read from this, so they can't disagree."""
+    if current is AppStatus.FAILED:
+        return Action.REINSTALL if checked else Action.UNINSTALL
     is_installed = current == AppStatus.INSTALLED
     if checked and not is_installed:
-        # includes NOT_INSTALLED and FAILED
         return Action.INSTALL
     if not checked and is_installed:
         return Action.UNINSTALL
@@ -63,6 +65,8 @@ def _derive_status_note(current: AppStatus, checked: bool) -> str:
         return "will install", "will-install"
     elif action is Action.UNINSTALL:
         return "will uninstall", "will-uninstall"
+    elif action is Action.REINSTALL:
+        return "will reinstall", "will-reinstall"
     else:  # Action.NOOP: box matches current state, describe that state instead
         if current is AppStatus.FAILED:
             return AppStatus.FAILED.value.upper(), "failed"
@@ -130,6 +134,11 @@ class ChecklistScreen(Vertical):
 
     ChecklistScreen .will-uninstall {
         color: $warning;
+        text-style: italic;
+    }
+
+    ChecklistScreen .will-reinstall {
+        color: $success;
         text-style: italic;
     }
 
@@ -332,7 +341,13 @@ class Deployer(App):
             action = resolve_action(self.state.get(app_id), checked)
             if action is Action.NOOP:
                 continue
-            (to_install if action is Action.INSTALL else to_uninstall).append(appspec)
+            if action is Action.REINSTALL:
+                to_uninstall.append(appspec)
+                to_install.append(appspec)
+            else:
+                (to_install if action is Action.INSTALL else to_uninstall).append(
+                    appspec
+                )
 
         # Lock the checklist so nothing changes mid-run.
         checklist.set_is_enabled(False)
