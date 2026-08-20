@@ -48,4 +48,4 @@ in Azure or DigitalOcean — in which case **you may skip the rest of the docume
 
 10. Once CapRover is installed, configure disk cleanup and set an appropriate cron schedule in the CapRover web UI.
     - We recommend setting disk cleanup to run daily at 3:00 AM e.g. `0 3 * * *` at the timezone most likely to be used by the VM's users
-    - We recommend keeping the 2 most recent images. (2 images allows you to revert the latest deployment, whereas 1 does not.)
+    - We recommend setting the most recent image to be kept to 1. This means you can't do a rollback to the previous deployment, but it saves space on the disk.
