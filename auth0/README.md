@@ -73,6 +73,12 @@ To restrict access until a user is approved, a Post-Login Trigger Action is used
 4. Name the action "Check Approval".
 5. Drag the new action into the Login flow (see diagram below).
 
+> [!NOTE]
+> 
+> This action checks for a variable `approved` in the user's `app_metadata`. If it is not present or is `false`, the user is denied access.
+>
+> While it is possible to set this value manually in the **User Management** page of auth0, GC Admin users typically do this via the GC Landing Page app. See [Auth0 approval process](#auth0-approval-process) below.
+
 ### 2. Add roles claim (Superset)
 
 Superset reads Auth0 RBAC roles from a custom ID-token claim on `/userinfo`. Auth0 rewrites `urn:gc:roles` → `urn.gc.roles` in that response. Create a second Post-Login Action and add it to the same Login flow:
@@ -103,7 +109,7 @@ C --> D[Complete: Token Issued]
 
 ## Setting up RBAC
 
-Role-Based Access Control (RBAC) allows you to control user access to different features based on assigned roles. Several of the Guardian Connector applications (e.g. GC-Explorer and GC-Landing Page) use four roles: **Admin**, **Member**, **Viewer**, and **Public**.
+Role-Based Access Control (RBAC) allows you to control user access to different features based on assigned roles. Several of the Guardian Connector applications (e.g. GC Explorer and GC Landing Page) use four roles: **Admin**, **Member**, **Viewer**, and **Public**.
 
 ### API Configuration
 
@@ -133,28 +139,28 @@ Role-Based Access Control (RBAC) allows you to control user access to different 
    - **Guest**: "Guest and unrestricted routes only"
    - **SignedIn**: "can access only routes that are set to public"
 
-**Note**: Users without any assigned roles are assigned the **SignedIn** role by GC Explorer and GC Landing Page.
+> [!NOTE]
+>
+> Users without any assigned roles are assigned the **SignedIn** role by GC Explorer and GC Landing Page.
 
 See the GC Explorer [RBAC documentation](https://github.com/ConservationMetrics/gc-explorer/blob/main/docs/auth.md) for more details on role setup.
 
+### Third Party Applications
+
+In addition to GC Explorer and GC Landing Page, we host several third party applications that have their own role-based access control mechanisms. The extent to which these mechanisms can integrate with those of Guardian Connector varies:
+
+- **Superset**: Superset allows you to synchronize its role definitions with your own. We leverage this functionality to map Guardian Connector roles to those of Superset (Alpha, Gamma, etc.). See the [`superset-deployment` README](https://github.com/conservationMetrics/superset-deployment#user-roles) for more details.
+- **Windmill**: Windmill has its own roles -- see [Roles and permissions](https://www.windmill.dev/docs/core_concepts/roles_and_permissions) in their documentation. These roles currently cannot be synchronized with Guardian Connector roles. In practice, we map them conceptually as follows: a Windmill **Administrator** is equivalent to a Guardian Connector **system administrator**, while a Windmill **Operator** is equivalent to a Guardian Connector **Admin**. This means that a GC Admin should be able to run and schedule scripts and flows and access Windmill apps, but should not have access to system-wide Windmill administration. This follows the same principle by which GC Admins are typically not given access to CapRover.
+- **CapRover**: CapRover itself does not have any RBAC or single sign-on support.
+
 ## Auth0 approval process
 
-1. A user signs up for one of the applications using Auth0, either by email/password or a third-party service (e.g., Google, GitHub).
+1. A user signs up for one of the applications -- typically, the GC Landing Page -- using Auth0, either by email/password or a third-party service (currently, only Google is supported).
 2. If the user is not yet approved, they will encounter a message such as:
+   - “Your approval to access the app is pending” (GC Landing Page, GC Explorer)
    - “Invalid login” (Superset)
-   - “Your approval to access the app is pending” (GC-Explorer)
-3. A tenant administrator approves the user:
-   - Navigate to **User Management > Users**
-   - Select the user
-   - In the **App Metadata** section, add:
-     ```json
-     {
-       "approved": true
-     }
-     ```
+3. A Guardian Connector administrator approves the user and assigns them a role. They can do this using the [User Management](https://docs.guardianconnector.net/reference/gc-toolkit/gc-landing-page/#-user-management) page on the GC Landing Page.
 4. Once approved, the user can log in to GuardianConnector services.
-5. For the GC-Explorer and GC-Landing Page applications: in the **Roles** tab for the user, assign the appropriate role. (Or, alternatively, on the **User Management > Roles** page, you can assign the user to the role.)
-6. For Superset, assign an Auth0 role (`Admin` → Admin, `Member` → Alpha, `Guest` → Gamma, `SignedIn` → Public). Roles sync on every login.
 
 ## Using Terraform
 
