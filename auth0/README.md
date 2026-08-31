@@ -73,6 +73,12 @@ To restrict access until a user is approved, a Post-Login Trigger Action is used
 4. Name the action "Check Approval".
 5. Drag the new action into the Login flow (see diagram below).
 
+> [!NOTE]
+> 
+> This action checks for a variable `approved` in the user's `app_metadata`. If it is not present or is `false`, the user is denied access.
+>
+> While it is possible to set this value manually in the **User Management** page of auth0, GC Admin users typically do this via the GC Landing Page app. See [Auth0 approval process](#auth0-approval-process) below.
+
 ### 2. Add roles claim (Superset)
 
 Superset reads Auth0 RBAC roles from a custom ID-token claim on `/userinfo`. Auth0 rewrites `urn:gc:roles` → `urn.gc.roles` in that response. Create a second Post-Login Action and add it to the same Login flow:
