@@ -1,12 +1,19 @@
 import importlib.resources
 
 from gc_stack_deploy.wizard.auth0.provisioning import ClientResult
-from gc_stack_deploy.wizard.yaml_writer import apply_auth0_results_to_config, load_config
+from gc_stack_deploy.wizard.yaml_writer import (
+    apply_auth0_results_to_config,
+    apply_secrets_to_config,
+    load_config,
+)
 from ruamel.yaml import YAML
 
 
 def load_example_config():
-    example = importlib.resources.files("gc_stack_deploy.example_configs") / "stack.example.yaml"
+    example = (
+        importlib.resources.files("gc_stack_deploy.example_configs")
+        / "stack.example.yaml"
+    )
     with importlib.resources.as_file(example) as path:
         return load_config(path)
 
@@ -31,9 +38,9 @@ class TestApplyAuth0ResultsToConfig:
         apply_auth0_results_to_config(
             config,
             domain="example.us.auth0.com",
-            community_name="springfield",
+            community_name="creek",
             client_results=client_results,
-            root_domain="springfield.example.net",
+            root_domain="creek.example.net",
             admin_email="admin@example.net",
         )
 
@@ -41,9 +48,9 @@ class TestApplyAuth0ResultsToConfig:
         for app in ("superset-only", "gc-landing-page", "gc-explorer"):
             assert config[app]["auth0_domain"] == "example.us.auth0.com"
 
-        assert config["community_name"] == "springfield"
+        assert config["community_name"] == "creek"
         for app in ("gc-landing-page", "gc-explorer"):
-            assert config[app]["community_name"] == "springfield"
+            assert config[app]["community_name"] == "creek"
 
         # Also survives a re-dump/re-load round trip.
         reloaded = dump_to_dict(config)
@@ -89,3 +96,39 @@ class TestApplyAuth0ResultsToConfig:
         )
         assert config["gc-landing-page"]["root_domain"] == "root.example.net"
         assert config["superset-only"]["admin_email"] == "admin@example.net"
+
+
+class TestApplySecretsToConfig:
+    def test_fills_blanks_and_rebuilds_redis_url(self):
+        config = load_example_config()
+        # The shipped example ships these blank.
+        assert not config["postgres"]["pass"]
+        assert not config["redis"]["redis_password"]
+        assert not config["filebrowser"]["admin_password"]
+
+        apply_secrets_to_config(config)
+
+        assert config["postgres"]["pass"]
+        assert config["redis"]["redis_password"]
+        assert config["filebrowser"]["admin_password"]
+
+        expected_url = (
+            f"redis://:{config['redis']['redis_password']}@srv-captain--redis:6379"
+        )
+        assert config["superset-only"]["redis_url"] == expected_url
+
+    def test_leaves_operator_set_values_untouched(self):
+        config = load_example_config()
+        # fmt: off
+        config["postgres"]["pass"] = "my-real-password"
+        config["redis"]["redis_password"] = "my-real-redis-pass"
+        config["superset-only"]["redis_url"] = "redis://:external@some-external-host:6379"
+        config["filebrowser"]["admin_password"] = "my-real-fb-password"
+
+        apply_secrets_to_config(config)
+
+        assert config["postgres"]["pass"] == "my-real-password"
+        assert config["redis"]["redis_password"] == "my-real-redis-pass"
+        assert config["superset-only"]["redis_url"] == "redis://:external@some-external-host:6379"
+        assert config["filebrowser"]["admin_password"] == "my-real-fb-password"
+        # fmt: on

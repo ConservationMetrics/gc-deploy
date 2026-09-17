@@ -64,6 +64,20 @@ gc-stack-deploy init --config-file stack.yaml
 ```
 Then open the file (you could use `nano` or `vi`) and fill in the blanks.
 
+#### (Recommended) Run the setup wizard
+
+Before deploying, run `gc-stack-deploy wizard -c stack.yaml` to provision your Auth0 tenant
+(connections, per-app clients, RBAC roles, and the approval/roles-claim Post-Login Actions) and
+auto-generate the Postgres/Redis/Filebrowser secrets, writing the results directly into
+`stack.yaml`. This automates most of [`auth0/README.md`](/auth0/README.md), which you should
+still consult first for the steps that stay manual: creating the Auth0 tenant itself, the GCP
+OAuth client for Google social login, and the wizard's own bootstrap M2M application (see
+["Bootstrap M2M application for the wizard"](/auth0/README.md#bootstrap-m2m-application-for-the-wizard)).
+
+With the wizard's secrets already filled in, Filebrowser's admin password will already be set in
+`stack.yaml` — you no longer need to watch the deploy-time logs to catch a one-time generated
+password.
+
 Finally you are ready to use this same configuration file to deploy the apps to CapRover,
 running on the same machine.
 
