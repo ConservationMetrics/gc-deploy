@@ -15,7 +15,7 @@ from .auth0.provisioning import (
     ensure_post_login_actions,
     ensure_roles,
 )
-from .yaml_writer import apply_auth0_results_to_config, dump_config
+from .yaml_writer import apply_auth0_results_to_config, apply_secrets_to_config, dump_config
 
 logger = logging.getLogger("gc-stack-deploy.wizard")
 
@@ -179,6 +179,9 @@ def run_wizard(
         root_domain=root_domain,
         admin_email=admin_email,
     )
+
+    logger.info("Generating non-Auth0 secrets (Postgres/Redis/Filebrowser) where blank")
+    apply_secrets_to_config(config)
 
     dump_config(config, config_file)
     logger.info(f"Wrote {config_file}")
