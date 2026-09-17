@@ -59,6 +59,31 @@ class TestApplyAuth0ResultsToConfig:
         assert reloaded["gc-landing-page"]["auth0_domain"] == "example.us.auth0.com"
         assert reloaded["gc-explorer"]["auth0_domain"] == "example.us.auth0.com"
 
+    def test_dumps_as_real_yaml_anchors_not_duplicated_literals(self):
+        """Regression test for the anchor/alias gotcha: writing the same plain
+        str to every site fixes the values but silently degrades the YAML into
+        duplicated literals. Assert the dump keeps `&anchor`/`*alias` syntax."""
+        config = load_example_config()
+        apply_auth0_results_to_config(
+            config,
+            domain="example.us.auth0.com",
+            community_name="creek",
+            client_results={},
+        )
+
+        import io
+
+        from ruamel.yaml import YAML
+
+        buf = io.StringIO()
+        YAML().dump(config, buf)
+        dumped = buf.getvalue()
+
+        assert "&auth0_domain example.us.auth0.com" in dumped
+        assert dumped.count("*auth0_domain") == 3  # superset-only, gc-landing-page, gc-explorer
+        assert "&community_name creek" in dumped
+        assert dumped.count("*community_name") == 2  # gc-landing-page, gc-explorer
+
     def test_writes_client_id_and_secret_per_app(self):
         config = load_example_config()
         client_results = {"superset-only": ClientResult("cid", "csecret", True)}
