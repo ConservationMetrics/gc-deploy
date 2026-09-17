@@ -3,12 +3,18 @@
 `stack.example.yaml` uses YAML anchors/aliases (`&auth0_domain`, `&community_name`)
 so one value can be shared across several app blocks. ruamel only preserves that
 sharing when the *same object* is assigned at every position -- assigning a fresh
-string to just `config["auth0_domain"]` leaves the aliased sites (already-loaded,
-independent objects) untouched. So every function here computes each shared value
-once and assigns that exact object everywhere it belongs.
+plain string to just `config["auth0_domain"]` leaves the aliased sites
+(already-loaded, independent objects) untouched, and even assigning that same
+plain string everywhere only fixes the *values*, not the `&anchor`/`*alias`
+syntax on re-dump (ruamel's round-trip representer only re-emits an anchor for
+objects it recognizes as anchor-carrying, which a bare `str` is not). So the
+shared value is wrapped in `PlainScalarString` with an explicit anchor name via
+`yaml_set_anchor()`, and that exact object is assigned everywhere it belongs --
+this keeps the output as real YAML anchors/aliases, not four duplicated literals.
 """
 
 from ruamel.yaml import YAML
+from ruamel.yaml.scalarstring import PlainScalarString
 
 from .auth0.provisioning import ClientResult
 from .stack_secrets import build_redis_url, fill_if_blank
@@ -20,6 +26,14 @@ def load_config(file_path):
     ryaml.preserve_quotes = True
     with open(file_path, "r") as f:
         return ryaml.load(f)
+
+
+def _anchored(value: str, anchor_name: str) -> PlainScalarString:
+    """A scalar string that dumps as `&anchor_name value`, so every alias
+    site assigned this same object re-serializes as `*anchor_name`."""
+    s = PlainScalarString(value)
+    s.yaml_set_anchor(anchor_name)
+    return s
 
 
 # Apps that carry an `auth0_domain` field aliased to the shared top-level value.
@@ -54,15 +68,17 @@ def apply_auth0_results_to_config(
         Deployment-inputs screen values, written to gc-landing-page.root_domain
         and superset-only.admin_email respectively, if those apps are present.
     """
-    config["auth0_domain"] = domain
+    domain_value = _anchored(domain, "auth0_domain")
+    config["auth0_domain"] = domain_value
     for app in AUTH0_DOMAIN_APPS:
         if app in config:
-            config[app]["auth0_domain"] = domain
+            config[app]["auth0_domain"] = domain_value
 
-    config["community_name"] = community_name
+    community_name_value = _anchored(community_name, "community_name")
+    config["community_name"] = community_name_value
     for app in COMMUNITY_NAME_APPS:
         if app in config:
-            config[app]["community_name"] = community_name
+            config[app]["community_name"] = community_name_value
 
     for app, result in client_results.items():
         if app not in config:
