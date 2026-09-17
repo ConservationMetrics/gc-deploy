@@ -1,27 +1,23 @@
 """Thin helpers for talking to the Auth0 Management API.
 
-Pinned to the classic (pre-5.0) auth0-python surface: `Auth0(domain,
+Deliberately pinned to the classic (pre-5.0) auth0-python surface: `Auth0(domain,
 token)`, and per-resource `.all()`/`.create()`/`.update()` methods that take and
-return plain dicts.
+return plain dicts. See pyproject.toml for why the dependency is capped at <5.0.0.
 """
 
 from auth0.authentication import GetToken
 from auth0.management import Auth0
 
 
-def get_management_client(
-    domain: str, m2m_client_id: str, m2m_client_secret: str
-) -> Auth0:
+def get_management_client(domain: str, m2m_client_id: str, m2m_client_secret: str) -> Auth0:
     """Authenticate the bootstrap M2M application and return a ready Management API client."""
-    token_response = GetToken(
-        domain, m2m_client_id, client_secret=m2m_client_secret
-    ).client_credentials(f"https://{domain}/api/v2/")
+    token_response = GetToken(domain, m2m_client_id, client_secret=m2m_client_secret).client_credentials(
+        f"https://{domain}/api/v2/"
+    )
     return Auth0(domain, token_response["access_token"])
 
 
-def list_all(
-    resource_client, list_method="all", items_key=None, **params
-) -> list[dict]:
+def list_all(resource_client, list_method="all", items_key=None, **params) -> list[dict]:
     """Page through a Management API collection, returning every item.
 
     Not every Management API collection supports server-side name search, so
