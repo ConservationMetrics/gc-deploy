@@ -24,11 +24,18 @@ You will need a Google Cloud Platform (GCP) OAuth 2.0 Client in order to [avoid 
 
 ## Auth0 tenant configuration, step by step
 
+> [!TIP]
+>
+> Steps 3, 4 (for Superset/GC-Explorer/GC Landing Page; Windmill is still manual), 5, 6, and 7 below
+> can be automated by running `gc-stack-deploy wizard -c stack.yaml`.
+> See ["Bootstrap M2M application for the wizard"](#appendix-bootstrap-m2m-application-for-the-wizard)
+> to set it up.
+
 1. When creating a new Auth0 tenant, you will need to provide a **Tenant Name** for the tenant, which should match the alias chosen by the community.
     - Additionally, select a **Region** (CMI uses US) and **Environment Tag**: "Production".
-2. In **Authentication / Social**, enable google-oauth2 under Social Connections. You will need to provide a Client ID and Secret (see [GCP OAuth client configuration](#gcp-oauth-client-configuration)).
-3. In **Settings** → **Tenant Members**, add the email addresses of the desired tenant administrators (for example, CMI engineering team members and programmatic lead(s)).
-4. In **Applications**, create a separate Regular Web Application for each tool (e.g., Superset, GC-Explorer). 
+2. In **Settings** → **Tenant Members**, add the email addresses of the desired tenant administrators (for example, CMI engineering team members and programmatic lead(s)).
+3. **(Automated by `gc-stack-deploy wizard`)** In **Authentication / Social**, enable google-oauth2 under Social Connections. You will need to provide a Client ID and Secret (see [GCP OAuth client configuration](#gcp-oauth-client-configuration)).
+4. **(Automated by `gc-stack-deploy wizard` for Superset/GC-Explorer/GC Landing Page, but not Windmill)** In **Applications**, create a separate Regular Web Application for each tool (e.g., Superset, GC-Explorer).
    - For each application, give a human readable name (e.g. "Superset", "GC-Explorer", "Windmill", "GC Landing Page").
    - Add appropriate production domain values under Callback URLs, Web Origins, and CORS:
    - For **Superset** (assuming Superset is hosted at the root of your subdomain; otherwise, use the appropriate subdomain i.e. `superset.<domain>.guardianconnector.net`):
@@ -44,9 +51,9 @@ You will need a Google Cloud Platform (GCP) OAuth 2.0 Client in order to [avoid 
    - For **GC Landing Page**:
      - **Callback URL**: `https://<domain>.guardianconnector.net/login`
      - **Allowed Web Origins**: `https://<domain>.guardianconnector.net`
-5. Create a M2M application for metrics with a name like **GC Metrics**, and grant `read:users` and `read:stats` scopes to it. This authorizes the [GC Metrics script](https://github.com/ConservationMetrics/gc-scripts-hub/tree/main/f/metrics/guardianconnector) (which runs in Windmill) against the Auth0 Management API. Follow [**Setting up resources**](/caprover/INSTALL_GC_STACK.md#setting-up-resources) in the stack install guide to add these as a Windmill resource `oauth_client_credentials`.
-6. In **Actions**, configure Login Flow Actions for user approval and the roles claim. (See [Flows](#flows) below.)
-7. Set up **Role-Based Access Control** for the applications that use it. (See [RBAC Configuration](#rbac-configuration) below.)
+5. **(Automated by `gc-stack-deploy wizard`)** Create a M2M application for metrics with a name like **GC Metrics**, and grant `read:users` and `read:stats` scopes to it. This authorizes the [GC Metrics script](https://github.com/ConservationMetrics/gc-scripts-hub/tree/main/f/metrics/guardianconnector) (which runs in Windmill) against the Auth0 Management API. Follow [**Setting up resources**](/caprover/INSTALL_GC_STACK.md#setting-up-resources) in the stack install guide to add these as a Windmill resource `oauth_client_credentials`. (The wizard prints this client's ID/secret once at the end of its run — there is no `stack.yaml` field for it, so note it down then.)
+6. **(Automated by `gc-stack-deploy wizard`)** In **Actions**, configure Login Flow Actions for user approval and the roles claim. (See [Flows](#flows) below.)
+7. **(Automated by `gc-stack-deploy wizard`)** Set up **Role-Based Access Control** for the applications that use it. (See [RBAC Configuration](#rbac-configuration) below.)
 8. **Sign in** to an auth0 application with at least one user, who will serve as the initial admin user and can manage approval and roles for others using GC Landing Page. This user should be given the **Admin** role, and be approved (see [Auth0 approval process](#auth0-approval-process) below.)
 9. (Optional) in **Branding**, a few minor customizations like adding an organization logo and setting the background color to gray #F9F9F9 instead of standard black.
 
@@ -162,6 +169,17 @@ In addition to GC Explorer and GC Landing Page, we host several third party appl
 3. A Guardian Connector administrator approves the user and assigns them a role. They can do this using the [User Management](https://docs.guardianconnector.net/reference/gc-toolkit/gc-landing-page/#-user-management) page on the GC Landing Page.
 4. Once approved, the user can log in to GuardianConnector services.
 
-## Using Terraform
+## Appendix: Bootstrap M2M application for the wizard
 
-It is possible to use Terraform to automate much of the above process. Please see the [private `gc-forge` repo](https://github.com/ConservationMetrics/gc-forge/blob/main/terraform/modules/auth0-client/README.md) for more information.
+`gc-stack-deploy wizard` talks to the Auth0 Management API on your behalf, authenticated as a
+Machine-to-Machine application you create once per tenant:
+
+1. Go to the Auth0 dashboard, **Applications** → **Applications**.
+2. Create a new **Machine to Machine Application**, authorized against the **Auth0 Management API**.
+3. Grant it the following scopes (so the wizard can manage connections, roles, and actions):
+   - `read:clients create:clients create:client_keys create:client_grants update:clients`
+   - `read:connections create:connections update:connections`
+   - `read:client_grants update:client_grants`
+   - `read:roles create:roles`
+   - `read:actions create:actions update:actions`
+4. Copy down the Client ID and Secret. The wizard will prompt for these along with your tenant domain.
