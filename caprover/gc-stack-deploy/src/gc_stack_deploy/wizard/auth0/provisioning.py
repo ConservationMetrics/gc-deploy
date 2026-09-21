@@ -128,6 +128,31 @@ def ensure_m2m_client(
     )
 
 
+def ensure_windmill_client(
+    mgmt,
+    callbacks: list[str],
+    web_origins: list[str] | None = None,
+    allowed_origins: list[str] | None = None,
+    name: str = "Windmill",
+    existing_secret: str | None = None,
+) -> ClientResult:
+    """Create or update the Windmill Auth0 application (a regular web client).
+
+    Like ensure_m2m_client, there is no stack.yaml field for this client --
+    Windmill's Auth0 SSO settings are configured out-of-band, so the caller
+    should print its id/secret to the operator instead of persisting it.
+    """
+    return ensure_client(
+        mgmt,
+        name,
+        app_type="regular_web",
+        callbacks=callbacks,
+        web_origins=web_origins,
+        allowed_origins=allowed_origins,
+        existing_secret=existing_secret,
+    )
+
+
 def ensure_management_api_grant(mgmt, domain: str, client_id: str, scopes: list[str]):
     """Grant a client the given scopes against the tenant's own Management API."""
     audience = f"https://{domain}/api/v2/"

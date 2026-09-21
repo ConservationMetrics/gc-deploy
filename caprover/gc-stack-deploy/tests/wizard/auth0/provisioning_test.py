@@ -1,6 +1,8 @@
+from functools import partial
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
+import pytest
 from gc_stack_deploy.wizard.auth0.provisioning import (
     ADD_ROLES_CLAIM_ACTION_NAME,
     CHECK_APPROVAL_ACTION_NAME,
@@ -10,6 +12,7 @@ from gc_stack_deploy.wizard.auth0.provisioning import (
     ensure_management_api_grant,
     ensure_post_login_actions,
     ensure_roles,
+    ensure_windmill_client,
 )
 
 
@@ -26,40 +29,58 @@ def make_mgmt():
     return mgmt
 
 
-class TestEnsureClient:
-    def test_creates_when_not_found(self):
+# Each case exercises both ensure_client (generic) and ensure_windmill_client (its
+# thin wrapper) against the same create/update/warn behavior.
+CLIENT_CASES = [
+    pytest.param(
+        partial(ensure_client, name="Superset", app_type="regular_web"),
+        "Superset",
+        "regular_web",
+        id="ensure_client",
+    ),
+    pytest.param(
+        partial(ensure_windmill_client),
+        "Windmill",
+        "regular_web",
+        id="ensure_windmill_client",
+    ),
+]
+
+
+@pytest.mark.parametrize("ensure_fn,expected_name,expected_app_type", CLIENT_CASES)
+class TestEnsureClientLike:
+    CALLBACKS = ["http://example.net/oauth-authorized/auth0"]  # noqa: RUF012
+
+    def test_creates_when_not_found(self, ensure_fn, expected_name, expected_app_type):
         mgmt = make_mgmt()
         mgmt.clients.create.return_value = SimpleNamespace(
             client_id="new-id", client_secret="new-secret"
         )
 
-        result = ensure_client(
+        result = ensure_fn(
             mgmt,
-            "Superset",
-            "regular_web",
-            callbacks=["http://superset.example.net/oauth-authorized/auth0"],
-            web_origins=["https://superset.example.net/"],
-            allowed_origins=["https://superset.example.net/"],
+            callbacks=self.CALLBACKS,
+            web_origins=["https://example.net/"],
+            allowed_origins=["https://example.net/"],
         )
 
         assert result == ClientResult("new-id", "new-secret", True)
         kwargs = mgmt.clients.create.call_args.kwargs
-        assert kwargs["name"] == "Superset"
-        assert kwargs["callbacks"] == ["http://superset.example.net/oauth-authorized/auth0"]
+        assert kwargs["name"] == expected_name
+        assert kwargs["app_type"] == expected_app_type
+        assert kwargs["callbacks"] == self.CALLBACKS
         mgmt.clients.update.assert_not_called()
 
-    def test_updates_safe_fields_and_reuses_known_secret(self):
+    def test_updates_safe_fields_and_reuses_known_secret(
+        self, ensure_fn, expected_name, expected_app_type
+    ):
         mgmt = make_mgmt()
         mgmt.clients.list.return_value = [
-            SimpleNamespace(client_id="existing-id", name="Superset")
+            SimpleNamespace(client_id="existing-id", name=expected_name)
         ]
 
-        result = ensure_client(
-            mgmt,
-            "Superset",
-            "regular_web",
-            callbacks=["http://superset.example.net/oauth-authorized/auth0"],
-            existing_secret="known-secret",
+        result = ensure_fn(
+            mgmt, callbacks=self.CALLBACKS, existing_secret="known-secret"
         )
 
         assert result == ClientResult("existing-id", "known-secret", False)
@@ -67,14 +88,16 @@ class TestEnsureClient:
         mgmt.clients.update.assert_called_once()
         assert mgmt.clients.update.call_args.args[0] == "existing-id"
 
-    def test_no_known_secret_warns_and_leaves_blank(self, caplog):
+    def test_no_known_secret_warns_and_leaves_blank(
+        self, ensure_fn, expected_name, expected_app_type, caplog
+    ):
         mgmt = make_mgmt()
         mgmt.clients.list.return_value = [
-            SimpleNamespace(client_id="existing-id", name="Superset")
+            SimpleNamespace(client_id="existing-id", name=expected_name)
         ]
 
         with caplog.at_level("WARNING"):
-            result = ensure_client(mgmt, "Superset", "regular_web", existing_secret=None)
+            result = ensure_fn(mgmt, callbacks=self.CALLBACKS, existing_secret=None)
 
         assert result.client_secret is None
         assert result.created is False
@@ -89,7 +112,10 @@ class TestEnsureGoogleConnection:
         mgmt.connections.create.assert_called_once()
         kwargs = mgmt.connections.create.call_args.kwargs
         assert kwargs["strategy"] == "google-oauth2"
-        assert kwargs["options"] == {"client_id": "gcp-id", "client_secret": "gcp-secret"}
+        assert kwargs["options"] == {
+            "client_id": "gcp-id",
+            "client_secret": "gcp-secret",
+        }
         mgmt.connections.update.assert_not_called()
 
     def test_updates_when_present(self):
@@ -107,7 +133,9 @@ class TestEnsureGoogleConnection:
 class TestEnsureManagementApiGrant:
     def test_creates_when_absent(self):
         mgmt = make_mgmt()
-        ensure_management_api_grant(mgmt, "tenant.us.auth0.com", "client-1", ["read:users"])
+        ensure_management_api_grant(
+            mgmt, "tenant.us.auth0.com", "client-1", ["read:users"]
+        )
         mgmt.client_grants.create.assert_called_once_with(
             client_id="client-1",
             audience="https://tenant.us.auth0.com/api/v2/",
@@ -117,15 +145,21 @@ class TestEnsureManagementApiGrant:
     def test_updates_when_present(self):
         mgmt = make_mgmt()
         mgmt.client_grants.list.return_value = [SimpleNamespace(id="grant-1")]
-        ensure_management_api_grant(mgmt, "tenant.us.auth0.com", "client-1", ["read:users"])
-        mgmt.client_grants.update.assert_called_once_with("grant-1", scope=["read:users"])
+        ensure_management_api_grant(
+            mgmt, "tenant.us.auth0.com", "client-1", ["read:users"]
+        )
+        mgmt.client_grants.update.assert_called_once_with(
+            "grant-1", scope=["read:users"]
+        )
         mgmt.client_grants.create.assert_not_called()
 
 
 class TestEnsureRoles:
     def test_creates_missing_roles(self):
         mgmt = make_mgmt()
-        mgmt.roles.create.side_effect = [SimpleNamespace(id=f"role-{i}") for i in range(4)]
+        mgmt.roles.create.side_effect = [
+            SimpleNamespace(id=f"role-{i}") for i in range(4)
+        ]
         role_ids = ensure_roles(mgmt)
         assert set(role_ids) == {"Admin", "Member", "Guest", "SignedIn"}
         assert mgmt.roles.create.call_count == 4
@@ -158,9 +192,14 @@ class TestEnsurePostLoginActions:
         assert names == [CHECK_APPROVAL_ACTION_NAME, ADD_ROLES_CLAIM_ACTION_NAME]
         assert mgmt.actions.deploy.call_count == 2
         mgmt.actions.triggers.bindings.update_many.assert_called_once()
-        bindings = mgmt.actions.triggers.bindings.update_many.call_args.kwargs["bindings"]
+        bindings = mgmt.actions.triggers.bindings.update_many.call_args.kwargs[
+            "bindings"
+        ]
         assert len(bindings) == 2
-        assert {b["ref"]["value"] for b in bindings} == {"action-approval", "action-roles"}
+        assert {b["ref"]["value"] for b in bindings} == {
+            "action-approval",
+            "action-roles",
+        }
 
     def test_does_not_rebind_already_bound_actions(self):
         mgmt = make_mgmt()
@@ -169,7 +208,9 @@ class TestEnsurePostLoginActions:
         ]
         mgmt.actions.triggers.bindings.list.return_value = [
             SimpleNamespace(
-                action=SimpleNamespace(id="action-approval", name=CHECK_APPROVAL_ACTION_NAME),
+                action=SimpleNamespace(
+                    id="action-approval", name=CHECK_APPROVAL_ACTION_NAME
+                ),
                 display_name=CHECK_APPROVAL_ACTION_NAME,
             )
         ]
@@ -178,7 +219,9 @@ class TestEnsurePostLoginActions:
         ensure_post_login_actions(mgmt)
 
         mgmt.actions.triggers.bindings.update_many.assert_called_once()
-        bindings = mgmt.actions.triggers.bindings.update_many.call_args.kwargs["bindings"]
+        bindings = mgmt.actions.triggers.bindings.update_many.call_args.kwargs[
+            "bindings"
+        ]
         assert len(bindings) == 2
         values = {b["ref"]["value"] for b in bindings}
         assert values == {"action-approval", "action-roles"}
@@ -191,11 +234,15 @@ class TestEnsurePostLoginActions:
         ]
         mgmt.actions.triggers.bindings.list.return_value = [
             SimpleNamespace(
-                action=SimpleNamespace(id="action-approval", name=CHECK_APPROVAL_ACTION_NAME),
+                action=SimpleNamespace(
+                    id="action-approval", name=CHECK_APPROVAL_ACTION_NAME
+                ),
                 display_name=None,
             ),
             SimpleNamespace(
-                action=SimpleNamespace(id="action-roles", name=ADD_ROLES_CLAIM_ACTION_NAME),
+                action=SimpleNamespace(
+                    id="action-roles", name=ADD_ROLES_CLAIM_ACTION_NAME
+                ),
                 display_name=None,
             ),
         ]
