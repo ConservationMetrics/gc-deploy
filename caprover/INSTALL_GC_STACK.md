@@ -62,18 +62,36 @@ to your local directory by running `gc-stack-deploy init --config-file «destina
 ```sh
 gc-stack-deploy init --config-file stack.yaml
 ```
-Then open the file (you could use `nano` or `vi`) and fill in the blanks.
+Then open the file (you could use `nano` or `vi`) and fill in the blanks, or
+run the wizard (next step) to configure it for you.
 
-Finally you are ready to use this same configuration file to deploy the apps to CapRover,
-running on the same machine.
+#### (Recommended) Run the configuration wizard
+
+Before deploying, run the wizard to provision your Auth0 tenant, and write the
+credentials directly into `stack.yaml`:
 
 ```sh
-gc-stack-deploy --config-file stack.yaml
+gc-stack-deploy wizard --config-file stack.yaml
+```
+
+This automates most of [`auth0/README.md`](/auth0/README.md), which you should still consult
+first for the couple steps not automated here: creating the Auth0 tenant itself,
+the wizard's own bootstrap M2M application (see
+["Bootstrap M2M application for the wizard"](/auth0/README.md#bootstrap-m2m-application-for-the-wizard),
+and the GCP OAuth client for Google social login).
+
+#### Deploy
+
+Finally, use this same configuration file to deploy the apps to CapRover, running on the same
+machine.
+
+```sh
+gc-stack-deploy deploy --config-file stack.yaml
 ```
 
 #### The install/uninstall checklist
 
-Running `gc-stack-deploy` (without `init`) opens a checklist screen, one row per app defined
+Running `gc-stack-deploy deploy` opens a checklist screen, one row per app defined
 in your `stack.yaml`.
 
 Each row's checkbox reflects whether the app is currently installed, and a
@@ -93,7 +111,7 @@ If the script ran successfully, proceed to the [Post-install app configuration s
 > - You can uninstall a failed or unwanted app directly from the same checklist
 >   by unchecking it and pressing Go. Then can opt to install the same app again
 >   after having uninstalled it. (i.e. re-installing an installed app is a 2-phase process)
-> - You may re-run `gc-stack-deploy --config-file stack.yaml` later. Apps that
+> - You may re-run `gc-stack-deploy deploy --config-file stack.yaml` later. Apps that
 >   installed successfully already show as checked/installed and won't be touched again.
 > - You can still fall back to manually installing the apps using the one-click app install menu.
 >   See [Manually installing apps section](#manually-installing-apps).
