@@ -17,6 +17,7 @@ from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import PlainScalarString
 
 from .auth0.provisioning import ClientResult
+from .stack_secrets import build_redis_url, fill_if_blank
 
 
 def load_config(file_path):
@@ -110,6 +111,27 @@ def apply_deployment_metadata_to_config(
         config["gc-landing-page"]["root_domain"] = root_domain
     if admin_email is not None and "superset-only" in config:
         config["superset-only"]["admin_email"] = admin_email
+
+
+def apply_secrets_to_config(config) -> None:
+    """Fill in blank Postgres/Redis/Filebrowser secrets.
+
+    Only touches blocks that are already present in the loaded config.
+    """
+    if "postgres" in config:
+        fill_if_blank(config["postgres"], "pass")
+
+    if "redis" in config:
+        password_changed = fill_if_blank(config["redis"], "redis_password")
+        # If the password wasn't touched, an operator-pointed-at-external-Redis
+        # redis_url is already consistent with it by construction -- skip.
+        if password_changed and "superset-only" in config:
+            config["superset-only"]["redis_url"] = build_redis_url(
+                config["redis"]["redis_password"]
+            )
+
+    if "filebrowser" in config:
+        fill_if_blank(config["filebrowser"], "admin_password")
 
 
 def dump_config(config, file_path) -> None:

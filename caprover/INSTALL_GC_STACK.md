@@ -80,6 +80,10 @@ the wizard's own bootstrap M2M application (see
 ["Bootstrap M2M application for the wizard"](/auth0/README.md#bootstrap-m2m-application-for-the-wizard),
 and the GCP OAuth client for Google social login).
 
+The wizard also generates the Postgres/Redis/Filebrowser secrets, if you left them blank --
+so Filebrowser's admin password will already be set in `stack.yaml`, and you won't need to
+watch the deploy-time logs to catch a one-time generated password.
+
 #### Deploy
 
 Finally, use this same configuration file to deploy the apps to CapRover, running on the same

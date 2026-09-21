@@ -1,6 +1,6 @@
-"""Sequences Auth0 provisioning and the final YAML write. This is the only
-place that knows the end-to-end wizard order; screens.py just calls
-run_wizard() from a worker thread and reads the log.
+"""Sequences Auth0 provisioning, non-Auth0 secret generation, and the final
+YAML write. This is the only place that knows the end-to-end wizard order;
+screens.py just calls run_wizard() from a worker thread and reads the log.
 """
 
 import logging
@@ -18,6 +18,7 @@ from .auth0.provisioning import (
 from .yaml_writer import (
     apply_auth0_client_results_to_config,
     apply_deployment_metadata_to_config,
+    apply_secrets_to_config,
     dump_config,
 )
 
@@ -182,6 +183,9 @@ def run_wizard(
         root_domain=root_domain,
         admin_email=admin_email,
     )
+
+    logger.info("Generating non-Auth0 secrets (Postgres/Redis/Filebrowser) where blank")
+    apply_secrets_to_config(config)
 
     dump_config(config, config_file)
     logger.info(f"Wrote {config_file}")

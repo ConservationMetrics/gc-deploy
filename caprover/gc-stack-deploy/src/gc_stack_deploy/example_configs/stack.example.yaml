@@ -8,7 +8,7 @@ community_name: &community_name # URL slug / alias, e.g. "springfield" in "sprin
 postgres:
   # REQUIRED in all cases:
   user: "postgres" # Do not change this
-  pass: "your_pg_password" # IMPORTANT: set a new password, avoid special chars that apps may misparse in connection strings
+  pass: # set a password here, avoiding special chars that apps may misparse in connection strings -- or leave blank and `gc-stack-deploy wizard` will generate one
   database: postgres # `warehouse` will be created in the stack deploy script
   version: 17
   from_vm:
@@ -30,12 +30,12 @@ windmill-only:
 
 redis:
   app_name: redis # optional override
-  redis_password: "secretkey" # also optional override since redis is only accessible internally on the VM
+  redis_password: # optional, since redis is only accessible internally on the VM -- leave blank and `gc-stack-deploy wizard` will generate one
 
 superset-only:
   app_name: superset # IMPORTANT so that your app doesn't get deployed as "superset-only"
   ### REQUIRED:
-  redis_url: "redis[s]://:secretkey@srv-captain--redis:6379" # for locally hosted redis, remove `[s]`
+  redis_url: # e.g. "redis[s]://:<redis_password>@srv-captain--redis:6379" (remove `[s]` for locally hosted, non-SSL redis) -- if left blank alongside a blank redis.redis_password above, `gc-stack-deploy wizard` will fill in both to match
   redis_key_prefix: "eg_"
   ### OPTIONAL, but you probably want to override:
   auth0_domain: *auth0_domain
@@ -79,4 +79,4 @@ comapeo-cloud:
 
 filebrowser:
   app_name: files # IMPORTANT so that your app doesn't get deployed as "filebrowser"
-  admin_password: "changeme" # optional
+  admin_password: # optional -- leave blank and `gc-stack-deploy wizard` will generate one (or one is generated at deploy time and printed once)
