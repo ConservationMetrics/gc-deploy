@@ -4,15 +4,13 @@ version = "0.3.2"
 description = "Deploy Guardian Connector stack of apps to the (locally running) Caprover instance."
 requires-python = ">=3.9"
 dependencies = [
+    "auth0-python>=6.0.0,<7.0.0",
     "bcrypt",
     "psycopg[binary]",
     "ruamel.yaml",
     "textual",
     # This Git branch on a fork is an undeployed fix to https://github.com/ConservationMetrics/gc-deploy/issues/124
     "Caprover-API @ git+https://github.com/IamJeffG/Caprover-API.git@deploy_one_click_app-uses-create_and_update",
-    # Pinned below the v5 rewrite (fern-generated client, incompatible method shapes):
-    # this codebase relies on the classic all()/create()/update() Management API surface.
-    "auth0-python>=4.7.0,<5.0.0",
 ]
 
 [project.urls]
