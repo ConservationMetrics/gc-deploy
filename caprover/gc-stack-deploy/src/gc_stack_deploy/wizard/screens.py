@@ -38,13 +38,13 @@ class BootstrapCredentialsScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Header()
         with Vertical(id="form"):
+            yield Static("First, create an Auth0 tenant if you don't have one yet.")
             yield Static(
-                "First, create an Auth0 tenant if you don't have one yet."
-            )
-            yield Static(
-                "Then create a bootstrap Machine-to-Machine application in that "
-                "tenant -- see auth0/README.md's 'Bootstrap M2M application for "
-                "the wizard' section. You only need to do this once."
+                "Then create a Machine-to-Machine application named "
+                "'gc-stack-deploy' in that tenant, authorized against the Auth0 "
+                "Management API with the permissions listed in auth0/README.md's "
+                "'Bootstrap M2M application for the wizard' section. You only "
+                "need to do this once per tenant."
             )
             yield Static(
                 "Finally, enter the tenant domain and that M2M application's "
@@ -52,9 +52,9 @@ class BootstrapCredentialsScreen(Screen):
             )
             yield Label("Auth0 tenant domain (e.g. your-tenant.us.auth0.com)")
             yield Input(placeholder="your-tenant.us.auth0.com", id="domain")
-            yield Label("M2M client ID")
+            yield Label("gc-stack-deploy M2M client ID")
             yield Input(placeholder="client id", id="bootstrap_client_id")
-            yield Label("M2M client secret")
+            yield Label("gc-stack-deploy M2M client secret")
             yield Input(
                 placeholder="client secret", password=True, id="bootstrap_client_secret"
             )
@@ -66,8 +66,12 @@ class BootstrapCredentialsScreen(Screen):
             return
         self.app.wizard_data.update(
             domain=self.query_one("#domain", Input).value.strip(),
-            bootstrap_client_id=self.query_one("#bootstrap_client_id", Input).value.strip(),
-            bootstrap_client_secret=self.query_one("#bootstrap_client_secret", Input).value.strip(),
+            bootstrap_client_id=self.query_one(
+                "#bootstrap_client_id", Input
+            ).value.strip(),
+            bootstrap_client_secret=self.query_one(
+                "#bootstrap_client_secret", Input
+            ).value.strip(),
         )
         self.app.push_screen(AppSelectionScreen())
 
@@ -227,6 +231,9 @@ class WizardApp(App):
     }
     #form Input {
         margin-bottom: 1;
+    }
+    #form Static {
+      margin-bottom: 1;
     }
     #run-container {
         height: 1fr;
