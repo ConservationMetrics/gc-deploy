@@ -21,6 +21,7 @@ from textual.widgets import (
     Static,
 )
 
+from ..gui import RichLogHandler
 from .orchestrator import run_wizard
 from .yaml_writer import load_config
 
@@ -29,17 +30,6 @@ SELECTABLE_APPS = [
     ("gc-landing-page", "GC Landing Page"),
     ("gc-explorer", "GC-Explorer"),
 ]
-
-
-class RichLogHandler(logging.Handler):
-    """Adapts stdlib logging to a Textual RichLog widget. See gui.py's twin of this."""
-
-    def __init__(self, log_widget: RichLog):
-        super().__init__()
-        self.log_widget = log_widget
-
-    def emit(self, record: logging.LogRecord) -> None:
-        self.log_widget.write(self.format(record))
 
 
 class BootstrapCredentialsScreen(Screen):
