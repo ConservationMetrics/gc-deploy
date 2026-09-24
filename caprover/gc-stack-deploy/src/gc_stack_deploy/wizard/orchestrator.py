@@ -18,7 +18,7 @@ from .auth0.provisioning import (
 )
 from .yaml_writer import (
     apply_auth0_client_results_to_config,
-    apply_deployment_metadata_to_config,
+    apply_root_domain_to_config,
     dump_config,
 )
 
@@ -50,7 +50,7 @@ APP_DISPLAY_NAMES = {
 }
 
 
-def _client_spec_for_app(app_key: str, config: dict, root_domain: str) -> dict:
+def client_spec_for_app(app_key: str, config: dict, root_domain: str) -> dict:
     """Callback/origin URLs to set one app's Auth0 client.
 
     Assumes each app is reachable at "<app_name>.<root_domain>", except
@@ -115,8 +115,6 @@ def run_wizard(
     bootstrap_client_secret: str,
     selected_apps: list[str],
     root_domain: str,
-    community_name: str,
-    admin_email: str,
     gcp_client_id: str | None = None,
     gcp_client_secret: str | None = None,
     provision_windmill: bool = False,
@@ -131,6 +129,9 @@ def run_wizard(
         WARNING: This object will be mutated in place.
     config_file
         Path to write the mutated config to.
+    root_domain
+        Domain the stack is served at; each app's Auth0 callback/origin URLs
+        are built from it (see client_spec_for_app).
     selected_apps
         Subset of ("superset-only", "gc-explorer", "gc-landing-page") to
         provision Auth0 clients for.
@@ -163,7 +164,7 @@ def run_wizard(
 
     client_results: dict[str, ClientResult] = {}
     for app_key in selected_apps:
-        spec = _client_spec_for_app(app_key, config, root_domain)
+        spec = client_spec_for_app(app_key, config, root_domain)
         logger.info(f"Ensuring Auth0 client for {spec['name']}")
         client_results[app_key] = ensure_client(
             mgmt,
@@ -188,7 +189,7 @@ def run_wizard(
 
     if provision_windmill:
         logger.info("Ensuring Auth0 client for Windmill")
-        windmill_spec = _client_spec_for_app("windmill-only", config, root_domain)
+        windmill_spec = client_spec_for_app("windmill-only", config, root_domain)
         windmill_result = ensure_windmill_client(
             mgmt,
             callbacks=windmill_spec["callbacks"],
@@ -220,12 +221,7 @@ def run_wizard(
     apply_auth0_client_results_to_config(
         config, domain=domain, client_results=client_results
     )
-    apply_deployment_metadata_to_config(
-        config,
-        community_name=community_name,
-        root_domain=root_domain,
-        admin_email=admin_email,
-    )
+    apply_root_domain_to_config(config, root_domain)
 
     dump_config(config, config_file)
     logger.info(f"Wrote {config_file}")
