@@ -27,14 +27,31 @@ from .orchestrator import client_spec_for_app, run_wizard
 from .yaml_writer import load_config
 
 SELECTABLE_APPS = [
-    ("superset-only", "Superset"),
     ("gc-landing-page", "GC Landing Page"),
     ("gc-explorer", "GC-Explorer"),
+    ("superset-only", "Superset"),
 ]
 
+TOTAL_STEPS = 5
 
-class BootstrapCredentialsScreen(Screen):
+
+class WizardScreen(Screen):
+    """Base class for the wizard's sequential screens.
+
+    Sets the screen's sub_title to "Step N of TOTAL_STEPS" so Header shows
+    progress through the sequence; subclasses just set STEP.
+    """
+
+    STEP: int = 0
+
+    def on_mount(self) -> None:
+        self.sub_title = f"Step {self.STEP} of {TOTAL_STEPS}"
+
+
+class BootstrapCredentialsScreen(WizardScreen):
     """Collect the Auth0 tenant domain and bootstrap M2M credentials."""
+
+    STEP = 1
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -77,8 +94,10 @@ class BootstrapCredentialsScreen(Screen):
         self.app.push_screen(GoogleSocialScreen())
 
 
-class GoogleSocialScreen(Screen):
+class GoogleSocialScreen(WizardScreen):
     """Collect the optional GCP OAuth client for the google-oauth2 connection."""
+
+    STEP = 2
 
     def compose(self) -> ComposeResult:
         domain = self.app.wizard_data.get("domain") or "<tenant>.us.auth0.com"
@@ -122,12 +141,14 @@ class GoogleSocialScreen(Screen):
         self.app.push_screen(AppSelectionScreen())
 
 
-class AppSelectionScreen(Screen):
+class AppSelectionScreen(WizardScreen):
     """Checklist of which apps to provision Auth0 clients for.
 
     Pre-checked from whichever keys already exist in the target config,
     mirroring how Deployer.__init__ derives checklist state from config.
     """
+
+    STEP = 3
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -168,22 +189,22 @@ class AppSelectionScreen(Screen):
         self.app.push_screen(RootDomainScreen())
 
 
-class RootDomainScreen(Screen):
+class RootDomainScreen(WizardScreen):
     """Collect the root domain that the Auth0 clients' callback URLs are built from."""
+
+    STEP = 4
 
     def compose(self) -> ComposeResult:
         yield Header()
         with Vertical(id="form"):
             yield Static(
-                "Enter the root domain your Guardian Connector stack will be served "
-                "at, e.g. springfield.guardianconnector.net. Just the domain name: "
-                "no https://, no path."
+                "Enter the root domain your Guardian Connector stack will be served at."
             )
             yield Static(
                 "GC Landing Page is served at the root domain itself, and every "
                 "other app at its own subdomain of it. Each Auth0 client's "
                 "callback URL and allowed origins are set to these addresses, so "
-                "they must match where the apps will actually be reachable:"
+                "they must match where the apps will be reachable:"
             )
             yield Static("", id="hosts_preview", markup=False)
             yield Label("Root domain")
@@ -193,14 +214,11 @@ class RootDomainScreen(Screen):
                 placeholder="springfield.guardianconnector.net",
                 id="root_domain",
             )
-            yield Static(
-                "This is also written to gc-landing-page.root_domain in your "
-                "config file."
-            )
             yield Button("Run", id="run", variant="primary")
         yield Footer(show_command_palette=False)
 
     def on_mount(self) -> None:
+        super().on_mount()
         self._update_hosts_preview(self.query_one("#root_domain", Input).value)
 
     def on_input_changed(self, event: Input.Changed) -> None:
@@ -237,8 +255,10 @@ class RootDomainScreen(Screen):
         self.app.push_screen(RunScreen())
 
 
-class RunScreen(Screen):
+class RunScreen(WizardScreen):
     """Streams provisioning progress, then shows a completion summary."""
+
+    STEP = 5
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -248,6 +268,7 @@ class RunScreen(Screen):
         yield Footer(show_command_palette=False)
 
     def on_mount(self) -> None:
+        super().on_mount()
         handler = RichLogHandler(self.query_one("#log", RichLog))
         handler.setFormatter(logging.Formatter("%(name)s: %(message)s"))
         logger = logging.getLogger()
