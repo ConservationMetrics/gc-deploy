@@ -188,7 +188,7 @@ def main():
     parser.add_argument(
         "command",
         nargs="?",
-        choices=["init", "deploy"],
+        choices=["init", "wizard", "deploy"],
         default="deploy",
         help="Optional subcommand",
     )
@@ -215,6 +215,12 @@ def main():
     if args.command == "init":
         print("init -> " + args.config_file)
         copy_example(args.config_file)
+        return
+
+    if args.command == "wizard":
+        from .wizard.screens import WizardApp
+
+        WizardApp(args.config_file, dry_run=args.dry_run).run()
         return
 
     # Load configuration

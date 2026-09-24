@@ -1,9 +1,9 @@
-caproverUrl: "http[s]://captain.your-captain-root.net" # Remove the brackets if using SSL, remove `[s]` if using HTTP.
+caproverUrl: "http[s]://captain.your-gc-domain.net" # Remove the brackets if using SSL, remove `[s]` if using HTTP.
 caproverPassword: "secret-captain-password" # Set a secure password!
 
 # Shared values — set once, referenced below with *name (YAML anchors).
 auth0_domain: &auth0_domain # your Auth0 tenant host, e.g. "your-tenant.us.auth0.com"
-community_name: &community_name # URL slug / alias, e.g. "springfield" in "springfield.your-captain-root.net"
+community_name: &community_name # URL slug / alias, e.g. "springfield" in "springfield.your-gc-domain.net"
 
 postgres:
   # REQUIRED in all cases:
@@ -53,7 +53,7 @@ gc-landing-page:
   redirect_to_root: true # make gc-landing-page the landing page when no subdomain specified
   ### REQUIRED:
   community_name: *community_name
-  root_domain: # this is the root domain of the community, e.g. "your-captain-root.net".
+  root_domain: # the domain the stack is served at, e.g. "springfield.guardianconnector.net". Other apps get subdomains of it.
   auth0_domain: *auth0_domain
   auth0_client_id:
   auth0_client_secret:
