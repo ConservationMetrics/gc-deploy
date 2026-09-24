@@ -2,7 +2,7 @@
 
 Five screens, pushed in sequence, each handing its collected answers forward
 to the next: bootstrap credentials -> Google social login -> app selection ->
-deployment inputs -> run.
+root domain -> run.
 """
 
 import logging
@@ -23,7 +23,7 @@ from textual.widgets import (
 )
 
 from ..gui import RichLogHandler
-from .orchestrator import run_wizard
+from .orchestrator import client_spec_for_app, run_wizard
 from .yaml_writer import load_config
 
 SELECTABLE_APPS = [
@@ -165,41 +165,75 @@ class AppSelectionScreen(Screen):
         self.app.wizard_data["provision_windmill"] = self.query_one(
             "#chk_windmill", Checkbox
         ).value
-        self.app.push_screen(DeploymentInputsScreen())
+        self.app.push_screen(RootDomainScreen())
 
 
-class DeploymentInputsScreen(Screen):
-    """Root domain, community name, and admin email."""
+class RootDomainScreen(Screen):
+    """Collect the root domain that the Auth0 clients' callback URLs are built from."""
 
     def compose(self) -> ComposeResult:
         yield Header()
         with Vertical(id="form"):
-            yield Label("Root domain (e.g. your-captain-root.net)")
+            yield Static(
+                "Enter the root domain your Guardian Connector stack will be served "
+                "at, e.g. springfield.guardianconnector.net. Just the domain name: "
+                "no https://, no path."
+            )
+            yield Static(
+                "GC Landing Page is served at the root domain itself, and every "
+                "other app at its own subdomain of it. Each Auth0 client's "
+                "callback URL and allowed origins are set to these addresses, so "
+                "they must match where the apps will actually be reachable:"
+            )
+            yield Static("", id="hosts_preview", markup=False)
+            yield Label("Root domain")
             yield Input(
                 value=self.app.config.get("gc-landing-page", {}).get("root_domain")
                 or "",
+                placeholder="springfield.guardianconnector.net",
                 id="root_domain",
             )
-            yield Label("Community name (URL slug/alias)")
-            yield Input(
-                value=self.app.config.get("community_name") or "", id="community_name"
-            )
-            yield Label("Admin email")
-            yield Input(
-                value=self.app.config.get("superset-only", {}).get("admin_email") or "",
-                id="admin_email",
+            yield Static(
+                "This is also written to gc-landing-page.root_domain in your "
+                "config file."
             )
             yield Button("Run", id="run", variant="primary")
         yield Footer(show_command_palette=False)
 
+    def on_mount(self) -> None:
+        self._update_hosts_preview(self.query_one("#root_domain", Input).value)
+
+    def on_input_changed(self, event: Input.Changed) -> None:
+        self._update_hosts_preview(event.value)
+
+    def _update_hosts_preview(self, root_domain: str) -> None:
+        root_domain = root_domain.strip() or "<root domain>"
+        data = self.app.wizard_data
+        app_keys = list(data.get("selected_apps", []))
+        if data.get("provision_windmill"):
+            app_keys.append("windmill-only")
+        lines = [
+            f"  {spec['name']:<16} {spec['web_origins'][0].rstrip('/')}"
+            for spec in (
+                client_spec_for_app(key, self.app.config, root_domain)
+                for key in app_keys
+            )
+        ]
+        self.query_one("#hosts_preview", Static).update(
+            "\n".join(lines) or "  (no app clients selected)"
+        )
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id != "run":
             return
-        self.app.wizard_data.update(
-            root_domain=self.query_one("#root_domain", Input).value.strip(),
-            community_name=self.query_one("#community_name", Input).value.strip(),
-            admin_email=self.query_one("#admin_email", Input).value.strip(),
-        )
+        root_domain = self.query_one("#root_domain", Input).value.strip()
+        if not root_domain or any(c in root_domain for c in "/: "):
+            self.notify(
+                "Enter a bare domain name, e.g. springfield.guardianconnector.net",
+                severity="error",
+            )
+            return
+        self.app.wizard_data["root_domain"] = root_domain
         self.app.push_screen(RunScreen())
 
 
@@ -235,8 +269,6 @@ class RunScreen(Screen):
                 bootstrap_client_secret=data["bootstrap_client_secret"],
                 selected_apps=data["selected_apps"],
                 root_domain=data["root_domain"],
-                community_name=data["community_name"],
-                admin_email=data["admin_email"],
                 gcp_client_id=data.get("gcp_client_id"),
                 gcp_client_secret=data.get("gcp_client_secret"),
                 provision_windmill=data.get("provision_windmill", False),

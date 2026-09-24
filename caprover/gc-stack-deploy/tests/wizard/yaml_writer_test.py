@@ -4,7 +4,7 @@ import io
 from gc_stack_deploy.wizard.auth0.provisioning import ClientResult
 from gc_stack_deploy.wizard.yaml_writer import (
     apply_auth0_client_results_to_config,
-    apply_deployment_metadata_to_config,
+    apply_root_domain_to_config,
     load_config,
 )
 from ruamel.yaml import YAML
@@ -95,38 +95,17 @@ class TestApplyAuth0ClientResultsToConfig:
         assert config["superset-only"]["auth0_client_secret"] == "preexisting"
 
 
-class TestApplyDeploymentMetadataToConfig:
-    def test_community_name_identical_across_aliased_sites(self):
+class TestApplyRootDomainToConfig:
+    def test_writes_landing_page_root_domain(self):
         config = load_example_config()
-        apply_deployment_metadata_to_config(config, community_name="creek")
-
-        assert config["community_name"] == "creek"
-        for app in ("gc-landing-page", "gc-explorer"):
-            assert config[app]["community_name"] == "creek"
-
-        reloaded = dump_to_dict(config)
-        assert reloaded["community_name"] == "creek"
-        assert reloaded["gc-landing-page"]["community_name"] == "creek"
-        assert reloaded["gc-explorer"]["community_name"] == "creek"
-
-    def test_dumps_as_real_yaml_anchors_not_duplicated_literals(self):
-        config = load_example_config()
-        apply_deployment_metadata_to_config(config, community_name="creek")
-
-        buf = io.StringIO()
-        YAML().dump(config, buf)
-        dumped = buf.getvalue()
-
-        assert "&community_name creek" in dumped
-        assert dumped.count("*community_name") == 2  # gc-landing-page, gc-explorer
-
-    def test_root_domain_and_admin_email(self):
-        config = load_example_config()
-        apply_deployment_metadata_to_config(
-            config,
-            community_name="c",
-            root_domain="root.example.net",
-            admin_email="admin@example.net",
+        apply_root_domain_to_config(config, "springfield.guardianconnector.net")
+        assert (
+            dump_to_dict(config)["gc-landing-page"]["root_domain"]
+            == "springfield.guardianconnector.net"
         )
-        assert config["gc-landing-page"]["root_domain"] == "root.example.net"
-        assert config["superset-only"]["admin_email"] == "admin@example.net"
+
+    def test_skips_when_landing_page_absent(self):
+        config = load_example_config()
+        del config["gc-landing-page"]
+        apply_root_domain_to_config(config, "springfield.guardianconnector.net")
+        assert "gc-landing-page" not in config

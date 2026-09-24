@@ -2,7 +2,7 @@
 
 Config-mutation can be done in two separate functions:
 - apply_auth0_client_results_to_config() writes Auth0 API results (auth0_domain, per-app client id/secret)
-- apply_deployment_metadata_to_config() writes community_name/root_domain/admin_email
+- apply_root_domain_to_config() writes gc-landing-page.root_domain
 """
 
 from ruamel.yaml import YAML
@@ -38,8 +38,6 @@ def _anchored(value: str, anchor_name: str) -> PlainScalarString:
 
 # Apps that carry an `auth0_domain` field aliased to the shared top-level value.
 AUTH0_DOMAIN_APPS = ("superset-only", "gc-landing-page", "gc-explorer")
-# Apps that carry a `community_name` field aliased to the shared top-level value.
-COMMUNITY_NAME_APPS = ("gc-landing-page", "gc-explorer")
 
 
 def apply_auth0_client_results_to_config(
@@ -51,11 +49,8 @@ def apply_auth0_client_results_to_config(
     """Mutate the loaded config in place with genuine Auth0 provisioning results:
     the tenant domain and each selected app's client id/secret.
 
-    Deployment metadata that merely rides along on the same wizard screen
-    (community_name, root_domain, admin_email) is NOT handled here -- see
-    `apply_deployment_metadata_to_config` -- since none of it is actually an
-    Auth0 API concept: it's never sent to the Management API, just written
-    into plain (non `auth0_*`) stack.yaml fields.
+    The root domain is NOT handled here -- see `apply_root_domain_to_config`
+    -- since it's an input to provisioning, not an Auth0 API result.
 
     Parameters
     ----------
@@ -81,36 +76,12 @@ def apply_auth0_client_results_to_config(
             config[app]["auth0_client_secret"] = result.client_secret
 
 
-def apply_deployment_metadata_to_config(
-    config,
-    *,
-    community_name: str,
-    root_domain: str | None = None,
-    admin_email: str | None = None,
-) -> None:
-    """Mutate the loaded config in place with deployment-inputs-screen values
-    that aren't Auth0 API results -- they're written straight into plain
-    (non `auth0_*`) stack.yaml fields, and the wizard just happens to collect
-    them on the same screen as the Auth0-relevant inputs for convenience.
-
-    Parameters
-    ----------
-    community_name
-        Written to `community_name` everywhere it's aliased.
-    root_domain, admin_email
-        Written to gc-landing-page.root_domain and superset-only.admin_email
-        respectively, if those apps are present.
+def apply_root_domain_to_config(config, root_domain: str) -> None:
+    """Write the root domain the Auth0 clients were provisioned for to
+    gc-landing-page.root_domain, if that app is present.
     """
-    community_name_value = _anchored(community_name, "community_name")
-    config["community_name"] = community_name_value
-    for app in COMMUNITY_NAME_APPS:
-        if app in config:
-            config[app]["community_name"] = community_name_value
-
-    if root_domain is not None and "gc-landing-page" in config:
+    if "gc-landing-page" in config:
         config["gc-landing-page"]["root_domain"] = root_domain
-    if admin_email is not None and "superset-only" in config:
-        config["superset-only"]["admin_email"] = admin_email
 
 
 def dump_config(config, file_path) -> None:
