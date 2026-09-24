@@ -1,7 +1,8 @@
 """Textual screens for `gc-stack-deploy wizard`, and the WizardApp entry point.
 
-Four screens, pushed in sequence, each handing its collected answers forward
-to the next: bootstrap credentials -> app selection -> deployment inputs -> run.
+Five screens, pushed in sequence, each handing its collected answers forward
+to the next: bootstrap credentials -> Google social login -> app selection ->
+deployment inputs -> run.
 """
 
 import logging
@@ -73,6 +74,51 @@ class BootstrapCredentialsScreen(Screen):
                 "#bootstrap_client_secret", Input
             ).value.strip(),
         )
+        self.app.push_screen(GoogleSocialScreen())
+
+
+class GoogleSocialScreen(Screen):
+    """Collect the optional GCP OAuth client for the google-oauth2 connection."""
+
+    def compose(self) -> ComposeResult:
+        domain = self.app.wizard_data.get("domain") or "<tenant>.us.auth0.com"
+        yield Header()
+        with Vertical(id="form"):
+            yield Static(
+                "Optional: to enable Google social login, Auth0 needs a Google Cloud "
+                "Platform (GCP) OAuth 2.0 Client. Without one, Auth0 falls back to "
+                "development keys, which are not recommended for production."
+            )
+            yield Static(
+                "In the GCP console, create a project if needed, then create a "
+                "Client for a web application (or reuse an existing one under "
+                "APIs & Services -> OAuth consent screen -> Clients) and add:"
+            )
+            yield Static(
+                f"  Authorized JavaScript origin:  https://{domain}\n"
+                f"  Authorized redirect URI:       https://{domain}/login/callback",
+                markup=False,
+            )
+            yield Static(
+                "Then enter that client's ID and secret below, or leave them blank "
+                "to skip. See auth0/README.md's 'GCP OAuth client configuration' "
+                "section for details."
+            )
+            yield Label("GCP OAuth client ID")
+            yield Input(placeholder="(optional)", id="gcp_client_id")
+            yield Label("GCP OAuth client secret")
+            yield Input(placeholder="(optional)", password=True, id="gcp_client_secret")
+            yield Button("Next", id="next", variant="primary")
+        yield Footer(show_command_palette=False)
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id != "next":
+            return
+        self.app.wizard_data.update(
+            gcp_client_id=self.query_one("#gcp_client_id", Input).value.strip() or None,
+            gcp_client_secret=self.query_one("#gcp_client_secret", Input).value.strip()
+            or None,
+        )
         self.app.push_screen(AppSelectionScreen())
 
 
@@ -123,7 +169,7 @@ class AppSelectionScreen(Screen):
 
 
 class DeploymentInputsScreen(Screen):
-    """Root domain, community name, admin email, and optional GCP OAuth creds."""
+    """Root domain, community name, and admin email."""
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -143,14 +189,6 @@ class DeploymentInputsScreen(Screen):
                 value=self.app.config.get("superset-only", {}).get("admin_email") or "",
                 id="admin_email",
             )
-            yield Static(
-                "Optional: GCP OAuth client for Google social login "
-                "(leave blank to skip -- see auth0/README.md's GCP OAuth client section)."
-            )
-            yield Label("GCP OAuth client ID")
-            yield Input(placeholder="(optional)", id="gcp_client_id")
-            yield Label("GCP OAuth client secret")
-            yield Input(placeholder="(optional)", password=True, id="gcp_client_secret")
             yield Button("Run", id="run", variant="primary")
         yield Footer(show_command_palette=False)
 
@@ -161,9 +199,6 @@ class DeploymentInputsScreen(Screen):
             root_domain=self.query_one("#root_domain", Input).value.strip(),
             community_name=self.query_one("#community_name", Input).value.strip(),
             admin_email=self.query_one("#admin_email", Input).value.strip(),
-            gcp_client_id=self.query_one("#gcp_client_id", Input).value.strip() or None,
-            gcp_client_secret=self.query_one("#gcp_client_secret", Input).value.strip()
-            or None,
         )
         self.app.push_screen(RunScreen())
 
