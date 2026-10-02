@@ -77,7 +77,7 @@
     },
     "backupPolicyName": {
       "type": "string",
-      "defaultValue": "GuardianConnectorPolicy",
+      "defaultValue": "Guardian ConnectorPolicy",
       "metadata": {
         "description": "Backup policy name in the vault."
       }

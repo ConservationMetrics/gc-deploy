@@ -5,6 +5,7 @@
 ### 🖥️ Compute
 
 A computer server running your applications.
+
 - A virtual machine in the cloud of your choice, or self-host in the office.
 
 ### 📂 Storage for your Data Warehouse
@@ -16,7 +17,6 @@ Store, organize, and selectively share all your data:
 
 For a deeper explanation of how structured data is stored, organized, and used within the Guardian Connector data warehouse, see [`warehouse/README.md`](warehouse/README.md).
 
-
 ### 🔐 Access Control
 
 Secure login system to control who can access your applications.
@@ -26,7 +26,7 @@ Secure login system to control who can access your applications.
 - **Windmill**: Sync from outside data providers, schedule your data workflows, and run other scripts.
 - **Superset**: Visualize and explore structured/tabular data with interactive dashboards.
 - **Filebrowser**: Easily view and create share links for your media (pictures, videos...).
-- **GuardianConnector Explorer**: Unified view of tabular, media, and maps.
+- **Guardian Connector Explorer**: Unified view of tabular, media, and maps.
 - **CoMapeo Archive Server**: A CoMapeo archive server that synchronizes with CoMapeo devices.
 - ...plus install any other web applications you need using [CapRover](https://caprover.com/).
 
@@ -35,20 +35,20 @@ Secure login system to control who can access your applications.
 High-level steps to spawn a new stack
 
 1. 🖥️ Choose your cloud provider and deploy a VM running CapRover.
-    - **[Azure Setup Guide](azure/README.md)**
-    - **[DigitalOcean Setup Guide](digitalocean/README.md)**
-    - or [DIY on-premises or on another hosting provider](caprover/INSTALL_CAPROVER_ON_NEW_VM.md)
+   - **[Azure Setup Guide](azure/README.md)**
+   - **[DigitalOcean Setup Guide](digitalocean/README.md)**
+   - or [DIY on-premises or on another hosting provider](caprover/INSTALL_CAPROVER_ON_NEW_VM.md)
 
 2. 📂 Create your data warehouse: file storage & a SQL database.
-    - The Azure deployment can automatically create an Azure Storage Account and Files share for you, or you can use an existing one. If you are storing files on the VM directly, you can skip Azure Files entirely.
-    - A PostgreSQL database will be created automatically when you install the app stack (see step 4 below).
+   - The Azure deployment can automatically create an Azure Storage Account and Files share for you, or you can use an existing one. If you are storing files on the VM directly, you can skip Azure Files entirely.
+   - A PostgreSQL database will be created automatically when you install the app stack (see step 4 below).
 
 3. 🔐 If you plan on using auth0, set up an **auth0 tenant** with a user authorization workflow and client applications to help secure access to the apps you will deploy. See [`auth0/README.md`](auth0/README.md)
 
 4. 📦 Install the app stack by following [`caprover/INSTALL_GC_STACK.md`](caprover/INSTALL_GC_STACK.md).
 
 5. 📊 Set up data pipelines & other scripts to run in Windmill.
-    - See [**ConservationMetrics/gc-scripts-hub**](https://github.com/ConservationMetrics/gc-scripts-hub/)
+   - See [**ConservationMetrics/gc-scripts-hub**](https://github.com/ConservationMetrics/gc-scripts-hub/)
 
 6. 🔍 Use the [Post-Deployment Checklist](POST-DEPLOYMENT-CHECKLIST.md) to validate your deployment.
 

@@ -6,7 +6,7 @@ This guide walks you through setting up your custom Guardian Connector software 
 
 See [INSTALL_CAPROVER_ON_NEW_VM.md](INSTALL_CAPROVER_ON_NEW_VM.md) if you haven't already configured a new VM running CapRover.
 
-Additionally, if you haven't already, configure disk cleanup and set an appropriate cron schedule in the CapRover web UI. 
+Additionally, if you haven't already, configure disk cleanup and set an appropriate cron schedule in the CapRover web UI.
 
 - We recommend setting disk cleanup to run daily at 3:00 AM e.g. `0 3 * * *` at the timezone most likely to be used by the VM's users
 - We recommend setting the most recent image to be kept to 1. This means you can't do a rollback to the previous deployment, but it saves space on the disk.
@@ -22,7 +22,7 @@ Additionally, if you haven't already, configure disk cleanup and set an appropri
 
 If you don't want to sweat the details, it's much quicker to deploy the Guardian Connector stack of apps using the `gc-stack-deploy`.
 
-Unless your SQL database is on another host, the tool must be run on the same machine where CapRover is running. 
+Unless your SQL database is on another host, the tool must be run on the same machine where CapRover is running.
 
 #### Install the tool
 
@@ -56,12 +56,13 @@ Then, restart your shell or run `exec $SHELL -l`. Now you can run `gc-stack-depl
 #### Create a `stack.yaml` configuration file
 
 You must create a `stack.yaml` configuration file of for your new deployment. The configuration
-file lets you set secrets and API keys, and configure which apps you want.  Write an example template
+file lets you set secrets and API keys, and configure which apps you want. Write an example template
 to your local directory by running `gc-stack-deploy init --config-file «destination.yaml»`.
 
 ```sh
 gc-stack-deploy init --config-file stack.yaml
 ```
+
 Then open the file (you could use `nano` or `vi`) and fill in the blanks.
 
 Finally you are ready to use this same configuration file to deploy the apps to CapRover,
@@ -90,6 +91,7 @@ If the script ran successfully, proceed to the [Post-install app configuration s
 
 > [!TIP]
 > If something goes wrong partway through `gc-stack-deploy`:
+>
 > - You can uninstall a failed or unwanted app directly from the same checklist
 >   by unchecking it and pressing Go. Then can opt to install the same app again
 >   after having uninstalled it. (i.e. re-installing an installed app is a 2-phase process)
@@ -101,6 +103,7 @@ If the script ran successfully, proceed to the [Post-install app configuration s
 #### What could go wrong?
 
 It has been observed that...
+
 - the script can time out before a Docker image successfully pulls and builds
 - the script fails to enable SSL for a given webapp
 - CapRover or Docker misbehaves until the VM is rebooted once (`sudo shutdown -r now`)
@@ -113,7 +116,7 @@ In both cases, trying to run the script again typically fixes the issue. For the
 
 1. In your CapRover web dashboard, navigate to **Apps** → **Create A New App** → **One-Click Apps/Databases**.
 2. At the very bottom of the Apps list, find **3rd party repositories**. Enter the URL:
-    > `https://conservationmetrics.github.io/gc-deploy/one-click-apps`
+   > `https://conservationmetrics.github.io/gc-deploy/one-click-apps`
 3. **Connect New Repostory** and refresh the page. You can now browse and install Guardian Connector apps directly from CapRover.
 
 #### Install apps as One-Click Apps
@@ -139,23 +142,25 @@ If you haven't already (i.e. through `gc-stack-deploy`), create the `warehouse` 
 
 If you plan to expose the database to applications not hosted on this VM's CapRover,
 you will need to take some additional steps after installing the one-click-app:
+
 - Set a port mapping `5432:5432` for server to container.
 - Enable SSL by using the certs that come installed with `ssl-cert` on the Postgres Docker image. Modify the Service Update Override as follows:
-    ```yaml
-    TaskTemplate:
-        ContainerSpec:
-            User: "postgres"
-            Command:
-            - "postgres"
-            - "-c"
-            - "ssl=on"
-            - "-c"
-            - "ssl_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem"
-            - "-c"
-            - "ssl_key_file=/etc/ssl/private/ssl-cert-snakeoil.key"
-    ```
 
-     **TODO**: figure out how to use trusted certs for Postgres (for example, using Let's Encrypt for which CapRover has built-in support).
+  ```yaml
+  TaskTemplate:
+    ContainerSpec:
+      User: "postgres"
+      Command:
+        - "postgres"
+        - "-c"
+        - "ssl=on"
+        - "-c"
+        - "ssl_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem"
+        - "-c"
+        - "ssl_key_file=/etc/ssl/private/ssl-cert-snakeoil.key"
+  ```
+
+  **TODO**: figure out how to use trusted certs for Postgres (for example, using Let's Encrypt for which CapRover has built-in support).
 
 - Make sure your hosting provider’s firewall or network security settings allow inbound traffic on port **5432** using the **TCP** protocol. For example, on **Azure**, inbound traffic on port 5432 is blocked by default and must be explicitly allowed through a Network Security Group (NSG) rule.
 - Now, you will be able to connect to the database using the hostname of your VM (no subdomain needed), port 5432, and SSL enabled.
@@ -177,7 +182,7 @@ Find the admin password in the CapRover web portal under **Files** → **Logs**.
 2026-01-22T20:56:44.357124503Z 2026/01/22 20:56:44 Listening on [::]:80
 ```
 
-Then change the password inside 
+Then change the password inside
 Filebrowser app. **This has to be done immediately after installing the app**. If the app restarts,
 the log message showing the password will not be shown again.
 
@@ -186,24 +191,25 @@ the log message showing the password will not be shown again.
 
 #### Accessing the datalake folder
 
- When logging into Filebrowser app, you may see "This location can't be reached".
- This is because Filebrowser is configured to show files in a folder called "datalake"
- and that folder hasnt been created yet. You may do any of the following:
- - create that folder in Azure Storage Explorer, or
- - upload any file anyway - this will implictly create the necessary folder. Then you can delete it.
+When logging into Filebrowser app, you may see "This location can't be reached".
+This is because Filebrowser is configured to show files in a folder called "datalake"
+and that folder hasnt been created yet. You may do any of the following:
 
-### GuardianConnector Explorer
+- create that folder in Azure Storage Explorer, or
+- upload any file anyway - this will implictly create the necessary folder. Then you can delete it.
 
-GuardianConnector Explorer installation involves some separate PostgreSQL setup:
-creating a `guardianconnector` database. 
+### Guardian Connector Explorer
+
+Guardian Connector Explorer installation involves some separate PostgreSQL setup:
+creating a `guardianconnector` database.
 
 The `gc-stack-deploy` handles this for you, but if you are setting up the app using the one-click app install menu, you will need to create the database manually.
 
-### GuardianConnector Landing Page
+### Guardian Connector Landing Page
 
 `NUXT_PUBLIC_DOMAIN` should be the domain suffix that follows the community alias (for example, `guardianconnector.net`).
 
-The landing page uses the same PostgreSQL server as GuardianConnector Explorer.
+The landing page uses the same PostgreSQL server as Guardian Connector Explorer.
 `gc-stack-deploy` creates its `guardianconnector` configuration database before
 deploying the landing page.
 
@@ -219,14 +225,13 @@ No additional steps needed.
 
 Instance Settings Page
 
-* **Core** tab
-  
-  * Default timeout = 30 Min
-  * Retention period in secs= 2592000 (30 Days)
+- **Core** tab
+  - Default timeout = 30 Min
+  - Retention period in secs= 2592000 (30 Days)
 
-* **Telemetry** tab > Disable telemetry
+- **Telemetry** tab > Disable telemetry
 
-* **Auth/OAuth** tab > If you plan to use SSO, enable auth0 (or your
+- **Auth/OAuth** tab > If you plan to use SSO, enable auth0 (or your
   provider of choice) and enter your organization and app client variables.
 
   Note: after a domain-approved user has registered with SSO, they must be
@@ -266,24 +271,24 @@ you will need to install the Language Server Protocol (LSP):
 
 1. Deploy a new Caprover App, the Windmill LSP: `ghcr.io/windmill-labs/windmill-lsp:1.518.2`
 2. Route Windmill HTTP requests intended for LSP:
-    1. Go to the settings for the core windmill web server
-    2. Ensure **Websocket Support** is enabled.
-    3. Ensure **Force HTTPS** is enabled.
-    4. Click on **Edit Default Nginx Configurations** and paste the following content before the last closing bracket "}" (Change `windmill-lsp` in the codeblock to the app name you gave it):
-        ```
-        location /ws/ {
-            proxy_pass http://srv-captain--windmill-lsp:3001/ws/;
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection "upgrade";
-        }
-        ```
+   1. Go to the settings for the core windmill web server
+   2. Ensure **Websocket Support** is enabled.
+   3. Ensure **Force HTTPS** is enabled.
+   4. Click on **Edit Default Nginx Configurations** and paste the following content before the last closing bracket "}" (Change `windmill-lsp` in the codeblock to the app name you gave it):
+      ```
+      location /ws/ {
+          proxy_pass http://srv-captain--windmill-lsp:3001/ws/;
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection "upgrade";
+      }
+      ```
 
 ### Superset
 
 #### First-time admin login
 
-You can log in with the email and password you set as `ADMIN_EMAIL` and `ADMIN_PASSWORD`, which `superset-init-and-beat` service uses to initialize the database with a first admin user. 
+You can log in with the email and password you set as `ADMIN_EMAIL` and `ADMIN_PASSWORD`, which `superset-init-and-beat` service uses to initialize the database with a first admin user.
 
 If you are using Auth0, you can log in with the email account (either as username/password or as a social login) - the `ADMIN_PASSWORD` is not used in this case.
 
@@ -302,6 +307,7 @@ TaskTemplate:
     HealthCheck:
       Test: ["NONE"]
 ```
+
 See [`./one-click-apps/README.md`](./one-click-apps/README.md) for full example.
 
 ## Upgrade Apps
@@ -343,10 +349,10 @@ Your redis connection string can then be: `redis://:«password»@srv-captain--re
 
 > [!NOTE]
 > We use `one-click-apps/windmill-only.yml` in this repo, instead of the Windmill app from
-the public CapRover one-click-apps repo. This is to share a database with the other apps,
-instead of installing separate database servers for each app in the stack.
+> the public CapRover one-click-apps repo. This is to share a database with the other apps,
+> instead of installing separate database servers for each app in the stack.
 
-Windmill installation involves some separate PostgreSQL setup. If you want to set up Windmill manually, you must execute the necessary SQL commands directly on your PostgreSQL instance. They include creating the Windmill database, roles, and granting privileges. 
+Windmill installation involves some separate PostgreSQL setup. If you want to set up Windmill manually, you must execute the necessary SQL commands directly on your PostgreSQL instance. They include creating the Windmill database, roles, and granting privileges.
 
 Specific commands can
 be found inside the one-click-app's preamble.

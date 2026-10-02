@@ -1,6 +1,6 @@
-# Setting up an auth0 tenant for GuardianConnector
+# Setting up an auth0 tenant for Guardian Connector
 
-GuardianConnector uses [Auth0](https://auth0.com/) for authentication and user management. This guide outlines how to configure a new Auth0 tenant for production use.
+Guardian Connector uses [Auth0](https://auth0.com/) for authentication and user management. This guide outlines how to configure a new Auth0 tenant for production use.
 
 ## GCP OAuth client configuration
 
@@ -25,10 +25,10 @@ You will need a Google Cloud Platform (GCP) OAuth 2.0 Client in order to [avoid 
 ## Auth0 tenant configuration, step by step
 
 1. When creating a new Auth0 tenant, you will need to provide a **Tenant Name** for the tenant, which should match the alias chosen by the community.
-    - Additionally, select a **Region** (CMI uses US) and **Environment Tag**: "Production".
+   - Additionally, select a **Region** (CMI uses US) and **Environment Tag**: "Production".
 2. In **Authentication / Social**, enable google-oauth2 under Social Connections. You will need to provide a Client ID and Secret (see [GCP OAuth client configuration](#gcp-oauth-client-configuration)).
 3. In **Settings** → **Tenant Members**, add the email addresses of the desired tenant administrators (for example, CMI engineering team members and programmatic lead(s)).
-4. In **Applications**, create a separate Regular Web Application for each tool (e.g., Superset, GC-Explorer). 
+4. In **Applications**, create a separate Regular Web Application for each tool (e.g., Superset, GC-Explorer).
    - For each application, give a human readable name (e.g. "Superset", "GC-Explorer", "Windmill", "GC Landing Page").
    - Add appropriate production domain values under Callback URLs, Web Origins, and CORS:
    - For **Superset** (assuming Superset is hosted at the root of your subdomain; otherwise, use the appropriate subdomain i.e. `superset.<domain>.guardianconnector.net`):
@@ -60,21 +60,22 @@ To restrict access until a user is approved, a Post-Login Trigger Action is used
 2. Modify the **Post Login** Flow.
 3. Create a custom action using this trigger code (influenced by [the Common Use Cases in the auth0 documentation](https://auth0.com/docs/customize/actions/flows-and-triggers/login-flow#common-use-cases)):
 
-    ```jsx
-    exports.onExecutePostLogin = async (event, api) => {
-      // Check if the user is approved
-      if (event.user.app_metadata && event.user.app_metadata.approved) {
-        // User is approved, continue without action
-      } else {
-        api.access.deny("Your approval to access the app is pending.");
-      }
-    };
-    ```
+   ```jsx
+   exports.onExecutePostLogin = async (event, api) => {
+     // Check if the user is approved
+     if (event.user.app_metadata && event.user.app_metadata.approved) {
+       // User is approved, continue without action
+     } else {
+       api.access.deny("Your approval to access the app is pending.");
+     }
+   };
+   ```
+
 4. Name the action "Check Approval".
 5. Drag the new action into the Login flow (see diagram below).
 
 > [!NOTE]
-> 
+>
 > This action checks for a variable `approved` in the user's `app_metadata`. If it is not present or is `false`, the user is denied access.
 >
 > While it is possible to set this value manually in the **User Management** page of auth0, GC Admin users typically do this via the GC Landing Page app. See [Auth0 approval process](#auth0-approval-process) below.
@@ -87,13 +88,14 @@ Superset reads Auth0 RBAC roles from a custom ID-token claim on `/userinfo`. Aut
 2. Modify the **Post Login** Flow.
 3. Create a custom action using this trigger code:
 
-    ```jsx
-    exports.onExecutePostLogin = async (event, api) => {
-      if (event.authorization) {
-        api.idToken.setCustomClaim("urn:gc:roles", event.authorization.roles);
-      }
-    };
-    ```
+   ```jsx
+   exports.onExecutePostLogin = async (event, api) => {
+     if (event.authorization) {
+       api.idToken.setCustomClaim("urn:gc:roles", event.authorization.roles);
+     }
+   };
+   ```
+
 4. Name the action "Add Roles Claim".
 
 ### 3. Drag actions into the flow
@@ -160,7 +162,7 @@ In addition to GC Explorer and GC Landing Page, we host several third party appl
    - “Your approval to access the app is pending” (GC Landing Page, GC Explorer)
    - “Invalid login” (Superset)
 3. A Guardian Connector administrator approves the user and assigns them a role. They can do this using the [User Management](https://docs.guardianconnector.net/reference/gc-toolkit/gc-landing-page/#-user-management) page on the GC Landing Page.
-4. Once approved, the user can log in to GuardianConnector services.
+4. Once approved, the user can log in to Guardian Connector services.
 
 ## Using Terraform
 
