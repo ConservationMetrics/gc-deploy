@@ -111,7 +111,7 @@ C --> D[Complete: Token Issued]
 
 ## Setting up RBAC
 
-Role-Based Access Control (RBAC) allows you to control user access to different features based on assigned roles. Several of the Guardian Connector applications (e.g. GC Explorer and GC Landing Page) use four roles: **Admin**, **Member**, **Viewer**, and **Public**.
+Role-Based Access Control (RBAC) allows you to control user access to different features based on assigned roles. Several of the Guardian Connector applications (e.g. GC Explorer and GC Landing Page) use four roles: **Admin**, **Member**, **Guest**, and **SignedIn**.
 
 ### API Configuration
 

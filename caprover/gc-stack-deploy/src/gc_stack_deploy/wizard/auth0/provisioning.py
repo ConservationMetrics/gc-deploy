@@ -14,9 +14,8 @@ from .client import find_by_name
 
 logger = logging.getLogger(__name__)
 
-# Matches the role-creation list in auth0/README.md's Role Setup section (Admin,
-# Member, Guest, SignedIn). The prose earlier in that same doc ("Admin, Member,
-# Viewer, Public") is stale; the Role Setup list is the ground truth.
+# Matches the role-creation list in auth0/README.md's Role Setup section
+# (Admin, Member, Guest, SignedIn).
 ROLE_NAMES = ["Admin", "Member", "Guest", "SignedIn"]
 
 # Verbatim copy from auth0/README.md's "Check Approval" Post-Login Action
