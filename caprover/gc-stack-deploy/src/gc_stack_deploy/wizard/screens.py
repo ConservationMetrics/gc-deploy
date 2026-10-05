@@ -198,7 +198,7 @@ class RootDomainScreen(WizardScreen):
         yield Header()
         with Vertical(id="form"):
             yield Static(
-                "Enter the root domain your Guardian Connector stack will be served at."
+                "Enter the root domain your Guardian Connector stack will be served at (without https protocol prefix)."
             )
             yield Static(
                 "GC Landing Page is served at the root domain itself, and every "
