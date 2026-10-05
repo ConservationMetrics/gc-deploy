@@ -30,6 +30,10 @@ You will need a Google Cloud Platform (GCP) OAuth 2.0 Client in order to [avoid 
 > You'll first need to ["Bootstrap M2M application for the wizard"](#appendix-bootstrap-m2m-application-for-the-wizard)
 > to run the wizard.
 
+> [!WARNING]
+>
+> If you change a 🪄 step here, make the matching change in code under [`caprover/gc-stack-deploy/src/gc_stack_deploy/wizard/`](/caprover/gc-stack-deploy/src/gc_stack_deploy/wizard/).
+
 1. When creating a new Auth0 tenant, you will need to provide a **Tenant Name** for the tenant, which should match the alias chosen by the community.
    - Additionally, select a **Region** (CMI uses US) and **Environment Tag**: "Production".
 2. In **Settings** → **Tenant Members**, add the email addresses of the desired tenant administrators (for example, CMI engineering team members and programmatic lead(s)).
@@ -138,6 +142,15 @@ Role-Based Access Control (RBAC) allows you to control user access to different 
      - `delete:role_members` - to remove roles from users
      - `update:users_app_metadata` - to update user approval status
      - `delete:users` - to remove users
+   - **GC Metrics** (usage statistics):
+     - `read:users` - to fetch user information
+     - `read:stats` - to read tenant statistics
+
+> [!NOTE]
+>
+> These scope lists are mirrored in `EXPLORER_SCOPES`, `LANDING_PAGE_SCOPES` and `METRICS_SCOPES` in
+> [`orchestrator.py`](/caprover/gc-stack-deploy/src/gc_stack_deploy/wizard/orchestrator.py), which the
+> `gc-stack-deploy wizard` uses to grant them automatically. If you change scopes here, update that file too.
 
 ### Role Setup
 

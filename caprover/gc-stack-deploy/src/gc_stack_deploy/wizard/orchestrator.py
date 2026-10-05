@@ -24,7 +24,7 @@ from .yaml_writer import (
 
 logger = logging.getLogger("gc-stack-deploy.wizard")
 
-# Scope lists are copied verbatim from auth0/README.md.
+# KEEP IN SYNC with the scope lists under "API Configuration" in auth0/README.md.
 EXPLORER_SCOPES = [
     "read:users",
     "read:user_idp_tokens",
@@ -184,7 +184,7 @@ def run_wizard(
             "note this secret now, it will not be shown again:\n"
             f"    client_id:     {metrics_result.client_id}\n"
             f"    client_secret: {metrics_result.client_secret}\n"
-            "See auth0/README.md step 5 for wiring it into Windmill as a resource."
+            "See auth0/README.md for wiring it into Windmill as a resource."
         )
 
     if provision_windmill:
@@ -202,7 +202,7 @@ def run_wizard(
                 "note this secret now, it will not be shown again:\n"
                 f"    client_id:     {windmill_result.client_id}\n"
                 f"    client_secret: {windmill_result.client_secret}\n"
-                "See auth0/README.md step 4 for wiring it into Windmill's Auth0 SSO settings."
+                "See auth0/README.md for wiring it into Windmill's Auth0 SSO settings."
             )
 
     scope_grants = [
