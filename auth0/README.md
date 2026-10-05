@@ -51,11 +51,11 @@ You will need a Google Cloud Platform (GCP) OAuth 2.0 Client in order to [avoid 
    - For **Windmill**:
      - **Callback URL**: `https://windmill.<domain>.guardianconnector.net/user/login_callback/auth0`
      - **Allowed Web Origins**: `https://windmill.<domain>.guardianconnector.net/`
-     - The wizard prints this client's ID/secret once at the end of its run. Note it down, because there is no `stack.yaml` field to write it.
+     - The wizard saves this client's ID/secret as a comment at the bottom of `stack.yaml`. Copy it into Windmill manually.
    - For **GC Landing Page**:
      - **Callback URL**: `https://<domain>.guardianconnector.net/login`
      - **Allowed Web Origins**: `https://<domain>.guardianconnector.net`
-5. 🪄 Create a M2M application for metrics with a name like **GC Metrics**, and grant `read:users` and `read:stats` scopes to it. This authorizes the [GC Metrics script](https://github.com/ConservationMetrics/gc-scripts-hub/tree/main/f/metrics/guardianconnector) (which runs in Windmill) against the Auth0 Management API. Follow [**Setting up resources**](/caprover/INSTALL_GC_STACK.md#setting-up-resources) in the stack install guide to add these as a Windmill resource `oauth_client_credentials`. (The wizard prints this client's ID/secret once at the end of its run. Note it down, because there is no `stack.yaml` field to write it.)
+5. 🪄 Create a M2M application for metrics with a name like **GC Metrics**, and grant `read:users` and `read:stats` scopes to it. This authorizes the [GC Metrics script](https://github.com/ConservationMetrics/gc-scripts-hub/tree/main/f/metrics/guardianconnector) (which runs in Windmill) against the Auth0 Management API. Follow [**Setting up resources**](/caprover/INSTALL_GC_STACK.md#setting-up-resources) in the stack install guide to add these as a Windmill resource `oauth_client_credentials`. (The wizard saves this client's ID/secret as a comment at the bottom of `stack.yaml`. Copy it into Windmill manually.)
 6. 🪄 In **Actions**, configure Login Flow Actions for user approval and the roles claim. (See [Flows](#flows) below.)
 7. 🪄 Set up **Role-Based Access Control** for the applications that use it. (See [RBAC Configuration](#rbac-configuration) below.)
 8. **Sign in** to an auth0 application with at least one user, who will serve as the initial admin user and can manage approval and roles for others using GC Landing Page. This user should be given the **Admin** role, and be approved (see [Auth0 approval process](#auth0-approval-process) below.)

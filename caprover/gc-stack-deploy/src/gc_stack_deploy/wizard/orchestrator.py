@@ -141,8 +141,8 @@ def run_wizard(
     provision_windmill
         If True, also provision Windmill's Auth0 client. Like the GC Metrics
         M2M client, there is no stack.yaml field for it -- its id/secret are
-        printed for the operator to wire into Windmill's Auth0 SSO settings
-        out-of-band.
+        written as a comment at the bottom of stack.yaml for the operator to wire
+        into Windmill's Auth0 SSO settings out-of-band.
     """
     if dry_run:
         logger.info("DRY RUN: no Auth0 or stack.yaml changes will be made")
@@ -178,13 +178,12 @@ def run_wizard(
 
     logger.info("Ensuring GC Metrics M2M client")
     metrics_result = ensure_m2m_client(mgmt, name="GC Metrics")
+    # Secrets with no stack.yaml field; saved as a comment at the bottom of stack.yaml.
+    unsaved_secrets: list[str] = []
     if metrics_result.created and metrics_result.client_secret:
-        logger.info(
-            "GC Metrics M2M client created. There is no stack.yaml field for it -- "
-            "note this secret now, it will not be shown again:\n"
-            f"    client_id:     {metrics_result.client_id}\n"
-            f"    client_secret: {metrics_result.client_secret}\n"
-            "See auth0/README.md for wiring it into Windmill as a resource."
+        unsaved_secrets.append(
+            f"GC Metrics M2M client (Windmill resource): client_id={metrics_result.client_id} "
+            f"client_secret={metrics_result.client_secret}"
         )
 
     if provision_windmill:
@@ -197,12 +196,9 @@ def run_wizard(
             allowed_origins=windmill_spec["allowed_origins"],
         )
         if windmill_result.created and windmill_result.client_secret:
-            logger.info(
-                "Windmill Auth0 client created. There is no stack.yaml field for it -- "
-                "note this secret now, it will not be shown again:\n"
-                f"    client_id:     {windmill_result.client_id}\n"
-                f"    client_secret: {windmill_result.client_secret}\n"
-                "See auth0/README.md for wiring it into Windmill's Auth0 SSO settings."
+            unsaved_secrets.append(
+                f"Windmill Auth0 SSO client: client_id={windmill_result.client_id} "
+                f"client_secret={windmill_result.client_secret}"
             )
 
     scope_grants = [
@@ -224,4 +220,16 @@ def run_wizard(
     apply_root_domain_to_config(config, root_domain)
 
     dump_config(config, config_file)
+    if unsaved_secrets:
+        logger.warning(
+            "Auth0 only shows a client secret once. Secrets with no stack.yaml field "
+            f"were saved as a comment at the bottom of {config_file}; copy them "
+            "into Windmill (see auth0/README.md) and keep that file private."
+        )
+        with open(config_file, "a") as f:
+            f.write(
+                "\n# COPY THESE into Windmill (Auth0 won't show them again; see auth0/README.md)."
+                " Keep this file private:\n"
+                + "".join(f"# {line}\n" for line in unsaved_secrets)
+            )
     logger.info(f"Wrote {config_file}")
