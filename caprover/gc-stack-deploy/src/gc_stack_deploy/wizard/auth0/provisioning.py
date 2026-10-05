@@ -7,6 +7,7 @@ This module encodes a lot of business logic directly from /auth0/README.md in th
 """
 
 import logging
+import time
 from dataclasses import dataclass
 
 from .client import find_by_name
@@ -184,12 +185,40 @@ def ensure_roles(mgmt) -> dict[str, str]:
     return role_ids
 
 
+def _wait_until_built(mgmt, action_id: str, name: str) -> None:
+    """Block until an Action's latest version has finished building.
+
+    `deploy` kicks off an asynchronous build and returns immediately.
+    Call `_wait_until_built` to prevent a follow-up binding attempt to
+    error because the action was still "building".
+
+    See: https://support.auth0.com/center/s/article/Trying-to-create-a-binding-for-an-action-that-has-not-been-deployed-yet
+    """
+    ACTION_BUILD_TIMEOUT_SECONDS = 60
+    ACTION_BUILD_POLL_INTERVAL_SECONDS = 1
+
+    deadline = time.monotonic() + ACTION_BUILD_TIMEOUT_SECONDS
+    while True:
+        #  Poll `.get()` and check status.
+        status = mgmt.actions.get(action_id).status
+        if status == "built":
+            return
+        if status == "failed":
+            raise RuntimeError(f"Action {name!r} failed to build")
+        if time.monotonic() >= deadline:
+            raise TimeoutError(
+                f"Action {name!r} did not finish building within "
+                f"{ACTION_BUILD_TIMEOUT_SECONDS}s (last status: {status!r})"
+            )
+        time.sleep(ACTION_BUILD_POLL_INTERVAL_SECONDS)
+
+
 def _ensure_post_login_action(mgmt, name: str, code: str):
     """Create-or-update one Post-Login Action by name, then deploy it.
 
     Auth0 requires an explicit deploy before a code change to an Action takes
-    effect, so deploy is called unconditionally: a no-op when the code was
-    already deployed, required when it changed.
+    effect, so deploy is called unconditionally (it's a no-op when the code was
+    already deployed).
     """
     existing = find_by_name(
         mgmt.actions.list(trigger_id=POST_LOGIN_TRIGGER_ID, action_name=name), name
@@ -207,6 +236,7 @@ def _ensure_post_login_action(mgmt, name: str, code: str):
         action = mgmt.actions.create(name=name, **fields)
 
     mgmt.actions.deploy(action.id)
+    _wait_until_built(mgmt, action.id, name)
     return action
 
 

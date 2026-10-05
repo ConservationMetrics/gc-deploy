@@ -14,6 +14,7 @@ from gc_stack_deploy.wizard.auth0.provisioning import (
     ensure_roles,
     ensure_windmill_client,
 )
+from gc_stack_deploy.wizard.auth0 import provisioning
 
 
 def make_mgmt():
@@ -26,6 +27,9 @@ def make_mgmt():
     mgmt.actions.triggers.bindings.list.return_value = []
     # Auth0's update response reflects the (unchanged) id of the action updated.
     mgmt.actions.update.side_effect = lambda id, **kwargs: SimpleNamespace(id=id)
+    # By default, treat every action as already built so tests exercising
+    # other behavior don't need to care about the post-deploy build wait.
+    mgmt.actions.get.return_value = SimpleNamespace(status="built")
     return mgmt
 
 
@@ -250,3 +254,57 @@ class TestEnsurePostLoginActions:
         ensure_post_login_actions(mgmt)
 
         mgmt.actions.triggers.bindings.update_many.assert_not_called()
+
+
+class TestWaitUntilBuilt:
+    def test_returns_once_built(self, monkeypatch):
+        mgmt = make_mgmt()
+        mgmt.actions.get.side_effect = [
+            SimpleNamespace(status="pending"),
+            SimpleNamespace(status="building"),
+            SimpleNamespace(status="built"),
+        ]
+        sleeps = []
+        monkeypatch.setattr(provisioning.time, "sleep", sleeps.append)
+
+        provisioning._wait_until_built(mgmt, "action-id", "Some Action")
+
+        assert mgmt.actions.get.call_count == 3
+        # One sleep per non-built poll, at a constant positive interval.
+        assert len(sleeps) == 2
+        assert sleeps[0] == sleeps[1] > 0
+
+    def test_raises_on_failed_build(self, monkeypatch):
+        mgmt = make_mgmt()
+        mgmt.actions.get.return_value = SimpleNamespace(status="failed")
+        monkeypatch.setattr(provisioning.time, "sleep", lambda _: None)
+
+        with pytest.raises(RuntimeError, match="Some Action"):
+            provisioning._wait_until_built(mgmt, "action-id", "Some Action")
+
+    def test_raises_on_timeout(self, monkeypatch):
+        mgmt = make_mgmt()
+        mgmt.actions.get.return_value = SimpleNamespace(status="building")
+        monkeypatch.setattr(provisioning.time, "sleep", lambda _: None)
+        # Simulate the clock jumping past the deadline on the second check.
+        clock = iter([0, 1000])
+        monkeypatch.setattr(provisioning.time, "monotonic", lambda: next(clock))
+
+        with pytest.raises(TimeoutError, match="Some Action"):
+            provisioning._wait_until_built(mgmt, "action-id", "Some Action")
+
+    def test_ensure_post_login_action_waits_before_returning(self, monkeypatch):
+        mgmt = make_mgmt()
+        mgmt.actions.create.return_value = SimpleNamespace(id="action-id")
+        mgmt.actions.get.side_effect = [
+            SimpleNamespace(status="building"),
+            SimpleNamespace(status="built"),
+        ]
+        monkeypatch.setattr(provisioning.time, "sleep", lambda _: None)
+
+        action = provisioning._ensure_post_login_action(
+            mgmt, "Some Action", "code"
+        )
+
+        assert action.id == "action-id"
+        assert mgmt.actions.get.call_count == 2
