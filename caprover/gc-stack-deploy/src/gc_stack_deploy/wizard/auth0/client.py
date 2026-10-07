@@ -24,7 +24,12 @@ def get_management_client(
     token_response = GetToken(
         domain, m2m_client_id, client_secret=m2m_client_secret
     ).client_credentials(f"https://{domain}/api/v2/")
-    return Auth0(tenant_domain=domain, token=token_response["access_token"])
+    # The SDK retries 429s itself (honoring Retry-After / x-ratelimit-reset); default is 2.
+    return Auth0(
+        tenant_domain=domain,
+        token=token_response["access_token"],
+        max_retries=3,
+    )
 
 
 def find_by_name(items, name: str, key: str = "name"):

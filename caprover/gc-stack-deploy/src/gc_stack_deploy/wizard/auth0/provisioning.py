@@ -14,11 +14,11 @@ from .client import find_by_name
 
 logger = logging.getLogger(__name__)
 
-# Matches the role-creation list in auth0/README.md's Role Setup section
+# KEEP IN SYNC with  the role-creation list in auth0/README.md's Role Setup section
 # (Admin, Member, Guest, SignedIn).
 ROLE_NAMES = ["Admin", "Member", "Guest", "SignedIn"]
 
-# Verbatim copy from auth0/README.md's "Check Approval" Post-Login Action
+# KEEP IN SYNC with verbatim copy in auth0/README.md's "Check Approval" Post-Login Action.
 CHECK_APPROVAL_ACTION_NAME = "Check Approval"
 CHECK_APPROVAL_ACTION_CODE = """\
 exports.onExecutePostLogin = async (event, api) => {
@@ -31,7 +31,7 @@ exports.onExecutePostLogin = async (event, api) => {
 };
 """
 
-# Verbatim copy from auth0/README.md's "Add Roles Claim" Post-Login Action.
+# KEEP IN SYNC with verbatim copy in auth0/README.md's "Add Roles Claim" Post-Login Action.
 ADD_ROLES_CLAIM_ACTION_NAME = "Add Roles Claim"
 ADD_ROLES_CLAIM_ACTION_CODE = """\
 exports.onExecutePostLogin = async (event, api) => {
