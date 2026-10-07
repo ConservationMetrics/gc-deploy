@@ -16,10 +16,8 @@ You will need a Google Cloud Platform (GCP) OAuth 2.0 Client in order to [avoid 
 - If you already have a GCP OAuth 2.0 Client, then you can add the authorized JavaScript origin and redirect URI for your new tenant (per the formats above).
   - You can find your client by navigating to **APIS & Services** -> **OAuth consent screen** -> **Clients**.
 - Add the following settings:
-  _ Authorized JavaScript origins:
-  `https://<tenant>.us.auth0.com`
-  _ Authorized redirect URIs:
-  `https://<tenant>.us.auth0.com/login/callback`
+  - Authorized JavaScript origins: `https://<tenant>.us.auth0.com`
+  - Authorized redirect URIs: `https://<tenant>.us.auth0.com/login/callback`
 - Copy down the Client ID and Secret for your client.
 
 ## Auth0 tenant configuration, step by step
