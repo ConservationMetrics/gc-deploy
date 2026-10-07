@@ -211,7 +211,7 @@ Machine-to-Machine application you create once per tenant:
    binding them into the Login flow). The wizard never needs to read or modify users.
 
    If you skipped this dialog, you can authorize later: **Applications** → **APIs** →
-   **Auth0 Management API** → **Machine To Machine Applications** tab, toggle **gc-stack-deploy** on,
-   and expand it to check the permissions above.
+   **Auth0 Management API** → **Application Access** tab, click the **Edit** button next to
+   **gc-stack-deploy**, and on its **Client Access** tab check the permissions above.
 5. Click **Authorize**, then on the application's **Settings** tab copy the **Domain**, **Client ID**,
    and **Client Secret**. The wizard will prompt for these.
