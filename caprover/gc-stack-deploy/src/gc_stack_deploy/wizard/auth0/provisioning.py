@@ -234,6 +234,9 @@ def _ensure_post_login_action(mgmt, name: str, code: str):
         logger.info(f"Creating Post-Login Action {name!r}")
         action = mgmt.actions.create(name=name, **fields)
 
+    # create/update only save a draft, which Auth0 builds asynchronously;
+    # `deploy` returns 400 unless the draft is already in the "built" state.
+    _wait_until_built(mgmt, action.id, name)
     mgmt.actions.deploy(action.id)
     _wait_until_built(mgmt, action.id, name)
     return action
