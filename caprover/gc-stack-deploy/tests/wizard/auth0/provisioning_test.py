@@ -293,13 +293,21 @@ class TestWaitUntilBuilt:
         with pytest.raises(TimeoutError, match="Some Action"):
             provisioning._wait_until_built(mgmt, "action-id", "Some Action")
 
-    def test_ensure_post_login_action_waits_before_returning(self, monkeypatch):
+    def test_ensure_post_login_action_waits_before_deploy_and_before_returning(
+        self, monkeypatch
+    ):
         mgmt = make_mgmt()
         mgmt.actions.create.return_value = SimpleNamespace(id="action-id")
-        mgmt.actions.get.side_effect = [
-            SimpleNamespace(status="building"),
-            SimpleNamespace(status="built"),
-        ]
+        events = []
+        statuses = iter(["pending", "built", "building", "built"])
+
+        def fake_get(_id):
+            status = next(statuses)
+            events.append(f"get:{status}")
+            return SimpleNamespace(status=status)
+
+        mgmt.actions.get.side_effect = fake_get
+        mgmt.actions.deploy.side_effect = lambda _id: events.append("deploy")
         monkeypatch.setattr(provisioning.time, "sleep", lambda _: None)
 
         action = provisioning._ensure_post_login_action(
@@ -307,4 +315,11 @@ class TestWaitUntilBuilt:
         )
 
         assert action.id == "action-id"
-        assert mgmt.actions.get.call_count == 2
+        # The draft must be "built" before deploy, and deploy must finish building.
+        assert events == [
+            "get:pending",
+            "get:built",
+            "deploy",
+            "get:building",
+            "get:built",
+        ]
