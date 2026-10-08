@@ -2,8 +2,10 @@ caproverUrl: "http[s]://captain.your-gc-domain.net" # Remove the brackets if usi
 caproverPassword: "secret-captain-password" # Set a secure password!
 
 # Shared values — set once, referenced below with *name (YAML anchors).
-auth0_domain: &auth0_domain # your Auth0 tenant host, e.g. "your-tenant.us.auth0.com"
-community_name: &community_name # URL slug / alias, e.g. "springfield" in "springfield.your-gc-domain.net"
+# your Auth0 tenant host, e.g. "YOUR-TENANT.us.auth0.com"
+auth0_domain: &auth0_domain "YOUR-TENANT.us.auth0.com"
+# URL slug / alias, e.g. "springfield" in "springfield.your-gc-domain.net"
+community_name: &community_name "YOUR-COMMUNITY-NAME"
 
 postgres:
   # REQUIRED in all cases:

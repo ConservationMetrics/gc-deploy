@@ -109,3 +109,26 @@ class TestApplyRootDomainToConfig:
         del config["gc-landing-page"]
         apply_root_domain_to_config(config, "springfield.guardianconnector.net")
         assert "gc-landing-page" not in config
+
+
+class TestDumpedExampleLayout:
+    """Regression: comments after empty anchored values used to drift onto the
+    following line once the wizard replaced the value, and `community_name`
+    was left null."""
+
+    def test_comments_stay_above_shared_keys_and_values_are_set(self):
+        config = load_example_config()
+        apply_auth0_client_results_to_config(
+            config, domain="example.us.auth0.com", client_results={}
+        )
+        buf = io.StringIO()
+        YAML().dump(config, buf)
+        lines = buf.getvalue().splitlines()
+
+        for key in ("auth0_domain", "community_name"):
+            idx = next(i for i, ln in enumerate(lines) if ln.startswith(f"{key}:"))
+            assert lines[idx - 1].startswith("# "), f"comment not above {key}"
+            assert "#" not in lines[idx], f"stray trailing comment on {key}"
+            assert not lines[idx].rstrip().endswith(":"), f"{key} has no value"
+
+        assert config["community_name"]
