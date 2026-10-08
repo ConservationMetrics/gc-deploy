@@ -91,5 +91,6 @@ def dump_config(config, file_path) -> None:
     """
     ryaml = YAML()
     ryaml.preserve_quotes = True
+    ryaml.width = 4096  # Avoid folding long lines
     with open(file_path, "w") as f:
         ryaml.dump(config, f)
