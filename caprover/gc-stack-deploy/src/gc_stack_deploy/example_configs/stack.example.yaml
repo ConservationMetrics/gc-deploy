@@ -2,8 +2,12 @@ caproverUrl: "http[s]://captain.your-captain-root.net" # Remove the brackets if 
 caproverPassword: "secret-captain-password" # Set a secure password!
 
 # Shared values — set once, referenced below with *name (YAML anchors).
-auth0_domain: &auth0_domain # your Auth0 tenant host, e.g. "your-tenant.us.auth0.com"
-community_name: &community_name # URL slug / alias, e.g. "springfield" in "springfield.your-captain-root.net"
+auth0_domain:
+  &auth0_domain # your Auth0 tenant host, e.g. "your-tenant.us.auth0.com"
+
+community_name:
+  &community_name # URL slug / alias, e.g. "springfield" in "springfield.your-captain-root.net"
+
 
 postgres:
   # REQUIRED in all cases:
@@ -62,8 +66,6 @@ gc-landing-page:
   filebrowser_enabled: true
   windmill_enabled: true
   explorer_enabled: true
-  logo_url: # If you want to add a logo; can also be set later
-  background_image_url: # If you want to add a background image; can also be set later
 
 gc-explorer:
   app_name: explorer # IMPORTANT so that your app doesn't get deployed as "gcexplorer"
