@@ -14,7 +14,6 @@ It covers the manual steps that are not already automated through the scripts an
 
 ### CapRover
 
-- [ ] Did I set up the Guardian Connector 3rd party repository?
 - [ ] Did I deploy all required apps?
 - [ ] Did I configure environment variables and settings for each app correctly? (c.f. [caprover/INSTALL_GC_STACK.md#post-install-app-configuration](caprover/INSTALL_GC_STACK.md#post-install-app-configuration))
 - [ ] Did I store the CapRover admin password in KeePass?
@@ -28,7 +27,7 @@ It covers the manual steps that are not already automated through the scripts an
 
 ### Superset
 
-- [ ] Did I set a Mapbox API key and a logo in the environment variables?
+- [ ] Did I set a Mapbox API key environment variable?
 - [ ] Did I copy down the `SECRET_KEY` from the environment variables and store it in KeePass?
 - [ ] Did I successfully log in as the initial admin account using auth0?
 - [ ] If someone else will be the main Guardian Connector admin, did I have them sign in and upgrade their role to Admin? (Yes, this is distinct from the Landing Page / auth0 RBAC step above)
@@ -50,12 +49,11 @@ It covers the manual steps that are not already automated through the scripts an
   - [ ] Twilio message template
   - [ ] GFW API key
   - [ ] GCP service account
-  - [ ] [Local Contexts](https://localcontextshub.org)
+  - [ ] Local Contexts
   - [ ] CoMapeo archive server
   - [ ] Oauth client credentials for metrics (**GC Metrics** M2M app in Auth0)
 - [ ] Did I schedule the [`guardianconnector_metrics`](https://github.com/ConservationMetrics/gc-scripts-hub/blob/main/f/metrics/guardianconnector/README.md) script to run once a month?
 - [ ] Did I invite other required admin users to the Windmill instance and workspace?
-- [ ] Did I set up operator users with the appropriate permissions (e.g. [disable all settings except Runs and Schedules](https://docs.guardianconnector.net/reference/gc-toolkit/gc-scripts-hub/user-roles#configuring-operator-roles))?
 - [ ] Did I add the group `g/all` to all of the folders containing the workspace scripts, flows, and apps (e.g. `export`, `connectors`, `apps`)?
 - [ ] For Windmill connector and metrics resources, did I follow [**Setting up resources**](caprover/INSTALL_GC_STACK.md#setting-up-resources) in the stack install guide?
 

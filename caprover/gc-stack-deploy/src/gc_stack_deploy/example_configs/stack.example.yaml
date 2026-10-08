@@ -62,8 +62,6 @@ gc-landing-page:
   filebrowser_enabled: true
   windmill_enabled: true
   explorer_enabled: true
-  logo_url: # If you want to add a logo; can also be set later
-  background_image_url: # If you want to add a background image; can also be set later
 
 gc-explorer:
   app_name: explorer # IMPORTANT so that your app doesn't get deployed as "gcexplorer"
