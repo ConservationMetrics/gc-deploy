@@ -124,8 +124,20 @@ def _pre_pull_windmill_image(variables: dict, gc_repository: str) -> None:
         gc_repository
     )
     logger.info(f"Pre-pulling Windmill image {image!r} to avoid CapRover timeout ...")
-    subprocess.run(["docker", "pull", image], check=True)
-    logger.info("Windmill image pre-pull complete.")
+    try:
+        # Capture & redirect stdout/stderr to logger.
+        # This way, when we're running in a TUI, `docker pull`'s output won't clobber the app.
+        result = subprocess.run(
+            ["docker", "pull", "--quiet", image],
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        logger.error(f"docker pull failed:\n{e.stderr.strip()}")
+        raise
+    logger.info(f"Windmill image pre-pull complete ({result.stdout.strip()}).")
 
 
 class PostgresApp(AppSpec):
