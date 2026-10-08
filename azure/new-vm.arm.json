@@ -264,7 +264,7 @@
             "caching": "ReadWrite",
             "createOption": "FromImage",
             "deleteOption": "Delete",
-            "diskSizeGB": 30,
+            "diskSizeGB": 64,
             "managedDisk": {
               "storageAccountType": "StandardSSD_LRS"
             },

@@ -5,7 +5,7 @@
 ### I. Create a Droplet with the CapRover image
 
 1. Create a Droplet with the **"CapRover in Ubuntu"** image from DigitalOcean's marketplace; we suggest to use the big blue "Create a Droplet" button on CapRover's own [Getting Started](https://caprover.com/docs/get-started.html) guide to preselect the right Image.
-2. Pick an appropriate size for your Droplet such as a Shared CPU with 2 vCPUs, 4 GB Memory, and a 35 GB Disk.
+2. Pick an appropriate size for your Droplet such as a Shared CPU with 2 vCPUs, 4 GB Memory. The standard 32 GB OS disk may not be enough for both the OS and the Guardian Connector Docker images etc, so you may want to add a separate data disk of another 32 GB.
 3. For Authentication Method: **SSH Key** for best security.
 
 > [!CAUTION]

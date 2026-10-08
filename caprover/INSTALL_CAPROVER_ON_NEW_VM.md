@@ -18,7 +18,7 @@ in Azure or DigitalOcean — in which case **you may skip the rest of the docume
 > [!IMPORTANT]
 > Your VM should be set up with sufficient CPU processing power, RAM, and disk storage.
 >
-> Our current default for the Guardian Connector stack is a VM with 2 vCPUs, 4 GB Memory, and a 35 GB Disk.
+> Our current default for the Guardian Connector stack is a VM with 2 vCPUs, 4 GB Memory, and a 64 GB Disk.
 >
 > Anything less than that may run into performance issues, or the applications may not start at all.
 
