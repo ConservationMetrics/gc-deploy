@@ -166,8 +166,7 @@ class AppSelectionScreen(WizardScreen):
                         id=f"chk_{app_key}",
                     )
                 yield Checkbox(
-                    "Windmill (no stack.yaml field -- id/secret are saved as a comment at the bottom of stack.yaml for you"
-                    " to wire in manually)",
+                    "Windmill",
                     value="windmill-only" in self.app.config,
                     id="chk_windmill",
                 )
