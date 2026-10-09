@@ -16,7 +16,7 @@
      - CMI's convention is to use `guardian-<alias>` for the resource group name, where `<alias>` is the alias chosen by the community.
    - **Region:** Where will this stack be hosted? e.g. for data about Brazil, choose "`Brazil South`" to adhere to [Brazilian Data Protection Laws](https://www.gov.br/esporte/pt-br/acesso-a-informacao/lgpd). The Instance (VM) "Region" will be same as the Resource group's region.
    - **Create Storage Account / Storage Account Name:** See ["Configuring Azure Files"](#configuring-azure-files-optional) below.
-     - CMI's convention is to use `guardian-<alias>` for the storage account name.
+     - CMI's convention is to use `<alias>` for the storage account name, and `guardian-<alias>` for the folder.
    - **Select SSH Public Key Source:** Select "Generate new key pair" to generate a new SSH key pair, or select "Use existing key pair stored in Azure" (which is what CMI does to avoid having to manage SSH keys in multiple places).
    - **Backup Vault Name / Backup Vault Resource Group:** (Optional) To enable automated disk backups, provide the name of an existing Recovery Services Vault and its resource group. The vault must be in the same region as the VM. To find existing vaults: [Azure Portal > Recovery Services vaults](https://portal.azure.com/#browse/Microsoft.RecoveryServices%2Fvaults), then note the vault's Name and Resource Group. Leave blank to skip automatic backup configuration. See also ["VM Backups"](#vm-backups) below.
 3. Click "Review + Create". Wait for deployment (about 2 minutes).
