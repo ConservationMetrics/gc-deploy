@@ -171,7 +171,9 @@ See our ["Recover from Backup"](backup-recovery.md) documentation to recover fro
 
 ### File Share Backups
 
-If you have enabled soft delete for the file share, you can recover deleted files within a certain retention period (default is 7 days). See [Restore soft deleted file share](https://learn.microsoft.com/en-us/azure/storage/files/storage-files-prevent-file-share-deletion?tabs=azure-portal#restore-soft-deleted-file-share) from Azure's documentation for more details on how to do it.
+If you have enabled soft delete for the file share, you can recover deleted files within a certain retention period. By default, soft delete is enabled and set to 7 days on Azure File Shares.
+
+See [Restore soft deleted file share](https://learn.microsoft.com/en-us/azure/storage/files/storage-files-prevent-file-share-deletion?tabs=azure-portal#restore-soft-deleted-file-share) from Azure's documentation for more details.
 
 ## 🛠️ Building the Template
 
