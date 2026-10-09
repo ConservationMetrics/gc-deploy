@@ -238,16 +238,18 @@ No additional steps needed.
 
 #### For first-time login:
 
+When you are prompted to "Configure instance settings to get started", click "Advanced Setup".
+
 Instance Settings Page
 
-- **Core** tab
-  - Default timeout = 30 Min
-  - Retention period in secs= 2592000 (30 Days)
+- **Core > Jobs** tab
+  - **Default timeout** for individual jobs = 30 Min
 
-- **Telemetry** tab > Disable telemetry
+- **Advanced > Telemetry** tab
+  - Disable telemetry
 
-- **Auth/OAuth** tab > If you plan to use SSO, enable auth0 (or your
-  provider of choice) and enter your organization and app client variables.
+- **Authentication > SSO** tab
+  - If you plan to use SSO, enable **auth0** (or your provider of choice) and enter your organization and app client variables.
 
   Note: after a domain-approved user has registered with SSO, they must be
   manually added to workspaces by an instance admin.
