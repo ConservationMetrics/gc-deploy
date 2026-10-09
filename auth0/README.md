@@ -193,24 +193,25 @@ Machine-to-Machine application you create once per tenant:
 2. Name it **gc-stack-deploy**, choose **Machine to Machine Applications**, and click **Create**.
 3. In the **Authorize Machine to Machine Application** dialog that follows, select the
    **Auth0 Management API** from the dropdown.
-4. The permissions list that expands is very long. Check **only** the 14 permissions below and leave
+4. The permissions list that expands is very long. Check **only** the 15 permissions below and leave
    everything else unchecked. They are listed in the order they appear in the dashboard.
    You can also type each resource name (e.g. `client_grants`) into the **Filter Permissions** box.
 
-   | Resource        | Permissions to check                                            |
-   |-----------------|-----------------------------------------------------------------|
-   | `client_grants` | `read:client_grants`, `create:client_grants`, `update:client_grants` |
-   | `clients`       | `read:clients`, `update:clients`, `create:clients`              |
-   | `connections`   | `read:connections`, `update:connections`, `create:connections`  |
-   | `actions`       | `read:actions`, `update:actions`, `create:actions`              |
-   | `roles`         | `read:roles`, `create:roles`                                    |
+   | Resource              | Permissions to check                                                 |
+   |-----------------------|----------------------------------------------------------------------|
+   | `client_grants`       | `read:client_grants`, `update:client_grants`, `create:client_grants` |
+   | `clients`             | `read:clients`, `update:clients`, `create:clients`                   |
+   | `connections`         | `read:connections`, `update:connections`, `create:connections`       |
+   | `connections_options` | `update:connections_options`                                         |
+   | `actions`             | `read:actions`, `update:actions`, `create:actions`                   |
+   | `roles`               | `read:roles`, `create:roles`                                         |
 
    These let the wizard create and update applications and their Management API grants, the
    google-oauth2 connection, the RBAC roles, and the Post-Login Actions (including deploying and
    binding them into the Login flow). The wizard never needs to read or modify users.
 
    If you skipped this dialog, you can authorize later: **Applications** → **APIs** →
-   **Auth0 Management API** → **Machine To Machine Applications** tab, toggle **gc-stack-deploy** on,
-   and expand it to check the permissions above.
+   **Auth0 Management API** → **Application Access** tab, click the **Edit** button next to
+   **gc-stack-deploy**, and on its **Client Access** tab check the permissions above.
 5. Click **Authorize**, then on the application's **Settings** tab copy the **Domain**, **Client ID**,
    and **Client Secret**. The wizard will prompt for these.
