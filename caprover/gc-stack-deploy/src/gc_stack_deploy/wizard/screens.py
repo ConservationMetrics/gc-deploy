@@ -23,14 +23,8 @@ from textual.widgets import (
 )
 
 from ..gui import RichLogHandler
-from .orchestrator import client_spec_for_app, run_wizard
-from .yaml_writer import load_config
-
-SELECTABLE_APPS = [
-    ("gc-landing-page", "GC Landing Page"),
-    ("gc-explorer", "GC-Explorer"),
-    ("superset-only", "Superset"),
-]
+from .orchestrator import APP_DISPLAY_NAMES, client_spec_for_app, run_wizard
+from .yaml_writer import AUTH0_DOMAIN_APPS, load_config
 
 TOTAL_STEPS = 5
 
@@ -159,9 +153,9 @@ class AppSelectionScreen(WizardScreen):
                 "and the Post-Login Actions are tenant-wide and always provisioned.)"
             )
             with VerticalScroll():
-                for app_key, display_name in SELECTABLE_APPS:
+                for app_key in AUTH0_DOMAIN_APPS:
                     yield Checkbox(
-                        display_name,
+                        APP_DISPLAY_NAMES[app_key],
                         value=app_key in self.app.config,
                         id=f"chk_{app_key}",
                     )
@@ -179,7 +173,7 @@ class AppSelectionScreen(WizardScreen):
             return
         selected = [
             app_key
-            for app_key, _ in SELECTABLE_APPS
+            for app_key in AUTH0_DOMAIN_APPS
             if self.query_one(f"#chk_{app_key}", Checkbox).value
         ]
         self.app.wizard_data["selected_apps"] = selected

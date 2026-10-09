@@ -36,8 +36,9 @@ def _anchored(value: str, anchor_name: str) -> PlainScalarString:
     return s
 
 
-# Apps that carry an `auth0_domain` field aliased to the shared top-level value.
-AUTH0_DOMAIN_APPS = ("superset-only", "gc-landing-page", "gc-explorer")
+# Apps with `auth0_domain`, `auth0_client_id` and `auth0_client_secret` fields
+# in stack.yaml. These are also the wizard's app checkboxes, in checkbox order.
+AUTH0_DOMAIN_APPS = ("gc-landing-page", "gc-explorer", "superset-only")
 
 
 def apply_auth0_client_results_to_config(
