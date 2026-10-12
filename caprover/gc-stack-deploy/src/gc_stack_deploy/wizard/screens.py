@@ -205,7 +205,7 @@ class RootDomainScreen(WizardScreen):
             yield Input(
                 value=self.app.config.get("gc-landing-page", {}).get("root_domain")
                 or "",
-                placeholder="example.net",
+                placeholder="guardianconnector.net",
                 id="root_domain",
             )
             yield Button("Run", id="run", variant="primary")
