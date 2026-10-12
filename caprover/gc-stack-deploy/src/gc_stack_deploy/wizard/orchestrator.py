@@ -50,6 +50,18 @@ APP_DISPLAY_NAMES = {
 }
 
 
+def landing_host(community_name: str, root_domain: str) -> str:
+    """Hostname the landing page is served at.
+
+    ``root_domain`` is the parent domain (``example.net``), not the full host.
+    Returns ``<community_name>.<root_domain>``, or just ``root_domain`` when
+    ``community_name`` is blank.
+    """
+    alias = community_name.strip().strip(".")
+    parent = root_domain.strip().strip(".")
+    return f"{alias}.{parent}" if alias else parent
+
+
 def client_spec_for_app(app_key: str, config: dict, root_domain: str) -> dict:
     """Callback/origin URLs to set one app's Auth0 client.
 
@@ -57,17 +69,19 @@ def client_spec_for_app(app_key: str, config: dict, root_domain: str) -> dict:
     gc-landing-page, which (via its default redirect_to_root: true) is served
     directly at the root domain.
     """
+    community_name = str(config.get("community_name") or "")
+    root = landing_host(community_name, root_domain)
     if app_key == "gc-landing-page":
         return {
             "name": APP_DISPLAY_NAMES[app_key],
             "app_type": "regular_web",
-            "callbacks": [f"https://{root_domain}/login"],
-            "web_origins": [f"https://{root_domain}"],
-            "allowed_origins": [f"https://{root_domain}"],
+            "callbacks": [f"https://{root}/login"],
+            "web_origins": [f"https://{root}"],
+            "allowed_origins": [f"https://{root}"],
         }
     if app_key == "superset-only":
         app_name = config.get(app_key, {}).get("app_name", "superset")
-        host = f"{app_name}.{root_domain}"
+        host = f"{app_name}.{root}"
         return {
             "name": APP_DISPLAY_NAMES[app_key],
             "app_type": "regular_web",
@@ -80,7 +94,7 @@ def client_spec_for_app(app_key: str, config: dict, root_domain: str) -> dict:
         }
     if app_key == "gc-explorer":
         app_name = config.get(app_key, {}).get("app_name", "explorer")
-        host = f"{app_name}.{root_domain}"
+        host = f"{app_name}.{root}"
         return {
             "name": APP_DISPLAY_NAMES[app_key],
             "app_type": "regular_web",
@@ -90,7 +104,7 @@ def client_spec_for_app(app_key: str, config: dict, root_domain: str) -> dict:
         }
     if app_key == "windmill-only":
         app_name = config.get(app_key, {}).get("app_name", "windmill")
-        host = f"{app_name}.{root_domain}"
+        host = f"{app_name}.{root}"
         return {
             "name": APP_DISPLAY_NAMES[app_key],
             "app_type": "regular_web",
