@@ -1,4 +1,5 @@
 """The run_wizard function dictates the end-to-end wizard order:
+0. (in screens.py, before run_wizard) get a Management API access token for an M2M app
 1. provisioning of auth0 configs
 2. writes the auth0 credentials to stack.yaml.
 """
@@ -125,8 +126,7 @@ def run_wizard(
     config_file: str,
     *,
     domain: str,
-    bootstrap_client_id: str,
-    bootstrap_client_secret: str,
+    access_token: str,
     selected_apps: list[str],
     root_domain: str,
     gcp_client_id: str | None = None,
@@ -143,6 +143,9 @@ def run_wizard(
         WARNING: This object will be mutated in place.
     config_file
         Path to write the mutated config to.
+    access_token
+        Management API access token for `domain`, with at least the scopes in
+        auth0/m2m_app.py's MANAGEMENT_SCOPES.
     root_domain
         Domain the stack is served at; each app's Auth0 callback/origin URLs
         are built from it (see client_spec_for_app).
@@ -163,7 +166,7 @@ def run_wizard(
         return
 
     logger.info(f"Authenticating to Auth0 tenant {domain!r}")
-    mgmt = get_management_client(domain, bootstrap_client_id, bootstrap_client_secret)
+    mgmt = get_management_client(domain, access_token)
 
     if gcp_client_id and gcp_client_secret:
         logger.info("Provisioning google-oauth2 social connection")

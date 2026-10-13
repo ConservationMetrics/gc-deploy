@@ -5,7 +5,8 @@ pydantic response models (attribute access, not dict access), and `.list()`
 returning an auto-paginating, directly-iterable `SyncPager`.
 
 Example:
-    mgmt = get_management_client(domain, m2m_client_id, m2m_client_secret)
+    access_token = get_m2m_access_token(domain, client_id, client_secret)
+    mgmt = get_management_client(domain, access_token)
     existing = find_by_name(mgmt.clients.list(), "Superset")
     if existing:
         mgmt.clients.update(existing.client_id, callbacks=[...])
@@ -17,19 +18,18 @@ from auth0.authentication import GetToken
 from auth0.management import Auth0
 
 
-def get_management_client(
-    domain: str, m2m_client_id: str, m2m_client_secret: str
-) -> Auth0:
-    """Authenticate the bootstrap M2M application and return a ready Management API client."""
+def get_m2m_access_token(domain: str, client_id: str, client_secret: str) -> str:
+    """Exchange an M2M application's credentials for a Management API access token."""
     token_response = GetToken(
-        domain, m2m_client_id, client_secret=m2m_client_secret
+        domain, client_id, client_secret=client_secret
     ).client_credentials(f"https://{domain}/api/v2/")
+    return token_response["access_token"]
+
+
+def get_management_client(domain: str, access_token: str) -> Auth0:
+    """Return a ready Management API client that authenticates with `access_token`."""
     # The SDK retries 429s itself (honoring Retry-After / x-ratelimit-reset); default is 2.
-    return Auth0(
-        tenant_domain=domain,
-        token=token_response["access_token"],
-        max_retries=3,
-    )
+    return Auth0(tenant_domain=domain, token=access_token, max_retries=3)
 
 
 def find_by_name(items, name: str, key: str = "name"):

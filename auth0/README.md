@@ -25,8 +25,6 @@ You will need a Google Cloud Platform (GCP) OAuth 2.0 Client in order to [avoid 
 > [!TIP]
 >
 > Steps 3, 4, 5, 6, and 7 below can be automated by running `gc-stack-deploy wizard -c stack.yaml`. These are indicated by 🪄 below.
-> You'll first need to ["Bootstrap M2M application for the wizard"](#appendix-bootstrap-m2m-application-for-the-wizard)
-> to run the wizard.
 
 > [!WARNING]
 >
@@ -184,8 +182,13 @@ In addition to GC Explorer and GC Landing Page, we host several third party appl
 
 ## Appendix: Bootstrap M2M application for the wizard
 
-`gc-stack-deploy wizard` talks to the Auth0 Management API on your behalf, authenticated as a
-Machine-to-Machine application you create once per tenant:
+`gc-stack-deploy wizard` talks to the Auth0 Management API on your behalf, authenticated
+as a Machine-to-Machine (M2M) application to create application clients, Social Connection, RBAC, and Actions.
+Normally creates the temporary M2M app by itself, using the Auth0 CLI (you approve a login in your browser).
+When that works, you don't need the rest of this section.
+
+If the CLI can't be downloaded or your tenant uses a custom domain, you can create the M2M app
+by hand and enter its credentials in the wizard instead:
 
 1. Go to the Auth0 dashboard, **Applications** → **Applications** → **+ Create Application**.
 2. Name it **gc-stack-deploy**, choose **Machine to Machine Applications**, and click **Create**.
@@ -213,3 +216,10 @@ Machine-to-Machine application you create once per tenant:
    **gc-stack-deploy**, and on its **Client Access** tab check the permissions above.
 5. Click **Authorize**, then on the application's **Settings** tab copy the **Domain**, **Client ID**,
    and **Client Secret**. The wizard will prompt for these.
+6. When the wizard finishes, delete the application.
+
+> [!WARNING]
+>
+> `create:client_grants` and `update:client_grants` let this application grant itself any other Management
+> API permission, so treat its client secret as full administrator access to the tenant. (The temporary
+> application the wizard creates by itself has the same power, which is why the wizard deletes it.)
