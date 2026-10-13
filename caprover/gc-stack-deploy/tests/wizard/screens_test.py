@@ -96,6 +96,17 @@ async def wait_until(pilot, condition, timeout=5.0):
         await pilot.pause(0.05)
 
 
+async def wait_for_google_screen(pilot):
+    """Wait until GoogleSocialScreen is showing and settled.
+
+    Quitting earlier fails app shutdown with NoMatches: the new Header's title updates are
+    queued on the app (see Header._on_mount), and if they run after its screen is removed
+    they can't find their HeaderTitle. pilot.pause() lets those queued callbacks run first.
+    """
+    await wait_until(pilot, lambda: isinstance(pilot.app.screen, GoogleSocialScreen))
+    await pilot.pause()
+
+
 async def start_login(pilot, domain=DOMAIN):
     form = pilot.app.screen.query_one("#login_form")
     await wait_until(pilot, lambda: form.display)
@@ -120,7 +131,7 @@ def test_login_shows_code_then_continues_with_token_in_memory(config_file, monke
             assert app.screen.query_one("#login", Button).disabled
 
             FakeLogin.approve.set()
-            await wait_until(pilot, lambda: isinstance(app.screen, GoogleSocialScreen))
+            await wait_for_google_screen(pilot)
             assert app.wizard_data["domain"] == DOMAIN
             assert app.wizard_data["access_token"] == "the-token"
             assert app.wizard_data["temp_app"].client_id == "cid"
@@ -230,7 +241,7 @@ def test_manual_m2m_credentials_give_a_token_without_a_temporary_app(
         app = WizardApp(config_file)
         async with app.run_test(size=(120, 50)) as pilot:
             await use_m2m_credentials(pilot, domain=DOMAIN)
-            await wait_until(pilot, lambda: isinstance(app.screen, GoogleSocialScreen))
+            await wait_for_google_screen(pilot)
             assert app.wizard_data["domain"] == DOMAIN
             assert app.wizard_data["access_token"] == "the-token"
             assert app.wizard_data["temp_app"] is None
