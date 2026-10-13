@@ -55,7 +55,7 @@ gc-landing-page:
   redirect_to_root: true # make gc-landing-page the landing page when no subdomain specified
   ### REQUIRED:
   community_name: *community_name
-  root_domain: # the domain the stack is served at, e.g. "springfield.guardianconnector.net". Other apps get subdomains of it.
+  root_domain: # parent domain after the community name alias, e.g. "guardianconnector.net". The stack is served at <community_name>.<root_domain>.
   auth0_domain: *auth0_domain
   auth0_client_id:
   auth0_client_secret:

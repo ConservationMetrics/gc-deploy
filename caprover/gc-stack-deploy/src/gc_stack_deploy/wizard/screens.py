@@ -183,28 +183,29 @@ class AppSelectionScreen(WizardScreen):
 
 
 class RootDomainScreen(WizardScreen):
-    """Collect the root domain that the Auth0 clients' callback URLs are built from."""
+    """Collect the root domain after the community alias."""
 
     STEP = 4
 
     def compose(self) -> ComposeResult:
+        alias = self.app.config.get("community_name") or "<alias>"
         yield Header()
         with Vertical(id="form"):
             yield Static(
-                "Enter the root domain your Guardian Connector stack will be served at (without https protocol prefix)."
+                f"Enter the root domain your Guardian Connector stack will be served at, after the community alias {alias}, "
+                "without an https:// prefix."
             )
             yield Static(
-                "GC Landing Page is served at the root domain itself, and every "
-                "other app at its own subdomain of it. Each Auth0 client's "
-                "callback URL and allowed origins are set to these addresses, so "
-                "they must match where the apps will be reachable:"
+                f"The landing page is served at {alias}.<root domain>, and every "
+                f"other app at <app>.{alias}.<root domain>. Auth0 callback URLs "
+                "are set to these addresses:"
             )
             yield Static("", id="hosts_preview", markup=False)
             yield Label("Root domain")
             yield Input(
                 value=self.app.config.get("gc-landing-page", {}).get("root_domain")
                 or "",
-                placeholder="springfield.guardianconnector.net",
+                placeholder="guardianconnector.net",
                 id="root_domain",
             )
             yield Button("Run", id="run", variant="primary")
@@ -240,7 +241,7 @@ class RootDomainScreen(WizardScreen):
         root_domain = self.query_one("#root_domain", Input).value.strip()
         if not root_domain or any(c in root_domain for c in "/: "):
             self.notify(
-                "Enter a bare domain name, e.g. springfield.guardianconnector.net",
+                "Enter a bare domain name, e.g. example.net",
                 severity="error",
             )
             return

@@ -222,7 +222,7 @@ The `gc-stack-deploy` handles this for you, but if you are setting up the app us
 
 ### Guardian Connector Landing Page
 
-`NUXT_PUBLIC_DOMAIN` should be the domain suffix that follows the community alias (for example, `guardianconnector.net`).
+`NUXT_PUBLIC_ROOT_DOMAIN` is the domain after the community alias (for example, `guardianconnector.net`). The landing page builds its own URL as `https://<NUXT_PUBLIC_COMMUNITY_NAME>.<NUXT_PUBLIC_ROOT_DOMAIN>`.
 
 The landing page uses the same PostgreSQL server as Guardian Connector Explorer.
 `gc-stack-deploy` creates its `guardianconnector` configuration database before
