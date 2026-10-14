@@ -23,6 +23,7 @@ It covers the manual steps that are not already automated through the scripts an
 
 ### Landing Page
 
+- [ ] Did I approve the first user and make them an Admin in the Auth0 portal? (See [Auth0 approval process](auth0/README.md#auth0-approval-process).)
 - [ ] If someone else will be the main Guardian Connector admin, did I have them sign in, approve their account, and upgrade their role to Admin?
 - [ ] Did I set a custom background image and logo? (optional)
 
