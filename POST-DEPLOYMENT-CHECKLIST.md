@@ -37,7 +37,7 @@ It covers the manual steps that are not already automated through the scripts an
 
 ### Filebrowser
 
-- [ ] Did I get the Filebrowser admin password (from `gc-stack-deploy` output or `stack.yaml`, or for a one-click install, from the logs in CapRover and then change it)?
+- [ ] Did I get the File Browser admin password (from `gc-stack-deploy` output or `stack.yaml`, or for a one-click install, from the logs in CapRover and then change it)?
 - [ ] Did I store the updated admin credentials in KeePass?
 
 ### Windmill
