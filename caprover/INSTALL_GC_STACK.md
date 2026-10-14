@@ -237,6 +237,13 @@ deploying the landing page.
 
 You may also want to check if all of the other environmental variables (like `NUXT_PUBLIC_COMMUNITY_NAME`) are set correctly post-installation. Logo and login background are configured in the landing page Theme Settings (Admin), stored in `gc_settings`.
 
+#### First admin user (Auth0)
+
+> [!IMPORTANT]
+> **Nobody can sign in to Guardian Connector until you do this.**
+> Follow the first-user steps in [Auth0 approval process](/auth0/README.md#auth0-approval-process)
+> to approve the first user and make them an Admin.
+
 ### Redis
 
 No additional steps needed.

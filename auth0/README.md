@@ -58,8 +58,7 @@ You will need a Google Cloud Platform (GCP) OAuth 2.0 Client in order to [avoid 
 5. 🪄 Create a M2M application for metrics with a name like **GC Metrics**, and grant `read:users` and `read:stats` scopes to it. This authorizes the [GC Metrics script](https://github.com/ConservationMetrics/gc-scripts-hub/tree/main/f/metrics/guardianconnector) (which runs in Windmill) against the Auth0 Management API. Follow [**Setting up resources**](/caprover/INSTALL_GC_STACK.md#setting-up-resources) in the stack install guide to add these as a Windmill resource `oauth_client_credentials`. (The wizard saves this client's ID/secret as a comment at the bottom of `stack.yaml`. Copy it into Windmill manually.)
 6. 🪄 In **Actions**, configure Login Flow Actions for user approval and the roles claim. (See [Flows](#flows) below.)
 7. 🪄 Set up **Role-Based Access Control** for the applications that use it. (See [RBAC Configuration](#rbac-configuration) below.)
-8. **Sign in** to an auth0 application with at least one user, who will serve as the initial admin user and can manage approval and roles for others using GC Landing Page. This user should be given the **Admin** role, and be approved (see [Auth0 approval process](#auth0-approval-process) below.)
-9. (Optional) in **Branding**, a few minor customizations like adding an organization logo and setting the background color to gray #F9F9F9 instead of standard black.
+8. (Optional) in **Branding**, a few minor customizations like adding an organization logo and setting the background color to gray #F9F9F9 instead of standard black.
 
 ## Flows
 
@@ -177,11 +176,29 @@ In addition to GC Explorer and GC Landing Page, we host several third party appl
 
 ## Auth0 approval process
 
+Every user must be "approved" and given a role before they can use Guardian Connector. An Admin should do this
+in the GC Landing Page's [User Management](https://docs.guardianconnector.net/reference/gc-toolkit/gc-landing-page/#user-management)
+page.
+
+> [!IMPORTANT]
+> **Very first user**
+> The exception is the very first user: there is no Admin user yet to approve them, so they must be approved by hand _after_ the
+> stack is deployed.
+>
+> 1. Try to **Sign in** to the GC Landing Page once as the future admin, so that Auth0 creates the user. You will see "Your approval to access the app is pending", which is expected.
+> 2. In Auth0, go to **User Management** → **Users** → (that user). Under **Metadata**, set `app_metadata` to `{ "approved": true }` and save. This is the value the [user approval flow](#1-user-approval-flow) checks.
+> 3. On the same user, open the **Roles** tab, click **Assign Roles**, and choose **Admin**.
+> 4. Sign out of the GC Landing Page and sign back in, so that the new token carries the role.
+>
+> Afterwards, they can manage approval and roles for everyone else using the GC Landing Page, as described above.
+
+For every user after the first:
+
 1. A user signs up for one of the applications -- typically, the GC Landing Page -- using Auth0, either by email/password or a third-party service (currently, only Google is supported).
 2. If the user is not yet approved, they will encounter a message such as:
    - “Your approval to access the app is pending” (GC Landing Page, GC Explorer)
    - “Invalid login” (Superset)
-3. A Guardian Connector administrator approves the user and assigns them a role. They can do this using the [User Management](https://docs.guardianconnector.net/reference/gc-toolkit/gc-landing-page/#-user-management) page on the GC Landing Page.
+3. A Guardian Connector administrator approves the user and assigns them a role. They can do this using the [User Management](https://docs.guardianconnector.net/reference/gc-toolkit/gc-landing-page/#user-management) page on the GC Landing Page.
 4. Once approved, the user can log in to Guardian Connector services.
 
 ## Appendix: Bootstrap M2M application for the wizard
