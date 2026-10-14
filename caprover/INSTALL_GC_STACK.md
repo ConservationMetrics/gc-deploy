@@ -188,7 +188,14 @@ No additional steps needed, but you may want to check if the `ALLOWED_PROJECTS` 
 
 #### Find and change the admin password
 
-Find the admin password in the CapRover web portal under **Files** → **Logs**. Example log message:
+> [!NOTE]
+> If you deployed with `gc-stack-deploy`, skip this step.
+>
+> The filebrowser admin password (username `admin`) is in your `stack.yaml` under `filebrowser.admin_password`.
+
+If you installed Filebrowser as a one-click app, a password was generated and printed once during the deploy as `FILEBROWSER ADMIN PASSWORD`. If you put the password in `stack.yaml`, consider changing it inside the Filebrowser app.
+
+If you installed Filebrowser as a one-click app (Option 2), find the admin password in the CapRover web portal under **Files** → **Logs**. Example log message:
 
 ```
 2026-01-22T20:56:44.221575561Z 2026/01/22 20:56:44 Using database: /database/filebrowser.db
