@@ -2,6 +2,10 @@
 
 Guardian Connector uses [Auth0](https://auth0.com/) for authentication and user management. This guide outlines how to configure a new Auth0 tenant for production use.
 
+## Choose your tenant name
+
+Before you start, pick the **Tenant Name** for your new Auth0 tenant. It should match the alias chosen by the community. The steps below use it as `<tenant>`, starting with the GCP OAuth client, which needs your tenant's URLs before the tenant exists.
+
 ## GCP OAuth client configuration
 
 > [!IMPORTANT]
@@ -32,7 +36,7 @@ You will need a Google Cloud Platform (GCP) OAuth 2.0 Client in order to [avoid 
 >
 > If you change a 🪄 step here, make the matching change in code under [`caprover/gc-stack-deploy/src/gc_stack_deploy/wizard/`](/caprover/gc-stack-deploy/src/gc_stack_deploy/wizard/).
 
-1. When creating a new Auth0 tenant, you will need to provide a **Tenant Name** for the tenant, which should match the alias chosen by the community.
+1. Create the new Auth0 tenant now, using the **Tenant Name** you chose in [Choose your tenant name](#choose-your-tenant-name).
    - Additionally, select a **Region** (CMI uses US) and **Environment Tag**: "Production".
 2. In **Settings** → **Tenant Members**, add the email addresses of the desired tenant administrators (for example, CMI engineering team members and programmatic lead(s)).
 3. 🪄 In **Authentication / Social**, enable google-oauth2 under Social Connections. You will need to provide a Client ID and Secret (see [GCP OAuth client configuration](#gcp-oauth-client-configuration)).
