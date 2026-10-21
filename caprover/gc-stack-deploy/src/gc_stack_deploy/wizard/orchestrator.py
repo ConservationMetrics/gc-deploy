@@ -64,6 +64,7 @@ def client_spec_for_app(app_key: str, config: dict, root_domain: str) -> dict:
             "callbacks": [f"https://{root_domain}/login"],
             "web_origins": [f"https://{root_domain}"],
             "allowed_origins": [f"https://{root_domain}"],
+            "allowed_logout_urls": [f"https://{root_domain}"],
         }
     if app_key == "superset-only":
         app_name = config.get(app_key, {}).get("app_name", "superset")
@@ -87,6 +88,7 @@ def client_spec_for_app(app_key: str, config: dict, root_domain: str) -> dict:
             "callbacks": [f"https://{host}/login"],
             "web_origins": [f"https://{host}"],
             "allowed_origins": [f"https://{host}"],
+            "allowed_logout_urls": [f"https://{host}"],
         }
     if app_key == "windmill-only":
         app_name = config.get(app_key, {}).get("app_name", "windmill")
@@ -173,6 +175,7 @@ def run_wizard(
             callbacks=spec["callbacks"],
             web_origins=spec["web_origins"],
             allowed_origins=spec["allowed_origins"],
+            allowed_logout_urls=spec.get("allowed_logout_urls"),
             existing_secret=_get_existing_secret(config, app_key),
         )
 
