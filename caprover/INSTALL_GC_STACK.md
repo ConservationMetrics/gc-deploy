@@ -188,7 +188,14 @@ No additional steps needed, but you may want to check if the `ALLOWED_PROJECTS` 
 
 #### Find and change the admin password
 
-Find the admin password in the CapRover web portal under **Files** → **Logs**. Example log message:
+> [!NOTE]
+> If you deployed with `gc-stack-deploy`, skip this step.
+>
+> The File Browser admin password (username `admin`) is in your `stack.yaml` under `filebrowser.admin_password`.
+
+If you installed File Browser as a one-click app, a password was generated and printed once during the deploy as `FILEBROWSER ADMIN PASSWORD`. If you put the password in `stack.yaml`, consider changing it inside the File Browser app.
+
+If you installed File Browser as a one-click app (Option 2), find the admin password in the CapRover web portal under **Files** → **Logs**. Example log message:
 
 ```
 2026-01-22T20:56:44.221575561Z 2026/01/22 20:56:44 Using database: /database/filebrowser.db
@@ -222,13 +229,20 @@ The `gc-stack-deploy` handles this for you, but if you are setting up the app us
 
 ### Guardian Connector Landing Page
 
-`NUXT_PUBLIC_DOMAIN` should be the domain suffix that follows the community alias (for example, `guardianconnector.net`).
+`NUXT_PUBLIC_ROOT_DOMAIN` is the domain after the community alias (for example, `guardianconnector.net`). The landing page builds its own URL as `https://<NUXT_PUBLIC_COMMUNITY_NAME>.<NUXT_PUBLIC_ROOT_DOMAIN>`.
 
 The landing page uses the same PostgreSQL server as Guardian Connector Explorer.
 `gc-stack-deploy` creates its `guardianconnector` configuration database before
 deploying the landing page.
 
 You may also want to check if all of the other environmental variables (like `NUXT_PUBLIC_COMMUNITY_NAME`) are set correctly post-installation. Logo and login background are configured in the landing page Theme Settings (Admin), stored in `gc_settings`.
+
+#### First admin user (Auth0)
+
+> [!IMPORTANT]
+> **Nobody can sign in to Guardian Connector until you do this.**
+> Follow the first-user steps in [Auth0 approval process](/auth0/README.md#auth0-approval-process)
+> to approve the first user and make them an Admin.
 
 ### Redis
 

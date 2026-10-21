@@ -1,0 +1,3 @@
+[lint]
+unfixable = ["F401"]
+select = ["I"]

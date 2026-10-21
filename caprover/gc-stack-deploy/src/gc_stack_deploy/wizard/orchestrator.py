@@ -1,4 +1,5 @@
 """The run_wizard function dictates the end-to-end wizard order:
+0. (in screens.py, before run_wizard) get a Management API access token for an M2M app
 1. provisioning of auth0 configs
 2. writes the auth0 credentials to stack.yaml.
 """
@@ -50,6 +51,18 @@ APP_DISPLAY_NAMES = {
 }
 
 
+def landing_host(community_name: str, root_domain: str) -> str:
+    """Hostname the landing page is served at.
+
+    ``root_domain`` is the parent domain (``example.net``), not the full host.
+    Returns ``<community_name>.<root_domain>``, or just ``root_domain`` when
+    ``community_name`` is blank.
+    """
+    alias = community_name.strip().strip(".")
+    parent = root_domain.strip().strip(".")
+    return f"{alias}.{parent}" if alias else parent
+
+
 def client_spec_for_app(app_key: str, config: dict, root_domain: str) -> dict:
     """Callback/origin URLs to set one app's Auth0 client.
 
@@ -57,18 +70,20 @@ def client_spec_for_app(app_key: str, config: dict, root_domain: str) -> dict:
     gc-landing-page, which (via its default redirect_to_root: true) is served
     directly at the root domain.
     """
+    community_name = str(config.get("community_name") or "")
+    root = landing_host(community_name, root_domain)
     if app_key == "gc-landing-page":
         return {
             "name": APP_DISPLAY_NAMES[app_key],
             "app_type": "regular_web",
-            "callbacks": [f"https://{root_domain}/login"],
-            "web_origins": [f"https://{root_domain}"],
-            "allowed_origins": [f"https://{root_domain}"],
-            "allowed_logout_urls": [f"https://{root_domain}"],
+            "callbacks": [f"https://{root}/login"],
+            "web_origins": [f"https://{root}"],
+            "allowed_origins": [f"https://{root}"],
+            "allowed_logout_urls": [f"https://{root}"],
         }
     if app_key == "superset-only":
         app_name = config.get(app_key, {}).get("app_name", "superset")
-        host = f"{app_name}.{root_domain}"
+        host = f"{app_name}.{root}"
         return {
             "name": APP_DISPLAY_NAMES[app_key],
             "app_type": "regular_web",
@@ -81,7 +96,7 @@ def client_spec_for_app(app_key: str, config: dict, root_domain: str) -> dict:
         }
     if app_key == "gc-explorer":
         app_name = config.get(app_key, {}).get("app_name", "explorer")
-        host = f"{app_name}.{root_domain}"
+        host = f"{app_name}.{root}"
         return {
             "name": APP_DISPLAY_NAMES[app_key],
             "app_type": "regular_web",
@@ -92,7 +107,7 @@ def client_spec_for_app(app_key: str, config: dict, root_domain: str) -> dict:
         }
     if app_key == "windmill-only":
         app_name = config.get(app_key, {}).get("app_name", "windmill")
-        host = f"{app_name}.{root_domain}"
+        host = f"{app_name}.{root}"
         return {
             "name": APP_DISPLAY_NAMES[app_key],
             "app_type": "regular_web",
@@ -113,8 +128,7 @@ def run_wizard(
     config_file: str,
     *,
     domain: str,
-    bootstrap_client_id: str,
-    bootstrap_client_secret: str,
+    access_token: str,
     selected_apps: list[str],
     root_domain: str,
     gcp_client_id: str | None = None,
@@ -131,6 +145,9 @@ def run_wizard(
         WARNING: This object will be mutated in place.
     config_file
         Path to write the mutated config to.
+    access_token
+        Management API access token for `domain`, with at least the scopes in
+        auth0/m2m_app.py's MANAGEMENT_SCOPES.
     root_domain
         Domain the stack is served at; each app's Auth0 callback/origin URLs
         are built from it (see client_spec_for_app).
@@ -151,7 +168,7 @@ def run_wizard(
         return
 
     logger.info(f"Authenticating to Auth0 tenant {domain!r}")
-    mgmt = get_management_client(domain, bootstrap_client_id, bootstrap_client_secret)
+    mgmt = get_management_client(domain, access_token)
 
     if gcp_client_id and gcp_client_secret:
         logger.info("Provisioning google-oauth2 social connection")

@@ -2,6 +2,10 @@
 
 Guardian Connector uses [Auth0](https://auth0.com/) for authentication and user management. This guide outlines how to configure a new Auth0 tenant for production use.
 
+## Choose your tenant name
+
+Before you start, pick the **Tenant Name** for your new Auth0 tenant. It should match the alias chosen by the community. The steps below use it as `<tenant>`, starting with the GCP OAuth client, which needs your tenant's URLs before the tenant exists.
+
 ## GCP OAuth client configuration
 
 > [!IMPORTANT]
@@ -25,14 +29,12 @@ You will need a Google Cloud Platform (GCP) OAuth 2.0 Client in order to [avoid 
 > [!TIP]
 >
 > Steps 3, 4, 5, 6, and 7 below can be automated by running `gc-stack-deploy wizard -c stack.yaml`. These are indicated by 🪄 below.
-> You'll first need to ["Bootstrap M2M application for the wizard"](#appendix-bootstrap-m2m-application-for-the-wizard)
-> to run the wizard.
 
 > [!WARNING]
 >
 > If you change a 🪄 step here, make the matching change in code under [`caprover/gc-stack-deploy/src/gc_stack_deploy/wizard/`](/caprover/gc-stack-deploy/src/gc_stack_deploy/wizard/).
 
-1. When creating a new Auth0 tenant, you will need to provide a **Tenant Name** for the tenant, which should match the alias chosen by the community.
+1. Create the new Auth0 tenant now, using the **Tenant Name** you chose in [Choose your tenant name](#choose-your-tenant-name).
    - Additionally, select a **Region** (CMI uses US) and **Environment Tag**: "Production".
 2. In **Settings** → **Tenant Members**, add the email addresses of the desired tenant administrators (for example, CMI engineering team members and programmatic lead(s)).
 3. 🪄 In **Authentication / Social**, enable google-oauth2 under Social Connections. You will need to provide a Client ID and Secret (see [GCP OAuth client configuration](#gcp-oauth-client-configuration)).
@@ -58,8 +60,7 @@ You will need a Google Cloud Platform (GCP) OAuth 2.0 Client in order to [avoid 
 5. 🪄 Create a M2M application for metrics with a name like **GC Metrics**, and grant `read:users` and `read:stats` scopes to it. This authorizes the [GC Metrics script](https://github.com/ConservationMetrics/gc-scripts-hub/tree/main/f/metrics/guardianconnector) (which runs in Windmill) against the Auth0 Management API. Follow [**Setting up resources**](/caprover/INSTALL_GC_STACK.md#setting-up-resources) in the stack install guide to add these as a Windmill resource `oauth_client_credentials`. (The wizard saves this client's ID/secret as a comment at the bottom of `stack.yaml`. Copy it into Windmill manually.)
 6. 🪄 In **Actions**, configure Login Flow Actions for user approval and the roles claim. (See [Flows](#flows) below.)
 7. 🪄 Set up **Role-Based Access Control** for the applications that use it. (See [RBAC Configuration](#rbac-configuration) below.)
-8. **Sign in** to an auth0 application with at least one user, who will serve as the initial admin user and can manage approval and roles for others using GC Landing Page. This user should be given the **Admin** role, and be approved (see [Auth0 approval process](#auth0-approval-process) below.)
-9. (Optional) in **Branding**, a few minor customizations like adding an organization logo and setting the background color to gray #F9F9F9 instead of standard black.
+8. (Optional) in **Branding**, a few minor customizations like adding an organization logo and setting the background color to gray #F9F9F9 instead of standard black.
 
 ## Flows
 
@@ -183,17 +184,40 @@ GC Landing Page and GC Explorer clear the Auth0 SSO session on logout by redirec
 
 ## Auth0 approval process
 
+Every user must be "approved" and given a role before they can use Guardian Connector. An Admin should do this
+in the GC Landing Page's [User Management](https://docs.guardianconnector.net/reference/gc-toolkit/gc-landing-page/#user-management)
+page.
+
+> [!IMPORTANT]
+> **Very first user**
+> The exception is the very first user: there is no Admin user yet to approve them, so they must be approved by hand _after_ the
+> stack is deployed.
+>
+> 1. Try to **Sign in** to the GC Landing Page once as the future admin, so that Auth0 creates the user. You will see "Your approval to access the app is pending", which is expected.
+> 2. In Auth0, go to **User Management** → **Users** → (that user). Under **Metadata**, set `app_metadata` to `{ "approved": true }` and save. This is the value the [user approval flow](#1-user-approval-flow) checks.
+> 3. On the same user, open the **Roles** tab, click **Assign Roles**, and choose **Admin**.
+> 4. Sign out of the GC Landing Page and sign back in, so that the new token carries the role.
+>
+> Afterwards, they can manage approval and roles for everyone else using the GC Landing Page, as described above.
+
+For every user after the first:
+
 1. A user signs up for one of the applications -- typically, the GC Landing Page -- using Auth0, either by email/password or a third-party service (currently, only Google is supported).
 2. If the user is not yet approved, they will encounter a message such as:
    - “Your approval to access the app is pending” (GC Landing Page, GC Explorer)
    - “Invalid login” (Superset)
-3. A Guardian Connector administrator approves the user and assigns them a role. They can do this using the [User Management](https://docs.guardianconnector.net/reference/gc-toolkit/gc-landing-page/#-user-management) page on the GC Landing Page.
+3. A Guardian Connector administrator approves the user and assigns them a role. They can do this using the [User Management](https://docs.guardianconnector.net/reference/gc-toolkit/gc-landing-page/#user-management) page on the GC Landing Page.
 4. Once approved, the user can log in to Guardian Connector services.
 
 ## Appendix: Bootstrap M2M application for the wizard
 
-`gc-stack-deploy wizard` talks to the Auth0 Management API on your behalf, authenticated as a
-Machine-to-Machine application you create once per tenant:
+`gc-stack-deploy wizard` talks to the Auth0 Management API on your behalf, authenticated
+as a Machine-to-Machine (M2M) application to create application clients, Social Connection, RBAC, and Actions.
+Normally creates the temporary M2M app by itself, using the Auth0 CLI (you approve a login in your browser).
+When that works, you don't need the rest of this section.
+
+If the CLI can't be downloaded or your tenant uses a custom domain, you can create the M2M app
+by hand and enter its credentials in the wizard instead:
 
 1. Go to the Auth0 dashboard, **Applications** → **Applications** → **+ Create Application**.
 2. Name it **gc-stack-deploy**, choose **Machine to Machine Applications**, and click **Create**.
@@ -222,3 +246,10 @@ Machine-to-Machine application you create once per tenant:
 
 5. Click **Authorize**, then on the application's **Settings** tab copy the **Domain**, **Client ID**,
    and **Client Secret**. The wizard will prompt for these.
+6. When the wizard finishes, delete the application.
+
+> [!WARNING]
+>
+> `create:client_grants` and `update:client_grants` let this application grant itself any other Management
+> API permission, so treat its client secret as full administrator access to the tenant. (The temporary
+> application the wizard creates by itself has the same power, which is why the wizard deletes it.)

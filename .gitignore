@@ -45,3 +45,8 @@ share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# AI code assistants
+.claude/
+*.local.md
+*.local.mdc
