@@ -73,6 +73,8 @@ class TestEnsureClientLike:
         assert kwargs["name"] == expected_name
         assert kwargs["app_type"] == expected_app_type
         assert kwargs["callbacks"] == self.CALLBACKS
+        # Windmill & Superset don't need allowed_logout_urls.
+        # See test_ensure_client_sets_allowed_logout_urls_when_given for the apps that do.
         assert "allowed_logout_urls" not in kwargs
         mgmt.clients.update.assert_not_called()
 
