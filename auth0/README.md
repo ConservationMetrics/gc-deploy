@@ -48,6 +48,7 @@ You will need a Google Cloud Platform (GCP) OAuth 2.0 Client in order to [avoid 
    - For **GC-Explorer**:
      - **Callback URL**: `https://explorer.<domain>.guardianconnector.net/login`
      - **Allowed Web Origins**: `https://explorer.<domain>.guardianconnector.net`
+     - **Allowed Logout URLs**: `https://explorer.<domain>.guardianconnector.net`
    - For **Windmill**:
      - **Callback URL**: `https://windmill.<domain>.guardianconnector.net/user/login_callback/auth0`
      - **Allowed Web Origins**: `https://windmill.<domain>.guardianconnector.net/`
@@ -55,6 +56,7 @@ You will need a Google Cloud Platform (GCP) OAuth 2.0 Client in order to [avoid 
    - For **GC Landing Page**:
      - **Callback URL**: `https://<domain>.guardianconnector.net/login`
      - **Allowed Web Origins**: `https://<domain>.guardianconnector.net`
+     - **Allowed Logout URLs**: `https://<domain>.guardianconnector.net`
 5. 🪄 Create a M2M application for metrics with a name like **GC Metrics**, and grant `read:users` and `read:stats` scopes to it. This authorizes the [GC Metrics script](https://github.com/ConservationMetrics/gc-scripts-hub/tree/main/f/metrics/guardianconnector) (which runs in Windmill) against the Auth0 Management API. Follow [**Setting up resources**](/caprover/INSTALL_GC_STACK.md#setting-up-resources) in the stack install guide to add these as a Windmill resource `oauth_client_credentials`. (The wizard saves this client's ID/secret as a comment at the bottom of `stack.yaml`. Copy it into Windmill manually.)
 6. 🪄 In **Actions**, configure Login Flow Actions for user approval and the roles claim. (See [Flows](#flows) below.)
 7. 🪄 Set up **Role-Based Access Control** for the applications that use it. (See [RBAC Configuration](#rbac-configuration) below.)
@@ -174,6 +176,12 @@ In addition to GC Explorer and GC Landing Page, we host several third party appl
 - **Windmill**: Windmill has its own roles -- see [Roles and permissions](https://www.windmill.dev/docs/core_concepts/roles_and_permissions) in their documentation. These roles currently cannot be synchronized with Guardian Connector roles. In practice, we map them conceptually as follows: a Windmill **Administrator** is equivalent to a Guardian Connector **system administrator**, while a Windmill **Operator** is equivalent to a Guardian Connector **Admin**. This means that a GC Admin should be able to run and schedule scripts and flows and access Windmill apps, but should not have access to system-wide Windmill administration. This follows the same principle by which GC Admins are typically not given access to CapRover.
 - **CapRover**: CapRover itself does not have any RBAC or single sign-on support.
 
+## Single Sign-On (SSO) across GC apps
+
+All applications in the same Auth0 tenant share an SSO session cookie on the Auth0 domain. After a user authenticates once (e.g. on GC Landing Page), other apps (GC Explorer, Superset, etc.) can complete login without prompting for credentials again — either after the user clicks Login, or automatically via silent auth (`prompt=none`).
+
+GC Landing Page and GC Explorer clear the Auth0 SSO session on logout by redirecting to `/v2/logout`. That requires **Allowed Logout URLs** to be set on each Auth0 application (see step 4 above). Existing tenants created before logout URLs were provisioned should add them manually or re-run the wizard.
+
 ## Auth0 approval process
 
 Every user must be "approved" and given a role before they can use Guardian Connector. An Admin should do this
@@ -220,7 +228,7 @@ by hand and enter its credentials in the wizard instead:
    You can also type each resource name (e.g. `client_grants`) into the **Filter Permissions** box.
 
    | Resource              | Permissions to check                                                 |
-   |-----------------------|----------------------------------------------------------------------|
+   | --------------------- | -------------------------------------------------------------------- |
    | `client_grants`       | `read:client_grants`, `update:client_grants`, `create:client_grants` |
    | `clients`             | `read:clients`, `update:clients`, `create:clients`                   |
    | `connections`         | `read:connections`, `update:connections`, `create:connections`       |
@@ -235,6 +243,7 @@ by hand and enter its credentials in the wizard instead:
    If you skipped this dialog, you can authorize later: **Applications** → **APIs** →
    **Auth0 Management API** → **Application Access** tab, click the **Edit** button next to
    **gc-stack-deploy**, and on its **Client Access** tab check the permissions above.
+
 5. Click **Authorize**, then on the application's **Settings** tab copy the **Domain**, **Client ID**,
    and **Client Secret**. The wizard will prompt for these.
 6. When the wizard finishes, delete the application.

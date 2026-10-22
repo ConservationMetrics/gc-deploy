@@ -73,6 +73,9 @@ class TestEnsureClientLike:
         assert kwargs["name"] == expected_name
         assert kwargs["app_type"] == expected_app_type
         assert kwargs["callbacks"] == self.CALLBACKS
+        # Windmill & Superset don't need allowed_logout_urls.
+        # See test_ensure_client_sets_allowed_logout_urls_when_given for the apps that do.
+        assert "allowed_logout_urls" not in kwargs
         mgmt.clients.update.assert_not_called()
 
     def test_updates_safe_fields_and_reuses_known_secret(
@@ -106,6 +109,31 @@ class TestEnsureClientLike:
         assert result.client_secret is None
         assert result.created is False
         assert any("no known secret" in r.message for r in caplog.records)
+
+
+@pytest.mark.parametrize(
+    "name,logout_url",
+    [
+        ("GC Landing Page", "https://example.net"),
+        ("GC Explorer", "https://explorer.example.net"),
+    ],
+)
+def test_ensure_client_sets_allowed_logout_urls_when_given(name, logout_url):
+    """Landing Page and Explorer pass logout URLs. Superset and Windmill do not."""
+    mgmt = make_mgmt()
+    mgmt.clients.create.return_value = SimpleNamespace(
+        client_id="new-id", client_secret="new-secret"
+    )
+
+    ensure_client(
+        mgmt,
+        name=name,
+        app_type="regular_web",
+        callbacks=[f"{logout_url}/login"],
+        allowed_logout_urls=[logout_url],
+    )
+
+    assert mgmt.clients.create.call_args.kwargs["allowed_logout_urls"] == [logout_url]
 
 
 class TestEnsureGoogleConnection:

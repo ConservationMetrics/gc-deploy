@@ -74,6 +74,7 @@ def ensure_client(
     callbacks: list[str] | None = None,
     web_origins: list[str] | None = None,
     allowed_origins: list[str] | None = None,
+    allowed_logout_urls: list[str] | None = None,
     existing_secret: str | None = None,
 ) -> ClientResult:
     """Create or update a single Auth0 Application (client), by name.
@@ -93,6 +94,8 @@ def ensure_client(
         fields["web_origins"] = web_origins
     if allowed_origins is not None:
         fields["allowed_origins"] = allowed_origins
+    if allowed_logout_urls is not None:
+        fields["allowed_logout_urls"] = allowed_logout_urls
 
     if existing:
         logger.info(f"Updating existing Auth0 client {name!r}")
