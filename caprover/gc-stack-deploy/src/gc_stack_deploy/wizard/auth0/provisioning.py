@@ -114,7 +114,14 @@ def ensure_client(
         )
 
     logger.info(f"Creating Auth0 client {name!r}")
-    created = mgmt.clients.create(name=name, app_type=app_type, **fields)
+    created = mgmt.clients.create(
+        name=name,
+        app_type=app_type,
+        # The Auth0 web portal has always defaulted to RS256, but this Management API defaults new clients to HS256.
+        # Apps such as Superset verify ID tokens against the tenant's public keys, so need RS256.
+        jwt_configuration={"alg": "RS256"},
+        **fields,
+    )
     return ClientResult(
         client_id=created.client_id,
         client_secret=created.client_secret,
